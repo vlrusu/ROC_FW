@@ -1,0 +1,1 @@
+There is a problem with the automatic timing derivation, remove ARESETN* from DDR_Interface in ROC_derived_constraints
