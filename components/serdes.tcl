@@ -55,24 +55,24 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFO} -instance_
 
 # Add RxFIFOReset_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFOReset} -instance_name {RxFIFOReset_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:PLL_LOCK} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:SS_BUSY} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:INIT_DONE} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:FPGA_POR_N} -value {VCC}
 
 
 
 # Add RxFIFOReset_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFOReset} -instance_name {RxFIFOReset_1}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:PLL_LOCK} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:SS_BUSY} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:INIT_DONE} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:FPGA_POR_N} -value {VCC}
 
 
@@ -130,14 +130,14 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {TxRefCLK} -instanc
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "RxFIFOReset_0:EXT_RST_N" "SerdesRxController_0:reset_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:reset_n" "AND2_1:Y" "RxFIFOReset_1:EXT_RST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:EMPTY" "EMPTY0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFOReset_0:EXT_RST_N" "SerdesRxController_0:reset_n" "AND2_0:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFOReset_1:EXT_RST_N" "SerdesRxController_1:reset_n" "AND2_1:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EMPTY0" "RxFIFO_0:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:EMPTY" "EMPTY1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:fifo_ready" "fifo_ready0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:fifo_ready" "fifo_ready1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:FULL" "SerdesRxController_0:fifo_full" "FULL0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:fifo_full" "RxFIFO_1:FULL" "FULL1" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:fifo_full" "FULL0" "RxFIFO_0:FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:FULL" "SerdesRxController_1:fifo_full" "FULL1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_RXD_N" "LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_RXD_P" "LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_TXD_N" "LANE0_TXD_N" }
@@ -146,36 +146,36 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_RXD_N" "LANE1_RXD_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_RXD_P" "LANE1_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_TXD_N" "LANE1_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_TXD_P" "LANE1_TXD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:RCLOCK" "RxFIFO_1:RCLOCK" "RxFIFOReset_0:CLK" "RxFIFOReset_1:CLK" "RCLOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:RE" "RE0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:RCLOCK" "RxFIFOReset_0:CLK" "RxFIFOReset_1:CLK" "RCLOCK" "RxFIFO_0:RCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RE0" "RxFIFO_0:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:RE" "RE1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "TxRefCLK_0:REF_CLK_PAD_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "TxRefCLK_0:REF_CLK_PAD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:A" "RRESET" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:RESET" "RxFIFOReset_0:FABRIC_RESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxRefCLK_0:REF_CLK_PAD_N" "REF_CLK_PAD_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxRefCLK_0:REF_CLK_PAD_P" "REF_CLK_PAD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RRESET" "AND2_1:A" "AND2_0:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFOReset_0:FABRIC_RESET_N" "RxFIFO_0:RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:RESET" "RxFIFOReset_1:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:serdes_aligned" "serdes_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:serdes_aligned" "serdes_aligned_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:WE" "SerdesRxController_0:fifo_we" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:fifo_we" "RxFIFO_1:WE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:WCLOCK" "SerdesRxController_0:clk" "TxIF_0:LANE0_RX_CLK_R" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "TxIF_0:LANE0_RX_VAL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:clk" "RxFIFO_1:WCLOCK" "TxIF_0:LANE1_RX_CLK_R" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:B" "TxIF_0:LANE1_RX_VAL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_CDR_REF_CLK_0" "TxIF_0:LANE1_CDR_REF_CLK_0" "TxPLL_0:REF_CLK" "TxRefCLK_0:REF_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:fifo_we" "RxFIFO_0:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:WE" "SerdesRxController_1:fifo_we" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_RX_CLK_R" "SerdesRxController_0:clk" "RxFIFO_0:WCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_RX_VAL" "AND2_0:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_RX_CLK_R" "RxFIFO_1:WCLOCK" "SerdesRxController_1:clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_RX_VAL" "AND2_1:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxPLL_0:REF_CLK" "TxRefCLK_0:REF_CLK" "TxIF_0:LANE0_CDR_REF_CLK_0" "TxIF_0:LANE1_CDR_REF_CLK_0" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:howmany" "SerdesRxController_1:howmany" "howmany" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:howmany" "SerdesRxController_0:howmany" "howmany" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:Q" "Q0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:Q" "Q1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:fifo_rdcnt" "RxFIFO_0:RDCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:RDCNT" "SerdesRxController_1:fifo_rdcnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:data_out" "RxFIFO_0:DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_1:DATA" "SerdesRxController_1:data_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:k_in" "TxIF_0:LANE0_8B10B_RX_K" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_0:data_in" "TxIF_0:LANE0_RX_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:k_in" "TxIF_0:LANE1_8B10B_RX_K" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:data_in" "TxIF_0:LANE1_RX_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:RDCNT" "SerdesRxController_0:fifo_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:fifo_rdcnt" "RxFIFO_1:RDCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxFIFO_0:DATA" "SerdesRxController_0:data_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesRxController_1:data_out" "RxFIFO_1:DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_8B10B_RX_K" "SerdesRxController_0:k_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE0_RX_DATA" "SerdesRxController_0:data_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_8B10B_RX_K" "SerdesRxController_1:k_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:LANE1_RX_DATA" "SerdesRxController_1:data_in" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TxIF_0:CLKS_FROM_TXPLL_0" "TxPLL_0:CLKS_TO_XCVR" }

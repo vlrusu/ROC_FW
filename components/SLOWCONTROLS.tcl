@@ -249,52 +249,52 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:resetn_i" "AND2_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISS[0]" "CAL_PREAMP_CE0n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISS[1]" "CAL_PREAMP_CE1n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISDI" "CAL_PREAMP_MISO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISDO" "CAL_PREAMP_MOSI" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE0n" "PREAMPSPI_1:SPISS[0]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE1n" "PREAMPSPI_1:SPISS[1]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MISO" "PREAMPSPI_1:SPISDI" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MOSI" "PREAMPSPI_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:Y" "CAL_PREAMP_SCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calscl" "calscl" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calsda" "calsda" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRCS" "DDRCS" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRDMAEN" "DDRDMAEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRFIFO_RE" "DDRFIFO_RE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRFULL" "DDRFULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRMEMFIFO_RE" "DDRMEMFIFO_RE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRMEMFIFOEMPTY" "DDRMEMFIFOEMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRMEMFIFOFULL" "DDRMEMFIFOFULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRREN" "DDRREN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRSEL" "DDRSEL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRSET" "DDRSET" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRTEMPFIFOEMPTY" "DDRTEMPFIFOEMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRTEMPFIFOFULL" "DDRTEMPFIFOFULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRWEN" "DDRWEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm" "ewm" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_enable" "ewm_enable" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:PCLK" "HCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:PRESETN" "HRESETN" "AND2_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[0]" "HV_PREAMP_CE0n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[1]" "HV_PREAMP_CE1n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"calscl" "Registers_0:calscl" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"calsda" "Registers_0:calsda" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCS" "Registers_0:DDRCS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDMAEN" "Registers_0:DDRDMAEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRFIFO_RE" "Registers_0:DDRFIFO_RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRFULL" "Registers_0:DDRFULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFO_RE" "Registers_0:DDRMEMFIFO_RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFOEMPTY" "Registers_0:DDRMEMFIFOEMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFOFULL" "Registers_0:DDRMEMFIFOFULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRREN" "Registers_0:DDRREN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSEL" "Registers_0:DDRSEL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSET" "Registers_0:DDRSET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRTEMPFIFOEMPTY" "Registers_0:DDRTEMPFIFOEMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRTEMPFIFOFULL" "Registers_0:DDRTEMPFIFOFULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRWEN" "Registers_0:DDRWEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm" "Registers_0:ewm" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_enable" "Registers_0:ewm_enable" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HCLK" "PREAMPSPI_1:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HRESETN" "PREAMPSPI_1:PRESETN" "AND2_0:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE0n" "PREAMPSPI_0:SPISS[0]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE1n" "PREAMPSPI_0:SPISS[1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISDI" "HV_PREAMP_MISO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISDO" "HV_PREAMP_MOSI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISCLKO" "HV_PREAMP_SCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvscl" "hvscl" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvsda" "hvsda" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "MX2_0:B" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PCLK" "Registers_0:PCLK" "PREAMPSPI_0:PCLK" "GPIO_0:PCLK" "PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "sysservices_0:CLK" "TVS_Interface_0:clk" "TVS_Interface_0:R_CLK" "UARTapb_0:PCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:A" "MX2_0:A" "PREAMPSPI_1:SPISCLKO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PRESETN" "Registers_0:PRESETn" "PREAMPSPI_0:PRESETN" "PRESETN" "GPIO_0:PRESETN" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "sysservices_0:RESETN" "UARTapb_0:PRESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PWM[0]" "PWM0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hvscl" "Registers_0:hvscl" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hvsda" "Registers_0:hvsda" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "INV_0:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PCLK" "PCLK" "pwm_0:PCLK" "Registers_0:PCLK" "TVS_Interface_0:clk" "TVS_Interface_0:R_CLK" "UARTapb_0:PCLK" "sysservices_0:CLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "GPIO_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:A" "PREAMPSPI_1:SPISCLKO" "INV_0:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PRESETN" "PRESETN" "pwm_0:PRESETN" "Registers_0:PRESETn" "UARTapb_0:PRESETN" "sysservices_0:RESETN" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "GPIO_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PWM0" "pwm_0:PWM[0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PWM[1]" "counter32_0:clk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:INVERTCALSPICLCK" "MX2_0:S" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "Registers_0:INVERTCALSPICLCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERENABLE" "counter32_0:en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERRESET" "counter32_0:rst_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCRESET" "ROCRESET" "AND2_0:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCRESET" "Registers_0:ROCRESET" "AND2_0:B" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX" "UARTapb_0:RX" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_EMPTY" "SERDES_EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_FULL" "SERDES_FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_RE" "SERDES_RE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_RESET" "SERDES_RESET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_EMPTY" "Registers_0:SERDES_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_FULL" "Registers_0:SERDES_FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_RE" "Registers_0:SERDES_RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_RESET" "Registers_0:SERDES_RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC0_CEn" "SPI0_0:SPISS[0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC1_CEn" "SPI0_0:SPISS[1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC2_CEn" "SPI0_0:SPISS[2]" }
@@ -307,16 +307,16 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI1_ADC2_CEn" "SPI0_1:SPISS[2]
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI1_MISO" "SPI0_1:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI1_MOSI" "SPI0_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI1_SCLK" "SPI0_1:SPISCLKO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:tracker_clk" "tracker_clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"tracker_clk" "Registers_0:tracker_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "UARTapb_0:TX" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"counter32_0:cnt" "Registers_0:TIMERCOUNTER" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDIAG0" "Registers_0:DDRDIAG0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDIAG1" "Registers_0:DDRDIAG1" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERCOUNTER" "counter32_0:cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRDIAG0" "DDRDIAG0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRDIAG1" "DDRDIAG1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRIN" "Registers_0:DDRIN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFODATA0" "Registers_0:DDRMEMFIFODATA0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRMEMFIFODATA1" "DDRMEMFIFODATA1" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFODATA1" "Registers_0:DDRMEMFIFODATA1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRNHITS" "Registers_0:DDRNHITS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDROFFSET" "Registers_0:DDROFFSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPAGENO" "Registers_0:DDRPAGENO" }
@@ -326,25 +326,25 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPATTRN" "Registers_0:DDRPATT
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_early_cut" "Registers_0:event_window_early_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_late_cut" "Registers_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_delay" "Registers_0:ewm_delay" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_OUT" "GPIO_0:GPIO_OUT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:R_ADDR" "Registers_0:ROCTVS_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_aligned" "Registers_0:serdes_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_DATA" "Registers_0:SERDES_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_HOWMANY" "Registers_0:SERDES_HOWMANY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_RDCNT" "Registers_0:SERDES_RDCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_VAL" "TVS_Interface_0:R_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:R_DATA" "Registers_0:ROCTVS_VAL" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:APB_bif" "APB3_0:APBmslave0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:APBslave" "APB3_0:APBmslave1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave2" "Registers_0:BIF_1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave3" "UARTapb_0:APB_bif" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave4" "SPI0_0:APB_bif" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave5" "SPI0_1:APB_bif" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:BIF_1" "APB3_0:APBmslave2" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"UARTapb_0:APB_bif" "APB3_0:APBmslave3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_0:APB_bif" "APB3_0:APBmslave4" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_1:APB_bif" "APB3_0:APBmslave5" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:APB_bif" "APB3_0:APBmslave6" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:APB_bif" "APB3_0:APBmslave7" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave8" "sysservices_0:APBSlave" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APB3mmaster" "APB3mmaster" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"sysservices_0:APBSlave" "APB3_0:APBmslave8" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3mmaster" "APB3_0:APB3mmaster" }
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

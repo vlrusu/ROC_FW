@@ -5,28 +5,12 @@ source hdl_source.tcl
 build_design_hierarchy
 
 #Sourcing the Tcl files in which HDL+ core definitions are created for HDL modules
-source components/axi4dma_init.tcl 
-source components/fifo_mem_cntrl.tcl 
-source components/pattern_gen_checker.tcl 
 source components/SerdesRxController.tcl 
 source components/Registers.tcl 
-source components/ForwardDetector.tcl 
-source components/PacketSender.tcl 
-source components/RocMonitor.tcl 
-source components/CommandHandler.tcl 
 build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
 source components/COREJTAGDEBUG_C0.tcl 
-source components/AXI4_Interconnect.tcl 
-source components/CoreAXI4_Lite.tcl 
-source components/CoreDMA_Controller.tcl 
-source components/MEMFIFO.tcl 
-source components/PF_DDR3_Cntrl.tcl 
-source components/SRAM_AXI.tcl 
-source components/TEMPFIFO.tcl 
-source components/TPSRAM.tcl 
-source components/DDRInterface.tcl 
 source components/DAQFIFO.tcl 
 source components/DIGIFIFO.tcl 
 source components/RxFIFO.tcl 
@@ -51,21 +35,6 @@ source components/UARTapb.tcl
 source components/pwm.tcl 
 source components/sysservices.tcl 
 source components/SLOWCONTROLS.tcl 
-source components/ALGO_CLK_PLL_0.tcl 
-source components/Ctrl_clk.tcl 
-source components/DCS_FIFO.tcl 
-source components/FIFO.tcl 
-source components/FIFO_Response.tcl 
-source components/Oscillator1.tcl 
-source components/CORERESET_PF_C1.tcl 
-source components/ResetController.tcl 
-source components/Retransmit_RAM.tcl 
-source components/CorePCS_C0.tcl 
-source components/PF_XCVR_ERM_C0.tcl 
-source components/PF_XCVR_REF_CLK_C0.tcl 
-source components/XCVR_PLL_0.tcl 
-source components/XCVR_Block.tcl 
-source components/TOP_SERDES.tcl 
 source components/TrackerCCC.tcl 
 source components/pf_reset.tcl 
 source components/ROC.tcl 

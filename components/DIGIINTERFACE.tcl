@@ -111,25 +111,25 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {serdesmux_0:y} -pin_slices {
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:RCLOCK" "serdes_0:RCLOCK" "DIGIFIFO_0:WCLOCK" "DAQFIFO_0:WCLOCK" "clk" "DIGISERDES_Controller_0:clk" "DIGIFIFO_1:WCLOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:RE0" "DIGISERDES_Controller_0:fifo_re[0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:RE1" "DIGISERDES_Controller_0:fifo_re[1]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:WCLOCK" "DIGISERDES_Controller_0:clk" "serdes_0:RCLOCK" "serdes_1:RCLOCK" "DAQFIFO_0:WCLOCK" "DIGIFIFO_0:WCLOCK" "clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_re[0]" "serdes_1:RE0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_re[1]" "serdes_1:RE1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_re[2]" "serdes_0:RE0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_re[3]" "serdes_0:RE1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:WE" "DAQFIFO_0:WE" "DIGISERDES_Controller_0:outfifo_we" "DIGIFIFO_1:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:WE" "DIGISERDES_Controller_0:outfifo_we" "DAQFIFO_0:WE" "DIGIFIFO_0:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:EMPTY" "EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EMPTYDDR" "DIGIFIFO_1:EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:EMPTY" "EMPTYDDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:EMPTY" "EMPTYSERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:FULL" "FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"FULLDDR" "DIGIFIFO_1:FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:FULL" "FULLDDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:FULL" "FULLSERIAL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "serdes_0:LANE0_RXD_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE0_RXD_N" "LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE0_RXD_N" "LANE0_RXD_N_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_P" "serdes_0:LANE0_RXD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE0_RXD_P" "LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE0_RXD_P" "LANE0_RXD_P_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE0_TXD_N" "LANE0_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE0_TXD_N" "LANE0_TXD_N_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "serdes_0:LANE0_TXD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE0_TXD_P" "LANE0_TXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE0_TXD_P" "LANE0_TXD_P_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE1_RXD_N" "LANE1_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE1_RXD_N" "LANE1_RXD_N_0" }
@@ -140,39 +140,39 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE1_TXD_N" "LANE1_TX
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:LANE1_TXD_P" "LANE1_TXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:LANE1_TXD_P" "LANE1_TXD_P_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:RCLOCK" "RCLOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:RCLOCK" "RCLOCKSERIAL" "DIGIFIFO_1:RCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:RCLOCK" "DIGIFIFO_0:RCLOCK" "RCLOCKSERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:RE" "REDAQ" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REDDR" "DIGIFIFO_1:RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:RE" "REDDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:REF_CLK_PAD_N" "REF_CLK_PAD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:REF_CLK_PAD_N" "REF_CLK_PAD_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:REF_CLK_PAD_P" "REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:REF_CLK_PAD_P" "REF_CLK_PAD_P_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:RE" "RESERIAL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:RRESET" "serdes_0:RRESET" "DIGIFIFO_0:RESET" "DAQFIFO_0:RESET" "RESET" "DIGISERDES_Controller_0:reset_n" "DIGIFIFO_1:RESET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:RESET" "DIGISERDES_Controller_0:reset_n" "serdes_0:RRESET" "serdes_1:RRESET" "DAQFIFO_0:RESET" "DIGIFIFO_0:RESET" "RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_ready[2]" "serdes_0:fifo_ready0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_ready[3]" "serdes_0:fifo_ready1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:fifo_ready0" "DIGISERDES_Controller_0:fifo_ready[0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:fifo_ready1" "DIGISERDES_Controller_0:fifo_ready[1]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_ready[0]" "serdes_1:fifo_ready0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_ready[1]" "serdes_1:fifo_ready1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:serdes_aligned" "serdes_aligned[2]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:serdes_aligned" "serdes_aligned[0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:serdes_aligned_0" "serdes_aligned[1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:serdes_aligned_0" "serdes_aligned[3]" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:fifo_select" "serdesmux_0:sel" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:howmany" "DIGISERDES_Controller_0:howmany" "serdes_0:howmany" "howmany" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:sel" "DIGISERDES_Controller_0:fifo_select" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGISERDES_Controller_0:howmany" "serdes_0:howmany" "serdes_1:howmany" "howmany" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:Q" "Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:Q" "QDDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"QSERIAL" "DIGIFIFO_0:Q" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:Q" "QSERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:RDCNT" "RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_1:RDCNT" "RDCNTDDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RDCNTSERIAL" "DIGIFIFO_0:RDCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:RDCNT" "RDCNTSERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:d2" "serdes_0:Q0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:Q1" "serdesmux_0:d3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:d3" "serdes_0:Q1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:d0" "serdes_1:Q0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:d1" "serdes_1:Q1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_0:DATA" "serdesmux_0:y" "DIGIFIFO_1:DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DAQFIFO_0:DATA" "serdesmux_0:y[15:0]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:Q1" "serdesmux_0:d1" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:y" "DIGIFIFO_0:DATA" "DIGIFIFO_1:DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdesmux_0:y[15:0]" "DAQFIFO_0:DATA" }
 
 
 # Re-enable auto promotion of pins of type 'pad'

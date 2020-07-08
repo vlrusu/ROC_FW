@@ -38,9 +38,9 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {TVS_Cntrl} -hdl_
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"clk" "PF_URAM_C0_0:W_CLK" "TVS_Cntrl_0:clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_CLK" "clk" "TVS_Cntrl_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALID" "TVS_Cntrl_0:valid_i" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"R_CLK" "PF_URAM_C0_0:R_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:R_CLK" "R_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"resetn_i" "TVS_Cntrl_0:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_EN" "TVS_Cntrl_0:w_en_o" }
 
@@ -49,8 +49,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:CHANNEL" "TVS_Cntrl
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALUE" "TVS_Cntrl_0:value_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"R_ADDR" "PF_URAM_C0_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"R_DATA" "PF_URAM_C0_0:R_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_ADDR" "TVS_Cntrl_0:channel_o" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_DATA" "TVS_Cntrl_0:value_o" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:channel_o" "PF_URAM_C0_0:W_ADDR" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:value_o" "PF_URAM_C0_0:W_DATA" }
 
 
 # Re-enable auto promotion of pins of type 'pad'
