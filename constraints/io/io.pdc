@@ -6,7 +6,7 @@
 
 # Family: PolarFire , Die: MPF300TS , Package: FCG1152
 
-# Date generated: Fri Jun 12 10:19:13 2020 
+# Date generated: Wed Aug 12 13:35:20 2020 
 
 
 # 
@@ -72,16 +72,16 @@ set_io -port_name CAL_CALODD_P  \
 
 
 set_io -port_name CAL_CLK_OUT_N  \
-    -pin_name J15                \
+    -pin_name J3                 \
     -fixed true                  \
-    -io_std LVDS33               \
+    -io_std LVDS25               \
     -DIRECTION OUTPUT
 
 
 set_io -port_name CAL_CLK_OUT_P  \
-    -pin_name K15                \
+    -pin_name J4                 \
     -fixed true                  \
-    -io_std LVDS33               \
+    -io_std LVDS25               \
     -DIRECTION OUTPUT
 
 
@@ -128,16 +128,16 @@ set_io -port_name {GPIO_OUT[0]}  \
 
 
 set_io -port_name HV_CLK_OUT_N  \
-    -pin_name E5                \
+    -pin_name K3                \
     -fixed true                 \
-    -io_std LVDS33              \
+    -io_std LVDS25              \
     -DIRECTION OUTPUT
 
 
 set_io -port_name HV_CLK_OUT_P  \
-    -pin_name D5                \
+    -pin_name K2                \
     -fixed true                 \
-    -io_std LVDS33              \
+    -io_std LVDS25              \
     -DIRECTION OUTPUT
 
 
@@ -176,430 +176,11 @@ set_io -port_name HV_PREAMP_SCLK  \
     -DIRECTION OUTPUT
 
 
-#set_io -port_name {MDDR_A[0]}  \
-    #-pin_name AE5              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[1]}  \
-    #-pin_name AF5              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[2]}  \
-    #-pin_name AF2              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[3]}  \
-    #-pin_name AF3              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[4]}  \
-    #-pin_name AH3              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[5]}  \
-    #-pin_name AJ3              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[6]}  \
-    #-pin_name AH1              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[7]}  \
-    #-pin_name AH2              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[8]}  \
-    #-pin_name AK3              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[9]}  \
-    #-pin_name AL3              \
-    #-fixed true                \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[10]}  \
-    #-pin_name AJ1               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[11]}  \
-    #-pin_name AK1               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[12]}  \
-    #-pin_name AH4               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[13]}  \
-    #-pin_name AJ4               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_A[14]}  \
-    #-pin_name AK2               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_BA[0]}  \
-    #-pin_name AD8               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_BA[1]}  \
-    #-pin_name AD6               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_BA[2]}  \
-    #-pin_name AD9               \
-    #-fixed true                 \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_CASn  \
-    #-pin_name AG7            \
-    #-fixed true              \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_CKE  \
-    #-pin_name AG9           \
-    #-fixed true             \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_CLK_N  \
-    #-pin_name AE1             \
-    #-fixed true               \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_CLK_P  \
-    #-pin_name AE2             \
-    #-fixed true               \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_CSn  \
-    #-pin_name AF9           \
-    #-fixed true             \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_DQM[0]}  \
-    #-pin_name AE11               \
-    #-fixed true                  \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_DQM[1]}  \
-    #-pin_name AK8                \
-    #-fixed true                  \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_DQM[2]}  \
-    #-pin_name AN3                \
-    #-fixed true                  \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_DQM[3]}  \
-    #-pin_name AK13               \
-    #-fixed true                  \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name {MDDR_DQS_N[0]}  \
-    #-pin_name AF13                 \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_N[1]}  \
-    #-pin_name AJ6                  \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_N[2]}  \
-    #-pin_name AM4                  \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_N[3]}  \
-    #-pin_name AH13                 \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_P[0]}  \
-    #-pin_name AE13                 \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_P[1]}  \
-    #-pin_name AJ5                  \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_P[2]}  \
-    #-pin_name AL4                  \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_DQS_P[3]}  \
-    #-pin_name AH14                 \
-    #-fixed true                    \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[0]}  \
-    #-pin_name AE12             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[1]}  \
-    #-pin_name AF12             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[2]}  \
-    #-pin_name AG10             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[3]}  \
-    #-pin_name AF10             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[4]}  \
-    #-pin_name AD10             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[5]}  \
-    #-pin_name AE10             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[6]}  \
-    #-pin_name AD13             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[7]}  \
-    #-pin_name AD14             \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[8]}  \
-    #-pin_name AH6              \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[9]}  \
-    #-pin_name AH7              \
-    #-fixed true                \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[10]}  \
-    #-pin_name AJ9               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[11]}  \
-    #-pin_name AJ8               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[12]}  \
-    #-pin_name AH9               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[13]}  \
-    #-pin_name AK5               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[14]}  \
-    #-pin_name AK6               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[15]}  \
-    #-pin_name AK7               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[16]}  \
-    #-pin_name AM1               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[17]}  \
-    #-pin_name AM2               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[18]}  \
-    #-pin_name AN1               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[19]}  \
-    #-pin_name AN2               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[20]}  \
-    #-pin_name AP2               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[21]}  \
-    #-pin_name AP3               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[22]}  \
-    #-pin_name AL5               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[23]}  \
-    #-pin_name AM5               \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[24]}  \
-    #-pin_name AG11              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[25]}  \
-    #-pin_name AH11              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[26]}  \
-    #-pin_name AG12              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[27]}  \
-    #-pin_name AH12              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[28]}  \
-    #-pin_name AJ10              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[29]}  \
-    #-pin_name AJ11              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[30]}  \
-    #-pin_name AJ14              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name {MDDR_D[31]}  \
-    #-pin_name AJ13              \
-    #-fixed true                 \
-    #-DIRECTION INOUT
-#
-#
-#set_io -port_name MDDR_ODT  \
-    #-pin_name AE7           \
-    #-fixed true             \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_RASn  \
-    #-pin_name AE6            \
-    #-fixed true              \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_RSTn  \
-    #-pin_name AF7            \
-    #-fixed true              \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name MDDR_WEn  \
-    #-pin_name AG6           \
-    #-fixed true             \
-    #-DIRECTION OUTPUT
+set_io -port_name ROC_CAL_DEVRST_N  \
+    -pin_name A3                    \
+    -fixed true                     \
+    -io_std LVCMOS33                \
+    -DIRECTION OUTPUT
 
 
 set_io -port_name ROC_CLK_N  \
@@ -616,35 +197,18 @@ set_io -port_name ROC_CLK_P  \
     -DIRECTION INPUT
 
 
+set_io -port_name ROC_HV_DEVRST_N  \
+    -pin_name A2                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
 set_io -port_name RX  \
     -pin_name B2      \
     -fixed true       \
     -io_std LVCMOS33  \
     -DIRECTION INPUT
-
-
-#set_io -port_name SHIELD0  \
-    #-pin_name AD11         \
-    #-fixed true            \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name SHIELD1  \
-    #-pin_name AH8          \
-    #-fixed true            \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name SHIELD2  \
-    #-pin_name AN4          \
-    #-fixed true            \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name SHIELD3  \
-    #-pin_name AK12         \
-    #-fixed true            \
-    #-DIRECTION OUTPUT
 
 
 set_io -port_name SPI0_ADC0_CEn  \
@@ -787,13 +351,6 @@ set_io -port_name hvsda  \
     -DIRECTION INOUT
 
 
-set_io -port_name rocreset  \
-    -pin_name L19           \
-    -fixed true             \
-    -io_std LVCMOS33        \
-    -DIRECTION OUTPUT
-
-
 
 # 
 # Dedicated Peripheral I/O Settings
@@ -826,26 +383,6 @@ set_io -port_name {GPIO_OUT[3]}  \
 #Ports using Dedicated Pins
 
 #
-
-#set_io -port_name LANE0_RXD_N  \
-    #-pin_name G32              \
-    #-DIRECTION INPUT
-#
-#
-#set_io -port_name LANE0_RXD_P  \
-    #-pin_name G31              \
-    #-DIRECTION INPUT
-#
-#
-#set_io -port_name LANE0_TXD_N  \
-    #-pin_name F34              \
-    #-DIRECTION OUTPUT
-#
-#
-#set_io -port_name LANE0_TXD_P  \
-    #-pin_name F33              \
-    #-DIRECTION OUTPUT
-
 
 set_io -port_name LANE1_RXD_N  \
     -pin_name P30              \
@@ -890,16 +427,6 @@ set_io -port_name LANE1_TXD_P_0  \
 set_io -port_name NTRST  \
     -pin_name N14        \
     -DIRECTION INPUT
-
-
-#set_io -port_name REF_CLK_PAD_N  \
-    #-pin_name J28                \
-    #-DIRECTION INPUT
-#
-#
-#set_io -port_name REF_CLK_PAD_P  \
-    #-pin_name J27                \
-    #-DIRECTION INPUT
 
 
 set_io -port_name SERDES_CAL_CLK_N  \

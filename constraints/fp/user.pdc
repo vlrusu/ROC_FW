@@ -25,11 +25,11 @@
 # Core cell constraints
 #
 
-set_location -inst_name DIGIINTERFACE_0/serdes_1/TxRefCLK_0/TxRefCLK_0/I_IO -fixed true -x 2467 -y 371
+set_location -inst_name DIGIINTERFACE_0/serdes_1/TxRefClk_0/TxRefCLK_0/I_IO -fixed true -x 2467 -y 371
 #set_location -inst_name TOP_SERDES_0/XCVR_Block_0/XCVR_PLL_0_inst_0/XCVR_PLL_0_0/txpll_isnt_0 -fixed true -x 2460 -y 20
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_1_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 648 -y 378
 #set_location -inst_name CCC_0/ROC_CCC_0/clkint_8_1 -fixed true -x 17 -y 164
-set_location -inst_name DIGIINTERFACE_0/serdes_0/TxRefCLK_0/TxRefCLK_0/I_IO -fixed true -x 2467 -y 152
+set_location -inst_name DIGIINTERFACE_0/serdes_0/TxRefClk_0/TxRefCLK_0/I_IO -fixed true -x 2467 -y 152
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/CCC_0/pll_inst_0_1 -fixed true -x 0 -y 376
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DLL_0/dll_inst_0 -fixed true -x 3 -y 377
 set_location -inst_name DIGIINTERFACE_0/serdes_0/TxPLL_0/TxPLL_0/txpll_isnt_0 -fixed true -x 2466 -y 101
@@ -39,15 +39,15 @@ set_location -inst_name DIGIINTERFACE_0/serdes_0/TxPLL_0/TxPLL_0/txpll_isnt_0 -f
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_1_CTRL/I_LANECTRL -fixed true -x 659 -y 378
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_0_CTRL/I_LANECTRL -fixed true -x 503 -y 378
 set_location -inst_name CCC_0/ROC_CCC_0/pll_inst_0_DELAY -fixed true -x 7 -y 4
-set_location -inst_name DIGIINTERFACE_0/serdes_1/TxIF_0/I_XCVR/LANE0 -fixed true -x 2460 -y 317
+set_location -inst_name DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE0 -fixed true -x 2460 -y 317
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/CCC_0/hs_io_clk_15 -fixed true -x 578 -y 380
 set_location -inst_name CCC_0/ROC_CCC_0/pll_inst_0 -fixed true -x 0 -y 5
-set_location -inst_name DIGIINTERFACE_0/serdes_1/TxIF_0/I_XCVR/LANE1 -fixed true -x 2460 -y 344
+set_location -inst_name DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE1 -fixed true -x 2460 -y 344
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/CCC_0/hs_io_clk_11 -fixed true -x 576 -y 380
-set_location -inst_name CCC_0/ROC_CCC_0/clkint_12_1 -fixed true -x 15 -y 164
-set_location -inst_name CCC_0/ROC_CCC_0/clkint_12 -fixed true -x 1155 -y 162
+#set_location -inst_name CCC_0/ROC_CCC_0/clkint_12_1 -fixed true -x 15 -y 164
+#set_location -inst_name CCC_0/ROC_CCC_0/clkint_12 -fixed true -x 1155 -y 162
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANECTRL_ADDR_CMD_0/I_LANECTRL -fixed true -x 1235 -y 378
-set_location -inst_name DIGIINTERFACE_0/serdes_0/TxIF_0/I_XCVR/LANE1 -fixed true -x 2460 -y 125
+set_location -inst_name DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE1 -fixed true -x 2460 -y 125
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/IOD_BCLK_TRAINING/I_IOD_0 -fixed true -x 60 -y 378
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_0_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 492 -y 378
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_2_CTRL/I_LANECTRL -fixed true -x 803 -y 378
@@ -59,7 +59,7 @@ set_location -inst_name CCC_0/ROC_CCC_0/pll_inst_0_1 -fixed true -x 4 -y 4
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/CCC_0/clkint_4_1 -fixed true -x 582 -y 377
 #set_location -inst_name CCC_0/ROC_CCC_0/clkint_8 -fixed true -x 1157 -y 162
 set_location -inst_name CCC_0/ROC_CCC_0/clkint_0 -fixed true -x 1154 -y 163
-set_location -inst_name DIGIINTERFACE_0/serdes_0/TxIF_0/I_XCVR/LANE0 -fixed true -x 2460 -y 98
+set_location -inst_name DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE0 -fixed true -x 2460 -y 98
 set_location -inst_name CCC_0/ROC_CCC_0/clkint_0_1 -fixed true -x 14 -y 164
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/CCC_0/clkint_4 -fixed true -x 1158 -y 163
 #set_location -inst_name DDRInterface_0/PF_DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_3_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 936 -y 378

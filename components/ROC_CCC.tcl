@@ -130,7 +130,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL3_0_BYPASS:0"  \
 "GL3_0_BYPASS_EN:false"  \
 "GL3_0_DEDICATED_USED:false"  \
-"GL3_0_DIV:5"  \
+"GL3_0_DIV:10"  \
 "GL3_0_DIVSTART:0"  \
 "GL3_0_DYNAMIC_PH:false"  \
 "GL3_0_EXPOSE_EN:false"  \
@@ -203,7 +203,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "PLL_DYNAMIC_CONTROL_EN_1:false"  \
 "PLL_DYNAMIC_RECONFIG_INTERFACE_EN_0:false"  \
 "PLL_DYNAMIC_RECONFIG_INTERFACE_EN_1:false"  \
-"PLL_EXPORT_PWRDWN:false"  \
+"PLL_EXPORT_PWRDWN:true"  \
 "PLL_EXT_MAX_ADDR_0:128"  \
 "PLL_EXT_MAX_ADDR_1:128"  \
 "PLL_EXT_WAVE_SEL_0:0"  \

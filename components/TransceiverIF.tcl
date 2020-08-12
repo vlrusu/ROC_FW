@@ -1,6 +1,6 @@
-# Exporting core TxIF to TCL
-# Create design TCL command for core TxIF
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_XCVR_ERM:3.0.102} -component_name {TxIF} -params {\
+# Exporting core TransceiverIF to TCL
+# Create design TCL command for core TransceiverIF
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_XCVR_ERM:3.0.102} -component_name {TransceiverIF} -params {\
 "EXPOSE_ALL_DEBUG_PORTS:false" \
 "EXPOSE_FWF_EN_PORTS:false" \
 "SHOW_UNIVERSAL_SOLN_PORTS:true" \
@@ -46,6 +46,6 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_XCVR_ERM:3.0.102} -
 "UI_TX_RX_MODE:Duplex" \
 "UI_USE_INTERFACE_CLK_AS_PLL_REFCLK:false" \
 "UI_XCVR_RX_CALIBRATION:None (CDR)" \
-"UI_XCVR_RX_ENHANCED_MANAGEMENT:false" \
+"UI_XCVR_RX_ENHANCED_MANAGEMENT:true" \
 "XT_ES_DEVICE:false" }
-# Exporting core TxIF to TCL done
+# Exporting core TransceiverIF to TCL done

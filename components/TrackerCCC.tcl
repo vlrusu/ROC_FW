@@ -37,7 +37,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL0_0_BYPASS:0"  \
 "GL0_0_BYPASS_EN:false"  \
 "GL0_0_DEDICATED_USED:false"  \
-"GL0_0_DIV:12"  \
+"GL0_0_DIV:31"  \
 "GL0_0_DIVSTART:0"  \
 "GL0_0_DYNAMIC_PH:false"  \
 "GL0_0_EXPOSE_EN:false"  \
@@ -225,7 +225,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "PLL_POSTDIVIDERADDSOFTLOGIC_0:true"  \
 "PLL_REF_CLK_SEL_0:false"  \
 "PLL_REF_CLK_SEL_1:false"  \
-"PLL_REFDIV_0:1"  \
+"PLL_REFDIV_0:25"  \
 "PLL_REFDIV_1:1"  \
 "PLL_SPREAD_MODE_0:false"  \
 "PLL_SPREAD_MODE_1:false"  \

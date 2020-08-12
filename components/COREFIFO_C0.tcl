@@ -1,10 +1,10 @@
-# Exporting core DIGIFIFO to TCL
-# Exporting Create design command for core DIGIFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {DIGIFIFO} -params {\
+# Exporting core COREFIFO_C0 to TCL
+# Exporting Create design command for core COREFIFO_C0
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {COREFIFO_C0} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:false"  \
-"AFVAL:63500"  \
+"AFVAL:1020"  \
 "CTRL_TYPE:2"  \
 "ECC:0"  \
 "ESTOP:true"  \
@@ -16,7 +16,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "PREFETCH:false"  \
 "RCLK_EDGE:1"  \
 "RDCNT_EN:true"  \
-"RDEPTH:64000"  \
+"RDEPTH:1024"  \
 "RE_POLARITY:0"  \
 "READ_DVALID:false"  \
 "RESET_POLARITY:0"  \
@@ -24,9 +24,9 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "SYNC:0"  \
 "UNDERFLOW_EN:false"  \
 "WCLK_EDGE:1"  \
-"WDEPTH:64000"  \
+"WDEPTH:1024"  \
 "WE_POLARITY:0"  \
 "WRCNT_EN:false"  \
 "WRITE_ACK:false"  \
 "WWIDTH:32"   }
-# Exporting core DIGIFIFO to TCL done
+# Exporting core COREFIFO_C0 to TCL done

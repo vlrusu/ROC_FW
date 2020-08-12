@@ -50,7 +50,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALUE" "TVS_Cntrl_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"R_ADDR" "PF_URAM_C0_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"R_DATA" "PF_URAM_C0_0:R_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:channel_o" "PF_URAM_C0_0:W_ADDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:value_o" "PF_URAM_C0_0:W_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_DATA" "TVS_Cntrl_0:value_o" }
 
 
 # Re-enable auto promotion of pins of type 'pad'

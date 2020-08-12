@@ -1,6 +1,6 @@
-# Exporting core RxFIFO to TCL
-# Exporting Create design command for core RxFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {RxFIFO} -params {\
+# Exporting core ROCFIFO to TCL
+# Exporting Create design command for core ROCFIFO
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {ROCFIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:false"  \
@@ -26,7 +26,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "WCLK_EDGE:1"  \
 "WDEPTH:4096"  \
 "WE_POLARITY:0"  \
-"WRCNT_EN:false"  \
+"WRCNT_EN:true"  \
 "WRITE_ACK:false"  \
 "WWIDTH:32"   }
-# Exporting core RxFIFO to TCL done
+# Exporting core ROCFIFO to TCL done
