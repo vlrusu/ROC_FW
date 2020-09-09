@@ -1,6 +1,6 @@
 # Exporting core PF_DDR3_Cntrl to TCL
 # Create design TCL command for core PF_DDR3_Cntrl
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR3:2.4.111} -component_name {PF_DDR3_Cntrl} -params {\
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR3:2.4.112} -component_name {PF_DDR3_Cntrl} -params {\
 "ADDRESS_MIRROR:false" \
 "ADDRESS_ORDERING:CHIP_ROW_BANK_COL" \
 "AUTO_SELF_REFRESH:1" \
@@ -99,7 +99,7 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR3:2.4.111} -comp
 "WRITE_RECOVERY:5" \
 "ZQ_CALIB_PERIOD:200" \
 "ZQ_CALIB_TYPE:0" \
-"ZQ_CALIB_TYPE_TEMP:false" \
+"ZQ_CALIB_TYPE_TEMP:0" \
 "ZQ_CAL_INIT_TIME:512" \
 "ZQ_CAL_L_TIME:256" \
 "ZQ_CAL_S_TIME:64" }

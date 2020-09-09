@@ -1,6 +1,6 @@
 # Exporting core SRAM_AXI to TCL
 # Create design TCL command for core SRAM_AXI
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_SRAM_AHBL_AXI:1.2.105} -component_name {SRAM_AXI} -params {\
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_SRAM_AHBL_AXI:1.2.108} -component_name {SRAM_AXI} -params {\
 "AXI4_AWIDTH:32" \
 "AXI4_DWIDTH:32" \
 "AXI4_IDWIDTH:8" \

@@ -222,6 +222,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "PLL_LP_REQUIRES_LOCK_EN_1:false"  \
 "PLL_PLL_CASCADED_EN:false"  \
 "PLL_PLL_CASCADED_SELECTED_CLK:Output2"  \
+"PLL_POSTDIVIDERADDSOFTLOGIC_0:true"  \
 "PLL_REF_CLK_SEL_0:false"  \
 "PLL_REF_CLK_SEL_1:false"  \
 "PLL_REFDIV_0:1"  \

@@ -176,8 +176,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pattern_gen_checker_0:ram_da
 
 # Add PF_DDR3_Cntrl_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_DDR3_Cntrl} -instance_name {PF_DDR3_Cntrl_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_DDR3_Cntrl_0:PLL_LOCK}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_DDR3_Cntrl_0:CTRLR_READY}
 
 
 

@@ -49,7 +49,6 @@ source components/PF_URAM_C0.tcl
 source components/TVS_Interface.tcl 
 source components/UARTapb.tcl 
 source components/pwm.tcl 
-source components/sysservices.tcl 
 source components/SLOWCONTROLS.tcl 
 source components/ALGO_CLK_PLL_0.tcl 
 source components/Ctrl_clk.tcl 

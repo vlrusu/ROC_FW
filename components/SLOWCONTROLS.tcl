@@ -216,22 +216,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SPI0_1:SPIMODE}
 
 
 
-# Add sysservices_0 instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {sysservices} -instance_name {sysservices_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:USR_CMD_ERROR}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:USR_BUSY}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:USR_RDVLD}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {sysservices_0:FF_NONTIMED_ENTRY} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {sysservices_0:FF_TIMED_ENTRY} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:SYSSERV_INIT_REQ}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:FF_INIT_REQ}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:FF_US_RESTORE}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:FF_OSC2MHZ_ON}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:SS_BUSY}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {sysservices_0:FF_EXIT_STATUS}
-
-
-
 # Add TVS_Interface_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {TVS_Interface} -instance_name {TVS_Interface_0}
 
@@ -281,9 +265,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISCLKO" "HV_PREAM
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvscl" "hvscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvsda" "hvsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "MX2_0:B" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PCLK" "Registers_0:PCLK" "PREAMPSPI_0:PCLK" "GPIO_0:PCLK" "PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "sysservices_0:CLK" "TVS_Interface_0:clk" "TVS_Interface_0:R_CLK" "UARTapb_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PCLK" "pwm_0:PCLK" "SPI0_1:PCLK" "SPI0_0:PCLK" "TVS_Interface_0:clk" "TVS_Interface_0:R_CLK" "UARTapb_0:PCLK" "GPIO_0:PCLK" "PCLK" "Registers_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:A" "MX2_0:A" "PREAMPSPI_1:SPISCLKO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PRESETN" "Registers_0:PRESETn" "PREAMPSPI_0:PRESETN" "PRESETN" "GPIO_0:PRESETN" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "sysservices_0:RESETN" "UARTapb_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PRESETN" "pwm_0:PRESETN" "SPI0_1:PRESETN" "SPI0_0:PRESETN" "UARTapb_0:PRESETN" "GPIO_0:PRESETN" "PRESETN" "Registers_0:PRESETn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PWM[0]" "PWM0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PWM[1]" "counter32_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:INVERTCALSPICLCK" "MX2_0:S" }
@@ -343,7 +327,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave4" "SPI0_0:APB_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave5" "SPI0_1:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:APB_bif" "APB3_0:APBmslave6" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:APB_bif" "APB3_0:APBmslave7" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave8" "sysservices_0:APBSlave" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APB3mmaster" "APB3mmaster" }
 
 # Re-enable auto promotion of pins of type 'pad'

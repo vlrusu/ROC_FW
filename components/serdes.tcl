@@ -55,24 +55,24 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFO} -instance_
 
 # Add RxFIFOReset_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFOReset} -instance_name {RxFIFOReset_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:PLL_LOCK} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:SS_BUSY} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:INIT_DONE} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_0:FPGA_POR_N} -value {VCC}
 
 
 
 # Add RxFIFOReset_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {RxFIFOReset} -instance_name {RxFIFOReset_1}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:PLL_LOCK} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:SS_BUSY} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:INIT_DONE} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxFIFOReset_1:FPGA_POR_N} -value {VCC}
 
 
@@ -105,14 +105,14 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SerdesRxController_1
 
 # Add TxIF_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {TxIF} -instance_name {TxIF_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_TX_DATA} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_PCS_ARST_N} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_PMA_ARST_N} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_PCS_ARST_N} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_PMA_ARST_N} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_TX_DATA} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_TX_DISPFNC} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE0_8B10B_TX_K} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_TX_DATA} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_PCS_ARST_N} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_PMA_ARST_N} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_TX_DISPFNC} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TxIF_0:LANE1_8B10B_TX_K} -value {GND}
 

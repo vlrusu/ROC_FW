@@ -25,11 +25,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {SEL_RST_CNTL} -port_direction
 # Add MAIN_RESET instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET_PF_C1} -instance_name {MAIN_RESET}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:EXT_RST_N} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:PLL_LOCK} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:SS_BUSY} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_y_VDDI_STATUS} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:FPGA_POR_N} -value {VCC}
 
 
@@ -44,8 +44,8 @@ sd_invert_pins -sd_name ${sd_name} -pin_names {MainResetController_0:RESET_DCSRE
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MAIN_RESET:FABRIC_RESET_N" "MainResetController_0:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "MAIN_RESET:INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MAIN_RESET:FABRIC_RESET_N" "MainResetController_0:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_40CLK_N" "MainResetController_0:RESET_40CLK_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_CH_N" "MainResetController_0:RESET_CH_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_DCSRECV" "MainResetController_0:RESET_DCSRCV_N" }
