@@ -1,6 +1,6 @@
 # Exporting core TransceiverIF to TCL
 # Create design TCL command for core TransceiverIF
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_XCVR_ERM:3.0.102} -component_name {TransceiverIF} -params {\
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_XCVR_ERM:3.1.100} -component_name {TransceiverIF} -params {\
 "EXPOSE_ALL_DEBUG_PORTS:false" \
 "EXPOSE_FWF_EN_PORTS:false" \
 "SHOW_UNIVERSAL_SOLN_PORTS:true" \

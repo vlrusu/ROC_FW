@@ -233,6 +233,11 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:remot
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:remote_token0} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:remote_token1} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:remote_token2} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out3} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out0} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out1} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out2} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_address}
 
 
 
@@ -341,20 +346,15 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_3:D" "OUTBUF_DIFF_4
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "SLOWCONTROLS_0:TX" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_dummy_status_out" "SLOWCONTROLS_0:dummy_status_out0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_dummy_status_out_0" "SLOWCONTROLS_0:dummy_status_out2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_data_out" "SLOWCONTROLS_0:serdes_data0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_data_out_0" "SLOWCONTROLS_0:serdes_data2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_rdcnt" "SLOWCONTROLS_0:serdes_rdcnt0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_rdcnt_0" "SLOWCONTROLS_0:serdes_rdcnt2" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_dummy_status_out" "SLOWCONTROLS_0:dummy_status_out1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_dummy_status_out_0" "SLOWCONTROLS_0:dummy_status_out3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_data_out" "SLOWCONTROLS_0:serdes_data1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_data_out_0" "SLOWCONTROLS_0:serdes_data3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_rdcnt" "SLOWCONTROLS_0:serdes_rdcnt1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_rdcnt_0" "SLOWCONTROLS_0:serdes_rdcnt3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_OUT" "SLOWCONTROLS_0:GPIO_OUT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:dummy_status_address" "SLOWCONTROLS_0:dummy_status_address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_early_cut" "SLOWCONTROLS_0:event_window_early_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_late_cut" "SLOWCONTROLS_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:delay" "SLOWCONTROLS_0:ewm_delay" }

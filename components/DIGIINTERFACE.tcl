@@ -37,11 +37,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {lane1_fifo_re} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane0_fifo_re_0} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane1_fifo_re_0} -port_direction {IN}
 
-sd_create_bus_port -sd_name ${sd_name} -port_name {lane1_dummy_status_out} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {lane0_dummy_status_out} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {lane1_dummy_status_out_0} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {lane0_dummy_status_out_0} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_status_address} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {lane1_rdcnt} -port_direction {OUT} -port_range {[12:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {lane0_fifo_data_out} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {lane0_rdcnt} -port_direction {OUT} -port_range {[12:0]}
@@ -57,6 +52,9 @@ sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_IN} -instance_name {se
 sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_OUT} -instance_name {serdes_0} -pin_names {"LANE0_TXD_P" "LANE0_TXD_N" "LANE1_TXD_P" "LANE1_TXD_N" }
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_0:write_words} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_0:write_count} -value {1101111010101101}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_0:dummy_address} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {serdes_0:lane0_dummy_out}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {serdes_0:lane1_dummy_out}
 
 
 
@@ -66,6 +64,9 @@ sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_IN} -instance_name {se
 sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_OUT} -instance_name {serdes_1} -pin_names {"LANE0_TXD_P" "LANE0_TXD_N" "LANE1_TXD_P" "LANE1_TXD_N" }
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_1:write_words} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_1:write_count} -value {1101111010101101}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {serdes_1:dummy_address} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {serdes_1:lane0_dummy_out}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {serdes_1:lane1_dummy_out}
 
 
 
@@ -102,15 +103,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:REF_CLK_PAD_P" "REF_CL
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:REF_CLK_PAD_P" "REF_CLK_PAD_P_0" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:dummy_address" "serdes_0:dummy_address" "dummy_status_address" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane0_dummy_out" "lane0_dummy_status_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane0_dummy_out" "lane0_dummy_status_out_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane0_fifo_data_out" "lane0_fifo_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane0_fifo_data_out" "lane0_fifo_data_out_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane0_rdcnt" "lane0_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane0_rdcnt" "lane0_rdcnt_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane1_dummy_out" "lane1_dummy_status_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane1_dummy_out" "lane1_dummy_status_out_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane1_fifo_data_out" "lane1_fifo_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane1_fifo_data_out" "lane1_fifo_data_out_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_0:lane1_rdcnt" "lane1_rdcnt" }
