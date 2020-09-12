@@ -91,10 +91,10 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {SerdesStatus} -h
 
 # Add TransceiverIF_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {TransceiverIF} -instance_name {TransceiverIF_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE0_TX_DISPFNC} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE1_TX_DISPFNC} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE0_LOS} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE1_LOS} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE0_TX_DISPFNC} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TransceiverIF_0:LANE1_TX_DISPFNC} -value {GND}
 
 
 

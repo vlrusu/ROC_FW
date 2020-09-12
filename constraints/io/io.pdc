@@ -2,11 +2,11 @@
 
 # User I/O Constraints file 
 
-# Version: v12.4 12.900.0.16
+# Version: v12.5 12.900.10.16
 
 # Family: PolarFire , Die: MPF300TS , Package: FCG1152
 
-# Date generated: Wed Aug 12 13:35:20 2020 
+# Date generated: Fri Sep 11 22:15:36 2020 
 
 
 # 
@@ -127,6 +127,27 @@ set_io -port_name {GPIO_OUT[0]}  \
     -DIRECTION OUTPUT
 
 
+set_io -port_name {GPIO_OUT[1]}  \
+    -pin_name J13                \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {GPIO_OUT[2]}  \
+    -pin_name H12                \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {GPIO_OUT[3]}  \
+    -pin_name J14                \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
 set_io -port_name HV_CLK_OUT_N  \
     -pin_name K3                \
     -fixed true                 \
@@ -209,6 +230,13 @@ set_io -port_name RX  \
     -fixed true       \
     -io_std LVCMOS33  \
     -DIRECTION INPUT
+
+
+set_io -port_name SENSOR_MCP_CEn  \
+    -pin_name E2                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
 
 
 set_io -port_name SPI0_ADC0_CEn  \
@@ -295,6 +323,33 @@ set_io -port_name SPI1_SCLK  \
     -DIRECTION OUTPUT
 
 
+set_io -port_name SPI2_ADC0_CEn  \
+    -pin_name H3                 \
+    -fixed true                  \
+    -io_std LVCMOS25             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name SPI2_MISO  \
+    -pin_name R6             \
+    -fixed true              \
+    -io_std LVCMOS25         \
+    -DIRECTION INPUT
+
+
+set_io -port_name SPI2_MOSI  \
+    -pin_name R5             \
+    -fixed true              \
+    -io_std LVCMOS25         \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name SPI2_SCLK  \
+    -pin_name G15            \
+    -fixed true              \
+    -io_std LVCMOS33         \
+    -DIRECTION OUTPUT
+
 set_io -port_name TX   \
     -pin_name B1       \
     -fixed true        \
@@ -317,9 +372,9 @@ set_io -port_name calsda  \
 
 
 set_io -port_name ewm_active  \
-    -pin_name G15             \
+    -pin_name H4              \
     -fixed true               \
-    -io_std LVTTL             \
+    -io_std LVCMOS25          \
     -DIRECTION OUTPUT
 
 
@@ -362,21 +417,6 @@ set_io -port_name hvsda  \
 # The I/Os in this section are unplaced or placed but are not locked
 # the other listed attributes have been applied
 # 
-
-set_io -port_name {GPIO_OUT[1]}  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {GPIO_OUT[2]}  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {GPIO_OUT[3]}  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
 
 
 #
