@@ -116,6 +116,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {serdes_data2} -port_direction
 sd_create_bus_port -sd_name ${sd_name} -port_name {PADDR} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRDATA} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PWDATA} -port_direction {IN} -port_range {[31:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {use_lane} -port_direction {OUT} -port_range {[3:0]}
 
 sd_create_bif_port -sd_name ${sd_name} -port_name {APB3mmaster} -port_bif_vlnv {AMBA:AMBA2:APB:r0p0} -port_bif_role {mirroredMaster} -port_bif_mapping {\
 "PADDR:PADDR" \
@@ -399,6 +400,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_rdcnt1" "Registers_0:ser
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_rdcnt2" "Registers_0:serdes_rdcnt2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_rdcnt3" "Registers_0:serdes_rdcnt3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_VAL" "TVS_Interface_0:R_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"use_lane" "Registers_0:use_lane" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave0" "GPIO_0:APB_bif" }

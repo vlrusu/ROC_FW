@@ -25,6 +25,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_reset_n} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_rclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane0_fifo_re} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane1_fifo_re} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {lane0_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {lane1_empty} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {write_count} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_address} -port_direction {IN} -port_range {[3:0]}
@@ -58,14 +60,12 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {LiteFastTXwrapper}
 # Add ROCFIFO_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {ROCFIFO} -instance_name {ROCFIFO_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ROCFIFO_0:FULL}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ROCFIFO_0:EMPTY}
 
 
 
 # Add ROCFIFO_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {ROCFIFO} -instance_name {ROCFIFO_1}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ROCFIFO_1:FULL}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ROCFIFO_1:EMPTY}
 
 
 
@@ -116,11 +116,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:RCLOCK" "fifo_rclk" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:RESET" "fifo_reset_n" "ROCFIFO_1:RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesInitializer_1:clk" "SerdesStatus_0:clk" "init_clk" "SerdesInitializer_0:clk" "SerdesStatus_1:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SerdesInitializer_1:reset_n" "SerdesStatus_0:reset_n" "init_reset_n" "SerdesInitializer_0:reset_n" "SerdesStatus_1:reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"lane0_empty" "ROCFIFO_0:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:RE" "lane0_fifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "TransceiverIF_0:LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_P" "TransceiverIF_0:LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "TransceiverIF_0:LANE0_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "TransceiverIF_0:LANE0_TXD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_1:EMPTY" "lane1_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"lane1_fifo_re" "ROCFIFO_1:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE1_RXD_N" "TransceiverIF_0:LANE1_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE1_RXD_P" "TransceiverIF_0:LANE1_RXD_P" }

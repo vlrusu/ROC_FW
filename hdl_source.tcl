@@ -1,4 +1,5 @@
 #Importing and Linking all the HDL source files used in the design
+import_files -library work -hdl_source hdl/DigiReaderSM.vhd
 import_files -library work -hdl_source hdl/SerdesRxController.vhd
 import_files -library work -hdl_source hdl/SerdesTxController.vhd
 import_files -library work -hdl_source hdl/SerdesInitializer.vhd

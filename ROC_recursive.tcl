@@ -10,6 +10,7 @@ build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
 source components/COREJTAGDEBUG_C0.tcl 
+source components/DigiReaderFIFO.tcl 
 source components/LiteFast_C1.tcl 
 source components/TokenFIFO.tcl 
 source components/LiteFastRXwrapper.tcl 

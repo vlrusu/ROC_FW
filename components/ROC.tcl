@@ -91,6 +91,7 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 # Add CCC_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {ROC_CCC} -instance_name {CCC_0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {CCC_0:OUT2_FABCLK_0}
 
 
 
@@ -110,6 +111,12 @@ sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_IN} -instance_name {DI
 sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_OUT} -instance_name {DIGIINTERFACE_0} -pin_names {"LANE0_TXD_P" "LANE0_TXD_N" "LANE1_TXD_P" "LANE1_TXD_N" }
 sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_IN_0} -instance_name {DIGIINTERFACE_0} -pin_names {"LANE0_RXD_P_0" "LANE0_RXD_N_0" "LANE1_RXD_P_0" "LANE1_RXD_N_0" }
 sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_OUT_0} -instance_name {DIGIINTERFACE_0} -pin_names {"LANE0_TXD_P_0" "LANE0_TXD_N_0" "LANE1_TXD_P_0" "LANE1_TXD_N_0" }
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_rdcnt}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_full}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_empty}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_data}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_rclk} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DIGIINTERFACE_0:ddrfifo_re} -value {GND}
 
 
 
@@ -199,6 +206,9 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {PF_SRAM} -instance
 
 # Add SLOWCONTROLS_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {SLOWCONTROLS} -instance_name {SLOWCONTROLS_0}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:SERDES_RDCNT} -pin_slices {[11:0]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:SERDES_RDCNT} -pin_slices {[16:12]}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_RDCNT[16:12]} -value {GND}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DDRIN} -pin_slices {[9:0]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRIN[9:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DDROFFSET} -pin_slices {[15:0]}
@@ -209,10 +219,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRCS}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRWEN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRREN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRDMAEN}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_RE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_RESET}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_FULL} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_EMPTY} -value {GND}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRSEL}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRFULL} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRMEMFIFOEMPTY} -value {VCC}
@@ -222,9 +229,13 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRSET}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRFIFO_RE}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRTEMPFIFOEMPTY} -value {VCC}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRTEMPFIFOFULL} -value {VCC}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:write_to_fifo}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re3}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re1}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re2}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRNHITS}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_DATA} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_RDCNT} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_HOWMANY}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_aligned} -value {GND}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRPATTRN}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRMEMFIFODATA0} -value {VCC}
@@ -243,6 +254,14 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out1} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_out2} -value {GND}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:dummy_status_address}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data3} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_rdcnt0} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_rdcnt1} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_rdcnt2} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_rdcnt3} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data0} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data1} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data2} -value {GND}
 
 
 
@@ -268,14 +287,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_SCLK" "SLOWCONTROLS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREMAP_CE0n" "SLOWCONTROLS_0:CAL_PREAMP_CE0n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"calscl" "SLOWCONTROLS_0:calscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"calsda" "SLOWCONTROLS_0:calsda" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:CLK" "PF_SRAM_0:HCLK" "SLOWCONTROLS_0:PCLK" "SLOWCONTROLS_0:HCLK" "MIV_RV32IMC_C0_0:CLK" "CCC_0:OUT0_FABCLK_0" "DIGIINTERFACE_0:RCLOCKSERIAL" "DIGIINTERFACE_0:init_clk" "TrackerCCC_0:REF_CLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CCC_0:OUT0_FABCLK_0" "TrackerCCC_0:REF_CLK_0" "pf_reset_0:CLK" "PF_SRAM_0:HCLK" "SLOWCONTROLS_0:HCLK" "SLOWCONTROLS_0:PCLK" "DIGIINTERFACE_0:init_clk" "DIGIINTERFACE_0:serialfifo_rclk" "MIV_RV32IMC_C0_0:CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_0:D" "CCC_0:OUT1_FABCLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CCC_0:OUT3_FABCLK_0" "DIGIINTERFACE_0:outfifo_wclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:PLL_LOCK" "CCC_0:PLL_LOCK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CCC_0:REF_CLK_0" "CLKINT_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:JTAG_TCK" "COREJTAGDEBUG_C0_0:TGT_TCK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:JTAG_TDI" "COREJTAGDEBUG_C0_0:TGT_TDI_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:JTAG_TMS" "COREJTAGDEBUG_C0_0:TGT_TMS_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:JTAG_TRST" "COREJTAGDEBUG_C0_0:TGT_TRSTB_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_EMPTY" "DIGIINTERFACE_0:serialfifo_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_FULL" "DIGIINTERFACE_0:serialfifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_active" "EWMaker_0:ewm_active" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_cal" "ewm_hv" "EWMaker_0:ewm" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_CLK_OUT_N" "OUTBUF_DIFF_4:PADN" }
@@ -306,9 +328,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CLK_DIV_C0_0:CLK_OUT" "DIGII
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_OSC_C0_0:RCOSC_160MHZ_GL" "PF_CLK_DIV_C0_0:CLK_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:FABRIC_RESET_N" "PF_SRAM_0:HRESETN" "SLOWCONTROLS_0:PRESETN" "SLOWCONTROLS_0:HRESETN" "EWMaker_0:reset_n" "MIV_RV32IMC_C0_0:RESETN" "AND2_0:A" "DIGIINTERFACE_0:init_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:PLL_POWERDOWN_B" "CCC_0:PLL_POWERDOWN_N_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_HV_DEVRST_N" "ROC_CAL_DEVRST_N" "AND2_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_CLK_N" "INBUF_DIFF_0:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_CLK_P" "INBUF_DIFF_0:PADP" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_HV_DEVRST_N" "ROC_CAL_DEVRST_N" "AND2_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX" "SLOWCONTROLS_0:RX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SENSOR_MCP_CEn" "SENSOR_MCP_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_CAL_CLK_N" "DIGIINTERFACE_0:REF_CLK_PAD_N" }
@@ -328,10 +350,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:enable" "SLOWCONTROLS
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_2:D" "OUTBUF_DIFF_1:D" "SLOWCONTROLS_0:PWM0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:FIFO_RESET" "SLOWCONTROLS_0:reset_fifo_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "SLOWCONTROLS_0:ROCRESET" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_re" "SLOWCONTROLS_0:serdes_re0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_re" "SLOWCONTROLS_0:serdes_re1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_re_0" "SLOWCONTROLS_0:serdes_re2" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_re_0" "SLOWCONTROLS_0:serdes_re3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_RE" "DIGIINTERFACE_0:serialfifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC0_CEn" "SLOWCONTROLS_0:SPI0_ADC0_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC1_CEn" "SLOWCONTROLS_0:SPI0_ADC1_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC2_CEn" "SLOWCONTROLS_0:SPI0_ADC2_CEn" }
@@ -356,18 +375,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_3:D" "OUTBUF_DIFF_4
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "SLOWCONTROLS_0:TX" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_data_out" "SLOWCONTROLS_0:serdes_data0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_fifo_data_out_0" "SLOWCONTROLS_0:serdes_data2" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_rdcnt" "SLOWCONTROLS_0:serdes_rdcnt0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane0_rdcnt_0" "SLOWCONTROLS_0:serdes_rdcnt2" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_data_out" "SLOWCONTROLS_0:serdes_data1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_fifo_data_out_0" "SLOWCONTROLS_0:serdes_data3" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_rdcnt" "SLOWCONTROLS_0:serdes_rdcnt1" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:lane1_rdcnt_0" "SLOWCONTROLS_0:serdes_rdcnt3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_DATA" "DIGIINTERFACE_0:serialfifo_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_RDCNT[11:0]" "DIGIINTERFACE_0:serialfifo_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_OUT" "SLOWCONTROLS_0:GPIO_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_early_cut" "SLOWCONTROLS_0:event_window_early_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_late_cut" "SLOWCONTROLS_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:delay" "SLOWCONTROLS_0:ewm_delay" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:use_lane" "DIGIINTERFACE_0:use_lane" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_SRAM_0:AHBSlaveInterface" "MIV_RV32IMC_C0_0:AHBL_M_SLV" }
