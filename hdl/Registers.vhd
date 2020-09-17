@@ -98,6 +98,7 @@ entity Registers is
     serdes_data1 : in std_logic_vector(31 downto 0);
     serdes_data2 : in std_logic_vector(31 downto 0);
     serdes_data3 : in std_logic_vector(31 downto 0);
+    use_lane : out std_logic_vector(3 downto 0);
 
     ROCTVS_VAL  : in std_logic_vector(15 downto 0);
     ROCTVS_ADDR : out std_logic_vector(1 downto 0);
@@ -663,6 +664,7 @@ begin
             serdes_re1 <= PWDATA(1);
             serdes_re2 <= PWDATA(2);
             serdes_re3 <= PWDATA(3);
+            use_lane <= PWDATA(3 downto 0);
             
           when others =>
         end case;
