@@ -1,10 +1,10 @@
-# Exporting core DigiReaderFIFO to TCL
-# Exporting Create design command for core DigiReaderFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {DigiReaderFIFO} -params {\
+# Exporting core PATTERN_FIFO to TCL
+# Exporting Create design command for core PATTERN_FIFO
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {PATTERN_FIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
-"AF_STATIC_EN:false"  \
-"AFVAL:1020"  \
+"AF_STATIC_EN:true"  \
+"AFVAL:65534"  \
 "CTRL_TYPE:2"  \
 "ECC:0"  \
 "ESTOP:true"  \
@@ -29,4 +29,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "WRCNT_EN:false"  \
 "WRITE_ACK:false"  \
 "WWIDTH:32"   }
-# Exporting core DigiReaderFIFO to TCL done
+# Exporting core PATTERN_FIFO to TCL done

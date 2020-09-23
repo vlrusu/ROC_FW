@@ -37,12 +37,16 @@ entity Registers is
     DDRCS    : out std_logic;
     DDRWEN   : out std_logic;
     DDRREN   : out std_logic;
-    DDRDMAEN : out std_logic;
+    DDRFIFOWEN : out std_logic;
     DDROFFSET: out std_logic_vector(31 downto 0);
     DDRIN    : out std_logic_vector(31 downto 0);
     DDRDIAG0 : in  std_logic_vector(31 downto 0);
     DDRDIAG1 : in  std_logic_vector(31 downto 0);
     DDRPATTRN: out  std_logic_vector(1 downto 0);
+    DDRRAM   : in  std_logic_vector(31 downto 0);
+    DDRISERR : in  std_logic;
+    DDRERRLOC: in  std_logic_vector(31 downto 0);
+    DDRPTTREN: out std_logic;
 
     DDRSEL      : out std_logic;
     DDRFULL     : in  std_logic;
@@ -60,8 +64,21 @@ entity Registers is
     DDRTEMPFIFOEMPTY: in  std_logic;
     DDRMEMFIFO_RE   : out std_logic;
 
-    hvscl : out std_logic;
-    calscl : out std_logic;
+    DDRCONVRDCNT    : in std_logic_vector(16 downto 0);
+    DDRCONVDATA     : in std_logic_vector(31 downto 0);
+
+    DTCSIMSTART   : out std_logic;
+    DTCSIMBLKEN   : out std_logic;
+    DTCSIMPARAM   : out std_logic_vector(31 downto 0);
+    DTCSIMADDR    : out std_logic_vector(31 downto 0);
+    DTCSIMDATA    : out std_logic_vector(31 downto 0);
+    DTCSIMSPILLDATA: out std_logic_vector(31 downto 0);
+    DTCSIMBLKDATA : out std_logic_vector(15 downto 0);
+    DTCSIMBLKADDR : out std_logic_vector(6 downto 0);
+    DTCDATAREAD   : in std_logic_vector(31 downto 0);
+    
+    hvscl   : out std_logic;
+    calscl  : out std_logic;
 
     hvsda : inout std_logic;
     calsda : inout std_logic;
@@ -143,11 +160,15 @@ architecture synth of Registers is
    constant CRDDRCS    : std_logic_vector(7 downto 0) := x"22";  -- 1-bit chip select (to decide if we are writing to memory or to FIFO - in reality an SRAM)
    constant CRDDRWEN   : std_logic_vector(7 downto 0) := x"23";  -- a WR_EN that has to be set high and low by hand
    constant CRDDRREN   : std_logic_vector(7 downto 0) := x"24";  -- a RD_EN that has to be set high and low by hand
-   constant CRDDRDMAEN : std_logic_vector(7 downto 0) := x"25";  -- a DMA_EN to transfer data from FIFO to  memory that has to be set high and low by hand
+   constant CRDDRFIFOWEN : std_logic_vector(7 downto 0) := x"25";  -- a DMA_EN to transfer data from FIFO to  memory that has to be set high and low by hand
    constant CRDDRDIAG0 : std_logic_vector(7 downto 0) := x"26";  -- a 32-bit diagnostic input from DDR
    constant CRDDRIN    : std_logic_vector(7 downto 0) := x"27";  -- a 32-bit register driven to DDR (set offset in DDR memory address)
    constant CRDDRDIAG1 : std_logic_vector(7 downto 0) := x"28";  -- another 32-bit diagnostic input from DDR
    constant CRDDRRPATTRN: std_logic_vector(7 downto 0):= x"29";  -- 2-bit to specify test patter: 0=> ++1, 1=> --1, 2=> 5's, 3=> A's
+   constant CRDDRRAM   : std_logic_vector(7 downto 0) := x"2A";  -- 32-bit diagnostic input from RAM inside pattern generator
+   constant CRDDRISERR : std_logic_vector(7 downto 0) := x"2B";  -- 32-bit diagnostic input from RAM inside pattern generator
+   constant CRDDRERRLOC: std_logic_vector(7 downto 0) := x"2C";  -- 32-bit diagnostic input from RAM inside pattern generator
+   constant CRDDRPTTREN: std_logic_vector(7 downto 0) := x"2D";  -- a WR_EN that has to be set high and low by hand
 
    constant CRDDRSEL   : std_logic_vector(7 downto 0) := x"30";   -- 1-bit serial readout select (1 => DIGIFIFO readout via DDR3, 0 => DIGIFIFO readout directly)
    constant CRDDRFULL  : std_logic_vector(7 downto 0) := x"31";   --  DDR3 full flag: if 1, DDRPAGENO have been written to memory. When DDRPAGENO have been readout, goes back to 0 
@@ -164,7 +185,8 @@ architecture synth of Registers is
    constant CRDDRMEMFIFORE      : std_logic_vector(7 downto 0) := x"3B";
    constant CRDDRTEMPFIFOFULL   : std_logic_vector(7 downto 0) := x"3C"; 
    constant CRDDRTEMPFIFOEMPTY  : std_logic_vector(7 downto 0) := x"3D"; 
-
+   constant CRDDRCONVDATA       : std_logic_vector(7 downto 0) := x"3E";  -- DATA out of DIGIFIFO or PATTERN_FIFO
+   constant CRDDRCONVRDCNT      : std_logic_vector(7 downto 0) := x"3F"; -- RDCNT out of DIGIFIFO or PATTERN_FIFO
 
 -------------------------------------------------------------------------------
 -- -SERDES 
@@ -187,6 +209,22 @@ architecture synth of Registers is
    constant CRSERDES_DATA2 : std_logic_vector(7 downto 0) := x"4F";
    constant CRSERDES_DATA3 : std_logic_vector(7 downto 0) := x"50";
  
+
+ -------------------------------------------------------------------------------
+-- -DT SIMULATION signals: Monica added 08/22/2020 
+------------------------------------------------------------------------------ 
+   constant CRDTCSIMSTART : std_logic_vector(7 downto 0) := x"51";  -- send DTC packets/marker to DTCInterface
+   constant CRDTCSIMPARAM : std_logic_vector(7 downto 0) := x"52";  -- simulation parameters: [28] = DTC_SIMEN, [24] = DTC_SEL, [21:16] = OP_CODE,
+                                                                    --    [11:8] = RETR_SEQ_NUM, [7:4] = MARKER_TYPE, [3:0] = PACKET_TYPE
+   constant CRDTCSIMADDR  : std_logic_vector(7 downto 0) := x"53";  -- simulation packet address:  [23:16] = MODULE_ID, [15:0] = operation ADDRESS
+   constant CRDTCSIMDATA  : std_logic_vector(7 downto 0) := x"54";  -- simulation packet data:     [31:16] = BLK_CNT,   [15:0] = operation DATA
+   constant CRDTCSIMSPILLDT: std_logic_vector(7 downto 0) := x"55";  -- simulated data packet parameters: [31] = ON_SPILL, [30:24] = RF_MARKER
+                                                                    --    [23:16] =  EVT_MODE[7:0],  [15:0] = WINDOW_MARKER[15:0]
+   constant CRDTCSIMBLKEN : std_logic_vector(7 downto 0) := x"56";  -- enable write of DTC BLK data to RAM
+   constant CRDTCSIMBLKDT : std_logic_vector(7 downto 0) := x"57";  -- DTC BLK_RAM data
+   constant CRDTCSIMBLKAD : std_logic_vector(7 downto 0) := x"58";  -- DTC BLK_RAM address
+
+   constant CRDTCDATAREAD : std_logic_vector(7 downto 0) := x"59";  -- last DTC reply [31:16] = addr, [15:0] = data 
 
 -------------------------------------------------------------------------------
 -- -CAL DIGI SPI
@@ -416,6 +454,12 @@ begin
           DataOut(31 downto 0) <= DDRDIAG0;
         when CRDDRDIAG1 =>
           DataOut(31 downto 0) <= DDRDIAG1;
+        when CRDDRRAM =>
+          DataOut(31 downto 0) <= DDRRAM;
+        when CRDDRISERR =>
+          DataOut(0)    <= DDRISERR;
+        when CRDDRERRLOC =>
+          DataOut(31 downto 0) <= DDRERRLOC;
 
         when CRDDRFULL =>
           DataOut(0) <= DDRFULL;
@@ -436,7 +480,15 @@ begin
           DataOut(0) <= DDRTEMPFIFOFULL;
         when CRDDRTEMPFIFOEMPTY =>
           DataOut(0) <= DDRTEMPFIFOEMPTY;
- 
+
+        when CRDDRCONVDATA =>
+          DataOut(31 downto 0) <= DDRCONVDATA;
+        when CRDDRCONVRDCNT =>
+          DataOut(16 downto 0) <= DDRCONVRDCNT;
+
+        when CRDTCDATAREAD =>
+          DataOut(31 downto 0) <= DTCDATAREAD;
+          
         when CRSERDESFULL =>
           DataOut(0) <= SERDES_FULL;
         when CRSERDESEMPTY =>
@@ -525,14 +577,26 @@ begin
       DDRCS             <= '0';
       DDRWEN            <= '0';
       DDRREN            <= '0';
-      DDRDMAEN          <= '0';
+      DDRFIFOWEN        <= '0';
       DDRSEL            <= '0';
       DDRSET            <= '0';
+      DDRPTTREN         <= '0';
       DDRFIFO_RE        <= '0';
       DDRMEMFIFO_RE     <= '0';
       DDRPAGENO         <= x"0000_0000"; 
       DDROFFSET         <= x"0000_0000"; 
-      DDRNHITS          <= x"00"; 
+      DDRNHITS          <= x"01"; 
+      DDRPATTRN         <= b"00";
+      DDRIN             <= x"0000_0000";
+
+      DTCSIMSTART    <= '0';
+      DTCSIMBLKEN    <= '0';
+      DTCSIMPARAM    <= x"0000_0000";
+      DTCSIMADDR     <= x"0000_0000";
+      DTCSIMDATA     <= x"0000_0000";
+      DTCSIMSPILLDATA<= x"0000_0000";
+      DTCSIMBLKDATA  <= x"0000";
+      DTCSIMBLKADDR  <= b"0000000";
 
       SERDES_RE <= '0';
       serdes_re0 <= '0';
@@ -565,10 +629,16 @@ begin
      
       cal_init  <= '0';
       hv_init   <= '0';
-
+	  
+      DDRWEN        <= '0';
+      DDRREN        <= '0';
+      DDRFIFOWEN    <= '0';
       DDRFIFO_RE    <= '0';
-      DDRMEMFIFO_RE <= '0';
+      --DDRMEMFIFO_RE <= '0';
 
+      DTCSIMSTART    <= '0';
+      DTCSIMBLKEN    <= '0';
+      
       if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
 
@@ -595,15 +665,17 @@ begin
             DDRIN <= PWDATA(31 downto 0);
           when CRDDRRPATTRN =>
             DDRPATTRN <= PWDATA(1 downto 0);
+          when CRDDRPTTREN =>
+            DDRPTTREN <= PWDATA(0);
 
           when CRDDRCS =>
             DDRCS <= PWDATA(0);
           when CRDDRWEN =>
-            DDRWEN <= PWDATA(0);
+            DDRWEN <= '1';
           when CRDDRREN =>
-            DDRREN <= PWDATA(0);
-          when CRDDRDMAEN =>
-            DDRDMAEN <= PWDATA(0);
+            DDRREN <= '1';
+          when CRDDRFIFOWEN =>
+            DDRFIFOWEN <= '1';
           when CRDDRSEL =>
             DDRSEL <= PWDATA(0);
           when CRDDRSET =>
@@ -612,8 +684,24 @@ begin
           when CRDDRFIFORE =>
             DDRFIFO_RE <= '1';
           when CRDDRMEMFIFORE =>
-            DDRMEMFIFO_RE <= '1';
-
+--            DDRMEMFIFO_RE <= '1';
+            DDRMEMFIFO_RE <= PWDATA(0);
+          when CRDTCSIMSTART =>
+            DTCSIMSTART <= '1';
+          when CRDTCSIMBLKEN =>
+            DTCSIMBLKEN <= '1';
+          when CRDTCSIMPARAM =>
+            DTCSIMPARAM <= PWDATA(31 downto 0);
+          when CRDTCSIMADDR =>
+            DTCSIMADDR <= PWDATA(31 downto 0);
+          when CRDTCSIMDATA =>
+            DTCSIMDATA <= PWDATA(31 downto 0);
+          when CRDTCSIMSPILLDT =>
+            DTCSIMSPILLDATA <= PWDATA(31 downto 0);
+          when CRDTCSIMBLKDT =>
+            DTCSIMBLKDATA <= PWDATA(15 downto 0);
+          when CRDTCSIMBLKAD =>
+            DTCSIMBLKADDR <= PWDATA(6 downto 0);
           when CRSERDESRE =>
             SERDES_RE <= '1';
    

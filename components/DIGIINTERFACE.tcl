@@ -42,9 +42,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ddrfifo_rclk} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddrfifo_re} -port_direction {IN}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_data} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_rdcnt} -port_direction {OUT} -port_range {[11:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_rdcnt} -port_direction {OUT} -port_range {[16:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {use_lane} -port_direction {IN} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {ddrfifo_rdcnt} -port_direction {OUT} -port_range {[11:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ddrfifo_rdcnt} -port_direction {OUT} -port_range {[16:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ddrfifo_data} -port_direction {OUT} -port_range {[31:0]}
 
 # Add DigiReaderFIFO_0 instance
