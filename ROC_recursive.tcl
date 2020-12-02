@@ -70,6 +70,7 @@ source components/TVS_Interface.tcl
 source components/UARTapb.tcl 
 source components/pwm.tcl 
 #source components/sysservices.tcl 
+source components/PF_SYSTEM_SERVICES_C0.tcl 
 source components/SLOWCONTROLS.tcl 
 source components/RXCCC.tcl 
 source components/CORERESET_SYNC_RXCLK.tcl 
