@@ -40,3 +40,4 @@ import_files -library work -hdl_source hdl/ForwardDetector.vhd
 import_files -library work -hdl_source hdl/PacketSender.vhd
 import_files -library work -hdl_source hdl/TimeStamp_IF_TEST.vhd
 import_files -library work -hdl_source hdl/TimeStampManager.vhd
+import_files -library work -hdl_source hdl/pulse_stretcher.v

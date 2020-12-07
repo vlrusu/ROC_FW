@@ -29,22 +29,22 @@ use work.algorithm_constants.all;
 
 entity PacketSender is         
 	Generic (			
-				NORMAL_FIFO_ADDR_SIZE		: integer := 9;
+				NORMAL_FIFO_ADDR_SIZE	: integer := 9;
 				NUM_OF_TCLK_IN_40			: integer := 5;
-            gAPB_DWIDTH     			: integer := 16;  
-            gAPB_AWIDTH     			: integer := 16;	 
-            gSERDES_DWIDTH  			: integer := 20; 
-            gENDEC_DWIDTH   			: integer := 16;	
-            IO_SIZE         			: integer := 2;
+				gAPB_DWIDTH     			: integer := 16;  
+				gAPB_AWIDTH     			: integer := 16;	 
+				gSERDES_DWIDTH  			: integer := 20; 
+				gENDEC_DWIDTH   			: integer := 16;	
+				IO_SIZE         			: integer := 2;
 				ALGO_LOC_ADDR 				: natural := 0
 		);                              	
 		port(		
 				CLK40_GEN					: in std_logic;
 				ALIGNMENT_REQ				: in std_logic;
 				LOOPBACKMARKER				: in std_logic;
-            EPCS_TXCLK              : in std_logic;            
-            ALGO_CLK              	: in std_logic;
-            RESET_N                 : in std_logic;	 
+				EPCS_TXCLK              : in std_logic;            
+				ALGO_CLK              	: in std_logic;
+				RESET_N                 : in std_logic;	 
 				                        	
 				-- RocMonitor Interface						
 				ALGO_RESET					: in std_logic;
@@ -53,27 +53,27 @@ entity PacketSender is
 				ALGO_RDATA					: inout std_logic_vector(gAPB_DWIDTH-1 downto 0);	   										   
 														
 				-- CRC Interface			 
-            CRC_RST       	   	   : out std_logic;	  
-            CRC_EN       	   		: out std_logic;	 
-            CRC_OUT     	   		: in std_logic_vector(gENDEC_DWIDTH-1 downto 0);	  
-            CRC_IN    	   			: out std_logic_vector(gENDEC_DWIDTH-1 downto 0);
+				CRC_RST       	   		: out std_logic;	  
+				CRC_EN       	   		: out std_logic;	 
+				CRC_OUT     	   		: in std_logic_vector(gENDEC_DWIDTH-1 downto 0);	  
+				CRC_IN    	   			: out std_logic_vector(gENDEC_DWIDTH-1 downto 0);
 				                        	
 				-- 8b10b CorePCS Interface					  									
-            TX_CLK_STABLE          	: IN std_logic;	   
-            TX_DATA     	   		: OUT std_logic_vector(gENDEC_DWIDTH-1 downto 0);	
-            TX_K_CHAR     	   		: OUT std_logic_vector(IO_SIZE-1 downto 0);			
-            FORCE_DISP     	   	: OUT std_logic_vector(IO_SIZE-1 downto 0);			
-            DISP_SEL     	   		: OUT std_logic_vector(IO_SIZE-1 downto 0);	 
+				TX_CLK_STABLE          	: IN std_logic;	   
+				TX_DATA     	   		: OUT std_logic_vector(gENDEC_DWIDTH-1 downto 0);	
+				TX_K_CHAR     	   		: OUT std_logic_vector(IO_SIZE-1 downto 0);			
+				FORCE_DISP     	   	: OUT std_logic_vector(IO_SIZE-1 downto 0);			
+				DISP_SEL     	   		: OUT std_logic_vector(IO_SIZE-1 downto 0);	 
 				                        	
 				-- ResponseFifo Interface
-            RESP_FIFO_Q 				: in std_logic_vector (gENDEC_DWIDTH-1 downto 0);  
+				RESP_FIFO_Q 				: in std_logic_vector (gENDEC_DWIDTH-1 downto 0);  
 				RESP_FIFO_RE 				: out std_logic;
 				RESP_FIFO_RESET			: out std_logic;
 				RESP_FIFO_EMPTY 			: in std_logic;
 				RESP_FIFO_COUNT			: in std_logic_vector(NORMAL_FIFO_ADDR_SIZE downto 0);
 				                        	
 				-- ForwardFifo Interface	
-            FWD_FIFO_Q 					: in std_logic_vector (gENDEC_DWIDTH-1 downto 0);  
+				FWD_FIFO_Q 					: in std_logic_vector (gENDEC_DWIDTH-1 downto 0);  
 				FWD_FIFO_RE 				: out std_logic;	
 				FWD_FIFO_EMPTY 			: in std_logic; 
 				
@@ -87,10 +87,11 @@ entity PacketSender is
 				RETRANSMIT_RAM_WADDR		: out std_logic_vector(6 downto 0);
 				RETRANSMIT_RAM_WE			: out std_logic;		   
 				RETRANSMIT_DOUT_TO_RAM	: out std_logic_vector(15 downto 0);
-            RETRANSMIT_DOUT_FROM_RAM: in std_logic_vector(15 downto 0);
-            
-            ----  MT addded
-            BUSY_STOP               : out STD_LOGIC
+				RETRANSMIT_DOUT_FROM_RAM: in std_logic_vector(15 downto 0);
+			
+				----  MT addded 
+				LINK_ID						: in std_logic_vector(2 downto 0);	-- to retrieve ROC Link ID
+				BUSY_STOP					: out STD_LOGIC							-- to issue u-proc interrupt
         );                              	
 end PacketSender;                       	
                                         	                                                           
@@ -104,12 +105,12 @@ architecture arch of PacketSender is
 	                                    	
 	signal ps_status						: std_logic_vector(gAPB_DWIDTH-1 downto 0);		 
 		-- reset_ bit def: 
-         ----  all 0s at reset
-         ----  all 1s when no XCVR lock
+			----  all 0s at reset
+			----  all 1s when no XCVR lock
 			-- 7:0 state as per list below	            	
 			-- 8 indicate a fwd was sent ever
 			-- 9 indicate a dbg was sent ever
-            -- 12 indicate a crc was sent ever
+			-- 12 indicate a crc was sent ever
 			-- 14 enable                	
 			-- 15 rst	
             
@@ -120,21 +121,21 @@ architecture arch of PacketSender is
 	--=======================
 	--main signals	  		--| Equivalent Status (3 downto 0)
 	type state_t is (		--------------------------------- 
-		S_Pause,	   		      --| Status: (0xAA) 
-		S_OneExtra,			      --| Status: 7  
-		S_Crc,				      --| Status: 6                                       
-		S_Dbg,				      --| Status: (0xDD)  
+		S_Pause,	   				--| Status: (0xAA) 
+		S_OneExtra,					--| Status: 7  
+		S_Crc,						--| Status: 6                                       
+		S_Dbg,						--| Status: (0xDD)  
 		S_WaitToRetransmitData, --| Status: 0x10
-		S_packetRetransmit,	   --| Status: 0x11
-		S_postRetransmit,       --| Status: 0x12
-		S_doneRetransmit,       --| Status: 0x13
-		S_Resp,				      --| Status: 5                     
-		S_Fwd,				      --| Status: 4                     
-		S_Start,			         --| Unused                   	                              
-		S_WaitForRespData,	   --| Status: 3 
-		S_Idle,				      --| Status: 2 
-		S_Reset,			         --| Status: 1 				  
-		S_TxClkLoss			      --| Status: 0xFFFF
+		S_packetRetransmit,		--| Status: 0x11
+		S_postRetransmit,			--| Status: 0x12
+		S_doneRetransmit,			--| Status: 0x13
+		S_Resp,						--| Status: 5                     
+		S_Fwd,						--| Status: 4                     
+		S_Start,						--| Unused                   	                              
+		S_WaitForRespData,		--| Status: 3 
+		S_Idle,						--| Status: 2 
+		S_Reset,						--| Status: 1 				  
+		S_TxClkLoss					--| Status: 0xFFFF
 		); 	  					 
 	signal ps_state : state_t := S_Idle;				 
 	
@@ -172,12 +173,12 @@ architecture arch of PacketSender is
 	signal rsp_packet_count    		: unsigned(gENDEC_DWIDTH-1 downto 0);		  
 	signal kchar_count    				: unsigned(gENDEC_DWIDTH-1 downto 0); --count anytime TX_K_CHAR is not "11"	
 	signal kdata_count    				: unsigned(gENDEC_DWIDTH-1 downto 0); --count anytime TX_DATA is not "BC3C"		  
-    signal rsp_packet_seq           : unsigned(2 downto 0);
+	signal rsp_packet_seq				: unsigned(2 downto 0);
 	                                    	
 	signal respPacketType    			: unsigned(3 downto 0);		-- packet type
 	signal respPacketTypeSave    		: unsigned(3 downto 0);			  		  
 	signal respDataPacketCnt    		: unsigned(15 downto 0);    -- number of packets in Block DCS reply or Data Payload			  		  
-	signal respDataPacketCnt_save    : unsigned(15 downto 0);    -- number of packets from Data Header 
+	signal respDataPacketCnt_save		: unsigned(15 downto 0);    -- number of packets from Data Header 
 	signal nextIsPayload					: std_logic;				-- mask high after Block DCS reply or Data Header   			
 	signal nextIsPayload_save			: std_logic;
 	
@@ -206,36 +207,36 @@ architecture arch of PacketSender is
 	signal resp_fifo_q_latch3			: std_logic_vector(gENDEC_DWIDTH-1 downto 0);
 	
 	signal tx_data_latch					: std_logic_vector(15 downto 0);
-	signal tx_k_char_latch           : std_logic_vector(1 downto 0);			 
-	signal tx_k_char_latch2          : std_logic_vector(1 downto 0);			 
+	signal tx_k_char_latch				: std_logic_vector(1 downto 0);			 
+	signal tx_k_char_latch2				: std_logic_vector(1 downto 0);			 
 	signal clk40_genlatch				: std_logic;
 	signal clk40_genlatch2				: std_logic;
 	signal flagDetectionEdge			: unsigned (4 downto 0); -- TX_CLK cycles. Range: 1 to NUM_OF_TCLK_IN_40-1. CANT BE 0	
 	
 	signal L_markerOffsetPlusTwo		: unsigned (20 downto 0);  
 	signal L_markerOffsetPlusOne 		: unsigned (20 downto 0);	
-	signal L_markerOffsetCenter	   : unsigned (20 downto 0);  	 
+	signal L_markerOffsetCenter		: unsigned (20 downto 0);  	 
 	signal L_markerOffsetMinusOne		: unsigned (20 downto 0);	  
 	signal L_markerOffsetMinusTwo		: unsigned (20 downto 0); 
 	signal markerType						: std_logic_vector(15 downto 0);
 	
 	signal retransmit_det_sig			: std_logic;  
-	signal retransmit_packet_req		: std_logic_vector(2 downto 0);   
+	signal retransmit_seq_sig			: std_logic_vector(2 downto 0);   
 	signal retransmit_word_count		: unsigned(3 downto 0);  
-	signal retransmit_packet_seQ     : unsigned(2 downto 0);	
+	signal retransmit_packet_seq		: unsigned(2 downto 0);	
 	signal retransmit_read_count		: unsigned(3 downto 0);	 
 	signal retransmitCnt					: unsigned(3 downto 0);	 
-	signal retransmit_data_signal 	: std_logic_vector(15 downto 0);
-	signal retransmit_txdata_reg 		: std_logic_vector(15 downto 0); 
+	signal retransmit_data_signal		: std_logic_vector(15 downto 0);
+	signal retransmit_txdata_reg		: std_logic_vector(15 downto 0); 
 	
-	signal retransmit_we             : std_logic;
-	signal retransmit_we_latch1      : std_logic;	
-	signal retransmit_we_latch2      : std_logic;	
-	signal retransmit_we_sig 		   : std_logic;					
+	signal retransmit_we					: std_logic;
+	signal retransmit_we_latch1		: std_logic;	
+	signal retransmit_we_latch2		: std_logic;	
+	signal retransmit_we_sig			: std_logic;					
 	
-	signal crc_en_sig, crc_en_sig2 	: std_logic;	
+	signal crc_en_sig, crc_en_sig2	: std_logic;	
 	signal crc_to_tx, crc_to_tx2		: std_logic;
-   
+    
 begin
 															   												
    FWD_FIFO_RE <= (not FWD_FIFO_EMPTY) and fwdFifoRe_mask;	  
@@ -261,7 +262,7 @@ begin
             resp_fifo_count_latch	<= RESP_FIFO_COUNT;
             resp_fifo_count_latch2	<= resp_fifo_count_latch;
             resp_fifo_empty_latch 	<= RESP_FIFO_EMPTY;
-            RESP_FIFO_RE            <= (not resp_fifo_empty_latch) and respFifoRe_mask;	   
+            RESP_FIFO_RE <= (not resp_fifo_empty_latch) and respFifoRe_mask;	   
          else
             RESP_FIFO_RE	<= '0';
          end if;
@@ -279,11 +280,11 @@ begin
                tx_data_sig <= x"3CBC";	  -- the DTC receives BC3C (byte-flipped)
          end case;
          
-         tx_data_sig2      <= tx_data_sig;
+         tx_data_sig2   <= tx_data_sig;
 
-         tx_k_char_latch   <= tx_k_char_sig;  
-         tx_k_char_latch2  <= tx_k_char_latch;
-         TX_K_CHAR         <= tx_k_char_latch2;	   
+         tx_k_char_latch	<= tx_k_char_sig;  
+         tx_k_char_latch2   <= tx_k_char_latch;
+         TX_K_CHAR          <= tx_k_char_latch2;	   
 			
          --give one extra clock for CRC calc before going to tx data
          if (txDataSel = TXDATASEL_CRC) then		
@@ -337,11 +338,11 @@ begin
          end if;	 
 			
 			
-         clk40_genlatch 	      <= CLK40_GEN; 
-         clk40_genlatch2	      <= clk40_genlatch;	
+         clk40_genlatch 	<= CLK40_GEN; 
+         clk40_genlatch2	<= clk40_genlatch;	
 			
-         retransmit_det_sig	   <= RETRANSMIT_DETECTED;				 
-         retransmit_packet_req   <= RETRANSMIT_SEQUENCE_REQ;		
+         retransmit_det_sig	<= RETRANSMIT_DETECTED;				 
+         retransmit_seq_sig	<= RETRANSMIT_SEQUENCE_REQ;		
 		
       end if;							
    end process;
@@ -364,9 +365,9 @@ begin
          LoopbackLatch3				<= LoopbackLatch2;
          sendLoopbackOut 			<= '0';				 
 			
-         alignment_req_latch		   <= ALIGNMENT_REQ;
-         alignment_req_latch2		   <= alignment_req_latch;
-         alignment_req_risingEdge   <= alignment_req_latch and not alignment_req_latch2;	
+         alignment_req_latch		<= ALIGNMENT_REQ;
+         alignment_req_latch2		<= alignment_req_latch;
+         alignment_req_risingEdge<= alignment_req_latch and not alignment_req_latch2;	
 			
          -- create wrapping counter in TCLK representing 40	   
          if (stepTXCLKin40 = NUM_OF_TCLK_IN_40 - 1 or 
@@ -378,21 +379,21 @@ begin
 			
          -------------------------------------------
          if(RESET_N = '0') then	--Reset signal	 
-            flagDetectionEdge		   <= (others => '0');
-            needAlignmentCnt		   <= (others => '0');
-            alignmentReady			   <= '0';
+            flagDetectionEdge		<= (others => '0');
+            needAlignmentCnt		<= (others => '0');
+            alignmentReady			<= '0';
             L_markerOffsetPlusTwo	<= (others => '0');
             L_markerOffsetPlusOne 	<= (others => '0');
-            L_markerOffsetCenter	   <= (others => '0');
+            L_markerOffsetCenter	<= (others => '0');
             L_markerOffsetMinusOne	<= (others => '0');
             L_markerOffsetMinusTwo	<= (others => '0');
 				
          elsif (alignment_req_risingEdge = '1') then				--DCS Reset.
-            alignmentReady			   <= '0';
-            needAlignmentCnt		   <= (others => '0');						  
+            alignmentReady			<= '0';
+            needAlignmentCnt		<= (others => '0');						  
             L_markerOffsetPlusTwo	<= (others => '0');
             L_markerOffsetPlusOne 	<= (others => '0');
-            L_markerOffsetCenter	   <= (others => '0');
+            L_markerOffsetCenter	<= (others => '0');
             L_markerOffsetMinusOne	<= (others => '0');
             L_markerOffsetMinusTwo	<= (others => '0');
 
@@ -431,7 +432,8 @@ begin
             end if;
             
             ----Detection of Marker and Mode.
-            if(stepTXCLKin40 = flagDetectionEdge and LoopbackLatch2 = '1' and alignmentReady = '1') then								
+--            if(stepTXCLKin40 = flagDetectionEdge and LoopbackLatch2 = '1' and alignmentReady = '1') then								
+            if(LoopbackLatch2 = '1' and LoopbackLatch3 = '0' and alignmentReady = '1') then								
                sendLoopbackOut <= '1';		  						
             end if;					
 			
@@ -485,26 +487,26 @@ begin
             shRxReg <= shRxReg(SH_RX_REG_DEPTH-2 downto 0) & dbg_data_sig;  
          end if;
          
-         BUSY_STOP  <= '0';	
-         
-         RESP_FIFO_RESET	<= '0';
-         
+         BUSY_STOP  <= '0';
+			
+         RESP_FIFO_RESET			<= '0';
+		 
          if RESET_N = '0' or rst_cmd = '1' or ps_status(15) = '1' then 
-            RESP_FIFO_RESET		   <= '1';
-            nextIsPayload			   <= '0';
-            nextIsPayload_save	   <= '0';
-            dcsResp_DoubleOp		   <= '0';
-            dcsResp_BlockOp		   <= '0';
-            ps_state				      <= S_Reset;	   
-            ps_status 				   <= (others => '0');
-            ps_errors 				   <= (others => '0');	  
-            CRC_RST 				      <= '1';	   						    		 			
-            fwd_packet_count 		   <= (others => '0');	   
-            rsp_packet_count 		   <= (others => '0');	 
+            RESP_FIFO_RESET			<= '1';
+            nextIsPayload			<= '0';
+            nextIsPayload_save		<= '0';
+            dcsResp_DoubleOp		<= '0';
+            dcsResp_BlockOp			<= '0';
+            ps_state				<= S_Reset;	   
+            ps_status 				<= (others => '0');
+            ps_errors 					<= (others => '0');	  
+            CRC_RST 				<= '1';	   						    		 			
+            fwd_packet_count 		<= (others => '0');	   
+            rsp_packet_count 		<= (others => '0');	 
             rsp_packet_seq          <= (others => '0');
-            kchar_count 			   <= (others => '0');		
-            kdata_count 			   <= (others => '0');
-            respDataPacketCnt		   <= (others => '0');
+            kchar_count 			<= (others => '0');		
+            kdata_count 			<= (others => '0');
+            respDataPacketCnt		<= (others => '0');
             respDataPacketCnt_save	<= (others => '0');		
             retransmitCnt           <= (others => '0');		
             retransmit_packet_seq   <= (others => '0');
@@ -514,7 +516,7 @@ begin
             ps_state <= S_Reset;            -- can setup debug to mode DbgDataSel = 2 and view what was drained out of resp fifo
             
          elsif(sendLoopbackOut = '1') then  	-- If we are sending loopback, stop the state machine
-            respFifoRe_mask		<= respFifoRe_maskSave;
+            respFifoRe_mask			<= respFifoRe_maskSave;
             txDataSel				<= TXDATASEL_MARKER;
             markerType				<= x"1C12";
             
@@ -524,11 +526,11 @@ begin
             if(ps_state = S_Reset) then		  
 				
                RESP_FIFO_RESET				<= '1';
-               ps_errors(ERROR_HasReset)  <= '1';				
-               ps_state 					   <= S_Idle; 		
-               txDataSel					   <= TXDATASEL_MARKER;  
-               markerType					   <= x"1C13";	  	 
-               ps_status(7 downto 0)      <= x"01";	
+               ps_errors(ERROR_HasReset)		<= '1';				
+               ps_state 					<= S_Idle; 		
+               txDataSel					<= TXDATASEL_MARKER;  
+               markerType					<= x"1C13";	  	 
+               ps_status(7 downto 0)        <= x"01";	
                   
             elsif (ps_state = S_Idle) then
 					
@@ -539,26 +541,29 @@ begin
                   if(retransmit_det_sig = '1' and rsp_packet_count > 0) then    -- retransmission request: ignore if not packet received yet
 								
                      ps_state			<= S_WaitToRetransmitData;
-                     retransmitCnt  <= (others => '0');		
+                     retransmitCnt <= (others => '0');		
 								
                   elsif(FWD_FIFO_EMPTY = '0') then		  	-- forward a packet		
 								
-                     ps_state		 	   <= S_Fwd;			   
+                     ps_state		 	<= S_Fwd;			   
                      fwdFifoRe_mask 	<= '1';		  
-                     fwd_packet_count  <= fwd_packet_count + 1;	  
+																  
                      sendCnt <= (others => '0');		  		   	   
+                     fwd_packet_count <= fwd_packet_count + 1;	  
 								
                   elsif(resp_fifo_empty_latch = '0' and unsigned(resp_fifo_count_latch2) > 7) then	-- was 4
                      
-                     ps_state			   <= S_WaitForRespData;			  
-                     rsp_packet_count  <= rsp_packet_count + 1;
-                     rsp_packet_seq    <= rsp_packet_seq + 1;
+                     ps_state			<= S_WaitForRespData;			  
+															   
+															 
                      sendCnt <= to_unsigned(1,5); -- was 20, 5);	 
+                     rsp_packet_count   <= rsp_packet_count + 1;
+                     rsp_packet_seq     <= rsp_packet_seq + 1;
 								
                   elsif(force_send = '1') then				 -- debug force packet
 								
-                     ps_state	<= S_Dbg;			   
-                     sendCnt  <= (others => '0');	
+                     ps_state			<= S_Dbg;			   
+                     sendCnt <= (others => '0');	
 								
                   end if;
                end if;
@@ -566,11 +571,11 @@ begin
                   
             elsif (ps_state = S_Dbg) then	 	   -- handle debug packet generation
 						
-               sendCnt     <= sendCnt + 1;				   	  
-               crc_en_sig  <= '1';
+               sendCnt <= sendCnt + 1;				   	  
+               crc_en_sig <= '1';
 												 			  		  
-               txDataSel    <= TXDATASEL_CRC; --output CRC data
-               tx_k_char_sig<= (others => '0'); --data chars						   			   
+               txDataSel <= TXDATASEL_CRC; --output CRC data
+               tx_k_char_sig <= (others => '0'); --data chars						   			   
 						
                ps_status(9) <= '1'; --indicate a dbg was sent ever   	   
                ps_status(7 downto 0) <= x"DD"; 										 
@@ -579,11 +584,11 @@ begin
             
                sendCnt	<= sendCnt - 1;
                if (sendCnt = 0) then		 	  
-                  sendCnt	      <= (others => '0');
-                  ps_state	      <= S_Resp; 
-                  respFifoRe_mask<= not nextIsPayload;	--grab header from Q for data header, but not for payload
+                  sendCnt	<= (others => '0');
+                  ps_state	<= S_Resp; 
+                  respFifoRe_mask <= not nextIsPayload;	--grab header from Q for data header, but not for payload
                end if;																								 
-               ps_status(7 downto 0)   <= x"03";
+               ps_status(7 downto 0)       <= x"03";
                         
             elsif (ps_state = S_Resp) then			-- handle sending packet from response FIFO
 						
@@ -591,14 +596,14 @@ begin
                --============================== 
                -- logic to control resp fifo RE (whose default state is '0'!)
                if(sendCnt = 0) then		
-                  nextIsPayload_save<= nextIsPayload;							 							   
-                  respFifoRe_mask   <= '1';			 
+                  nextIsPayload_save <= nextIsPayload;							 							   
+                  respFifoRe_mask <= '1';			 
                elsif(sendCnt = 1) then  -- skip read for non-dataPayload packets 
                   if(nextIsPayload_save = '1') then -- Data Packet Payload							 							   
                      respFifoRe_mask <= '1';			 
                   end if;		 
                elsif(sendCnt < 8) then   	 
-                  respFifoRe_mask   <= '1';			 
+                  respFifoRe_mask <= '1';			 
                end if; -- end resp fifo RE handling
 								   
                --============================== 
@@ -608,10 +613,10 @@ begin
                   -- do nothing wait for extra data read delay clock	
                elsif(sendCnt = 4) then	--first word, do funny KCHAR while FIFO data waits	 
 							 								 							
-                  resp_tx_data(15 downto 8)  <= x"1C";  --K28.0
+                  resp_tx_data(15 downto 8) <= x"1C";  --K28.0
 --                  resp_tx_data(7 downto 5) <= std_logic_vector(rsp_packet_count(2 downto 0));	
-                  resp_tx_data(7 downto 5)   <= std_logic_vector(rsp_packet_seq);	
-                  resp_tx_data(4)            <= '0';	  -- really, this is the high bit of the packet type.. but we have < 16 (for now)
+                  resp_tx_data(7 downto 5) <= std_logic_vector(rsp_packet_seq);	
+                  resp_tx_data(4) <= '0';	  -- really, this is the high bit of the packet type.. but we have < 16 (for now)
 							
                   hdr_word <= resp_fifo_q_latch2;		  
 							
@@ -627,33 +632,33 @@ begin
                      respDataPacketCnt <= respDataPacketCnt - 1;	 
                            
                      if (respPacketTypeSave = 4 or respPacketTypeSave = 8) then
-                        respPacketTypeSave         <= x"8";	--DCS Block read response type	 
-                        resp_tx_data(3 downto 0)   <= x"8";		  		
+                        respPacketTypeSave <= x"8";	--DCS Block read response type	 
+                        resp_tx_data(3 downto 0) <= x"8";		  		
                      else
                         respPacketTypeSave <= x"6";	--Data response body 
-                        resp_tx_data(3 downto 0)   <= x"6";	
+                        resp_tx_data(3 downto 0) <= x"6";	
                      end if;
 							
                   elsif(respPacketType = 4 and nextIsPayload_save = '0') then -- DCS Reply Packet
                      txDataSel <= TXDATASEL_RSPFIFO;  --select RESP_FIFO for tx		   
-                     tx_k_char_sig(1)              <= '0';	-- was (0),.. but Rick gets bytes flipped						 
-                     resp_tx_data(3 downto 0)      <= x"4";	
+                     tx_k_char_sig(1) <= '0';	-- was (0),.. but Rick gets bytes flipped						 
+                     resp_tx_data(3 downto 0) <= x"4";	
                            
                      respPacketTypeSave <= respPacketType;	
 									
                   elsif(respPacketType = 5 and nextIsPayload = '0') then -- Data Header Packet				   
                      txDataSel <= TXDATASEL_RSPFIFO;  --select RESP_FIFO for tx		   
-                     tx_k_char_sig(1)              <= '0';	-- was (0),.. but Rick gets bytes flipped						 
-                     resp_tx_data(3 downto 0)      <= x"5";			  
+                     tx_k_char_sig(1) <= '0';	-- was (0),.. but Rick gets bytes flipped						 
+                     resp_tx_data(3 downto 0) <= x"5";			  
                            
                      respPacketTypeSave <= respPacketType;	   
 								
                   else					--invalid resp packet type, cancel send!
-                     ps_errors(ERROR_WrongPacketOut)  <= '1'; 					  
-                     ps_state 		                  <= S_Reset; 													  
-                     nextIsPayload 	                  <= '0';	  
+                     ps_errors(ERROR_WrongPacketOut)    <= '1'; 					  
+                     ps_state 		<= S_Reset; 													  
+                     nextIsPayload 	<= '0';	  
 								
-                     respPacketTypeSave               <= x"F";		
+                     respPacketTypeSave <= x"F";		
                   end if;	
                         
                else  -- sendCnt>4 starts packet body
@@ -668,7 +673,8 @@ begin
                      if(sendCnt = 5) then -- DMA Byte Count		
                         resp_tx_data <= (others => '0');	
                      elsif(sendCnt = 6) then --header word	
-                        resp_tx_data <= hdr_word;		
+                        --resp_tx_data <= hdr_word;		
+                        resp_tx_data <= hdr_word(15 downto 11) & LINK_ID & hdr_word(7 downto 0);			
                      elsif (sendCnt = 7) then -- PacketCount and Opcode	
                         if (nextIsPayload_save = '0') then
                            respDataPacketCnt	<= to_unsigned(0,6) & unsigned(resp_fifo_q_latch3(15 downto 6));
@@ -744,18 +750,18 @@ begin
                end if;
 								 	   
                if(sendCnt = 0) then -- first word, do funny KCHAR		
-                  tx_k_char_sig(1)  <= '0';	-- was (0),.. but Rick gets bytes flipped	  
+                  tx_k_char_sig(1) <= '0';	-- was (0),.. but Rick gets bytes flipped	  
                else																						 
-                  tx_k_char_sig     <= (others => '0'); --data chars				 					  
-                  crc_en_sig        <= '1';
+                  tx_k_char_sig <= (others => '0'); --data chars				 					  
+                  crc_en_sig <= '1';
                end if;    
 											   
                if(sendCnt = 8) then -- last word is CRC	
                   ps_state <= S_Crc; 	
                end if;			
 																																 
-               ps_status(8)            <= '1'; --indicate a fwd was sent ever
-               ps_status(7 downto 0)   <= x"04"; 	
+               ps_status(8) <= '1'; --indicate a fwd was sent ever
+               ps_status(7 downto 0) <= x"04"; 	
                      
             elsif (ps_state = S_Crc) then	
                   
@@ -784,7 +790,7 @@ begin
                   
                retransmitCnt <= retransmitCnt + 1;
                if (retransmitCnt = 1)then
-                  retransmit_packet_seq <= unsigned(retransmit_packet_req) + 1; 
+                  retransmit_packet_seq <= unsigned(retransmit_seq_sig) + 1; 
                end if;
                      
                if (retransmitCnt = 2) then

@@ -21,20 +21,20 @@ use ieee.numeric_std.all;
 
 entity Clock40Mhz is
 	  Generic (			 
-            gAPB_DWIDTH     		: integer := 16;  
-            gAPB_AWIDTH     		: integer := 16;	 
-            gSERDES_DWIDTH  		: integer := 20; 
-            gENDEC_DWIDTH   		: integer := 16;	
-            IO_SIZE         		: integer := 2;
+			gAPB_DWIDTH     		: integer := 16;  
+			gAPB_AWIDTH     		: integer := 16;	 
+			gSERDES_DWIDTH  		: integer := 20; 
+			gENDEC_DWIDTH   		: integer := 16;	
+			IO_SIZE         		: integer := 2;
 			ALGO_LOC_ADDR 			: natural := 0
 		);
 	port (
         CLOCKMARKER 				: IN  std_logic; -- example
-        EVENTMARKER					: IN  std_logic;
-        RESET_N						: IN  std_logic;
+        EVENTMARKER				: IN  std_logic;
+        RESET_N					: IN  std_logic;
         Clk_200Mhz  				: IN  std_logic;
                                     
-        Clk_40Mhz  					: OUT std_logic;
+        Clk_40Mhz  				: OUT std_logic;
 --		RESET_TSMGR					: OUT std_logic;
 
 --    --Error Detection Flags															   
@@ -44,16 +44,16 @@ entity Clock40Mhz is
 end Clock40Mhz;
 architecture architecture_Clock40Mhz of Clock40Mhz is
 --==========================SIGNALS=============================
-	--signal errorEventAlignment_sig			: std_logic;
-	--signal errorClockAlignment_sig			: std_logic;
-	--signal polarity_edge 					    : std_logic := '0'; 				  --Changes polarity to obtain 40Mhz clock
+	--signal errorEventAlignment_sig		: std_logic;
+	--signal errorClockAlignment_sig		: std_logic;
+	--signal polarity_edge 					: std_logic := '0'; 				  --Changes polarity to obtain 40Mhz clock
 	signal eventMarkerLatch					: std_logic;
-    signal counter       					: unsigned(2 downto 0)  := "000";
+	signal counter       					: unsigned(2 downto 0)  := "000";
 	signal clockMarkerLatch					: std_logic := '0';	
 	signal clockMarkerRisingEdge			: std_logic;
-	signal resetClock						: std_logic;  
+	signal resetClock							: std_logic;  
 	signal eventMarkerRisingEdge			: std_logic;	  
---	signal resetLatch						: std_logic;
+--	signal resetLatch							: std_logic;
 --	signal resetFallingEdge					: std_logic;  
 	
 	--signal launchResetTimestamp				: std_logic; 
@@ -66,15 +66,13 @@ architecture architecture_Clock40Mhz of Clock40Mhz is
 	--signal markerOffsetMinusOne				: unsigned (32 downto 0);
 	--signal markerOffsetMinusTwo				: unsigned (32 downto 0);
 begin 
+
+ --Reset when rising edge of CLOCKMARKER.	
+resetClock	<= '1' when (clockMarkerRisingEdge = '1' or eventMarkerRisingEdge = '1') else	'0';																 
 	
-resetClock				<= 	'1' when (clockMarkerRisingEdge = '1' or eventMarkerRisingEdge = '1') ELSE		  --Reset when rising edge of CLOCKMARKER.
-							'0';																 
+eventMarkerRisingEdge	<= '1' when EVENTMARKER = '1' and eventMarkerLatch = '0' else	'0';					
 	
-eventMarkerRisingEdge	<= 	'1' when EVENTMARKER = '1' and eventMarkerLatch = '0' else
-							'0';					
-	
-clockMarkerRisingEdge	<=  '1' when CLOCKMARKER = '1' and clockMarkerLatch = '0' else
-							'0';						   
+clockMarkerRisingEdge	<=	'1' when CLOCKMARKER = '1' and clockMarkerLatch = '0' else	'0';						   
 	
 --counterMisalignedMarker <= std_logic_vector(counterMisalignedEvent_sig);	
 		
@@ -88,29 +86,28 @@ clockMarkerRisingEdge	<=  '1' when CLOCKMARKER = '1' and clockMarkerLatch = '0' 
    TICK_40: PROCESS (Clk_200Mhz) 
    begin	
 	   if (rising_edge(Clk_200Mhz)) then  
-		   clockMarkerLatch 			<= CLOCKMARKER;	
-		   eventMarkerLatch				<= EVENTMARKER;
---		   resetLatch					<= RESET_N;
+		   clockMarkerLatch 		<= CLOCKMARKER;	
+		   eventMarkerLatch		<= EVENTMARKER;
+--		   resetLatch				<= RESET_N;
             
-            --(1A) MODULE RESET                     --SYSTEM RESET ASSERTED. Clock needs a clockmarker.
-            if(RESET_N = '0') then
-			  	Clk_40Mhz       		<= '1';		 
---			    errorClockAlignment 	<= '0';  
+			--(1A) MODULE RESET                     --SYSTEM RESET ASSERTED. Clock needs a clockmarker.
+			if(RESET_N = '0') then
+				Clk_40Mhz       		<= '1';		 
+--		   	errorClockAlignment 	<= '0';  
 --				errorEventAlignment 	<= '0';  
-                counter         		<= "000";
+				counter         		<= "000";
 	
-				
 			--(1B) CLOCK RESET
-            elsif(resetClock = '1') then  		   --CLOCKMARKER RECEIVED. Clock aligns to it.
-                                                   --EVENT MARKERS also resets the clock if it has been system resetted before.
-              --  polarity_edge  			 <= '1';
-                Clk_40Mhz      			 <= '1';
-                counter        			 <= "001";
-                alignedToMarker			 <= '1';
+			elsif(resetClock = '1') then  		   --CLOCKMARKER RECEIVED. Clock aligns to it.
+																--EVENT MARKERS also resets the clock if it has been system resetted before.
+				--  polarity_edge	<= '1';
+				Clk_40Mhz			<= '1';
+				counter				<= "001";
+				alignedToMarker	<= '1';
 				
 			--(1C)CLOCK NORMAL OPERATION
-            else	  
-				counter					 <= counter + 1;	
+			else	  
+				counter	<= counter + 1;	
 				if(counter < 3) then	 			--(1C.0)CLOCK HIGH. 3 200Mhz Cycles.
 					Clk_40Mhz	<= '1';
 				elsif (counter >= 3 and counter < 5) then	--(1C.1) CLOCK LOW. 2 200Mhz Cycles.	
@@ -119,9 +116,8 @@ clockMarkerRisingEdge	<=  '1' when CLOCKMARKER = '1' and clockMarkerLatch = '0' 
 						counter <= (others => '0');
 					end if;
 				end if;
-				
-            end if;
-        end if;
+			end if;
+		end if;
    end process;  
 
 ---- ===============	(2)EVENTALIGNCHECK 	===============
@@ -132,16 +128,16 @@ clockMarkerRisingEdge	<=  '1' when CLOCKMARKER = '1' and clockMarkerLatch = '0' 
 --   EVENTALIGNCHECK: PROCESS (Clk_200Mhz)
 --   begin		
 --	    if (rising_edge(Clk_200Mhz)) then  
---		   eventMarkerLatch				<= EVENTMARKER;
+--		   eventMarkerLatch	<= EVENTMARKER;
 --		 --(2A) MODULE RESET
 --		   if RESET = '1' then		   
 --			    errorEventAlignment 		<= '0';	 
 --			   
---			    counterMisalignedEvent_sig		<= (others => '0');				
---			   	markerOffsetPlusOne <= (others => '0');
---				markerOffsetPlusTwo <= (others => '0');
---				markerOffsetMinusOne <= (others => '0');
---				markerOffsetMinusTwo <= (others => '0');
+--			   counterMisalignedEvent_sig	<= (others => '0');				
+--			   markerOffsetPlusOne 			<= (others => '0');
+--				markerOffsetPlusTwo 			<= (others => '0');
+--				markerOffsetMinusOne 		<= (others => '0');
+--				markerOffsetMinusTwo 		<= (others => '0');
 --		
 --		--(2B)  MARKER ALIGN CHECK
 --		   elsif eventMarkerRisingEdge = '1' and needAlignment = '0' then	

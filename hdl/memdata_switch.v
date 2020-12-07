@@ -19,23 +19,23 @@
 //`timescale <time_units> / <precision>
 
 module memdata_switch(    
-   input    MEM_OUT_DISABLE,           // select between DDR data out(0) vs DTC simulated data out (1) to TOP_SERDES 
+   input    SIM_MEMFIFO,           // select between DDR data out(0) vs DTC simulated data out (1) to TOP_SERDES 
 
-   input          DDR_DATA_READY,
-   input [15:0]   DDR_DATA_PCKTS,
-   input [63:0]   DDR_DATA,
-   input          SIM_DATA_READY,
-   input [15:0]   SIM_DATA_PCKTS,
-   input [63:0]   SIM_DATA,
+   input          A_DDR_DATA_READY,
+   input [15:0]   A_DDR_DATA_PCKTS,
+   input [63:0]   A_DDR_DATA,
+   input          B_SIM_DATA_READY,
+   input [15:0]   B_SIM_DATA_PCKTS,
+   input [63:0]   B_SIM_DATA,
    output         MEMFIFO_DATA_READY,
    output [15:0]  MEMFIFO_DATA_PCKTS,
    output [63:0]  MEMFIFO_DATA
 );
 
 //<statements>
-   assign MEMFIFO_DATA_READY  = (MEM_OUT_DISABLE==1'b1) ?  SIM_DATA_READY  : DDR_DATA_READY;
-   assign MEMFIFO_DATA_PCKTS  = (MEM_OUT_DISABLE==1'b1) ?  SIM_DATA_PCKTS  : DDR_DATA_PCKTS;
-   assign MEMFIFO_DATA        = (MEM_OUT_DISABLE==1'b1) ?  SIM_DATA        : DDR_DATA;
+   assign MEMFIFO_DATA_READY  = (SIM_MEMFIFO==1'b1) ?  B_SIM_DATA_READY  : A_DDR_DATA_READY;
+   assign MEMFIFO_DATA_PCKTS  = (SIM_MEMFIFO==1'b1) ?  B_SIM_DATA_PCKTS  : A_DDR_DATA_PCKTS;
+   assign MEMFIFO_DATA        = (SIM_MEMFIFO==1'b1) ?  B_SIM_DATA        : A_DDR_DATA;
 
 endmodule
 

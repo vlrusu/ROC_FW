@@ -3,7 +3,7 @@
 --
 -- File: Reset_Watchdog.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      v1.0: Nov.2020:  MT  code cleaned
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -26,23 +26,23 @@ use work.algorithm_constants.all;
 
 entity MainResetController is
 port (				   
-	FABRIC_RESET_N		: IN  std_logic;
+	FABRIC_RESET_N		: IN	std_logic;
 
-	SEL_RESET 			: IN  std_logic;		  					   --  0 = Pre-Load/ 1 = Start
-	SEL_RST_CNTL		: IN  std_logic_vector(9 downto 0);		-- Reset Cntl
+	SEL_RESET 			: IN  std_logic;		  						--  0 = Pre-Load/ 1 = Start
+	SEL_RST_CNTL		: IN  std_logic_vector(9 downto 0);		-- 	Reset Cntl
 	
-	SLOW_CLK			   : IN  std_logic; 
+	SLOW_CLK				: IN	std_logic; 
 	
-	RESET_40CLK_N		: OUT std_logic; 
-	RESET_FW_N			: OUT std_logic;
-	RESET_CH_N			: OUT std_logic;	
-	RESET_TS_N			: OUT std_logic;
-	RESET_DCSRCV_N		: OUT std_logic;
-	RESET_RM_N			: OUT std_logic;
-	RESET_DCSRESP_N	: OUT std_logic; 
-	RESET_PS_N			: OUT std_logic; 
-	RESET_RECV_FIFO_N	: OUT std_logic;
-	RESET_RESP_FIFO_N	: OUT std_logic
+	RESET_FW_N			: OUT	std_logic;
+	RESET_PS_N			: OUT	std_logic; 
+	RESET_RM_N			: OUT	std_logic;
+	RESET_CH_N			: OUT	std_logic;	
+	RESET_TS_N			: OUT	std_logic;
+	RESET_40CLK_N		: OUT	std_logic; 
+	RESET_RESP_FIFO_N	: OUT	std_logic;
+	RESET_RECV_FIFO_N	: OUT	std_logic;
+	RESET_DCSRCV_N		: OUT	std_logic;
+	RESET_DCSRESP_N	: OUT	std_logic 
 	
 );
 end MainResetController;												
@@ -57,19 +57,19 @@ architecture architecture_ResetController of MainResetController is
 	signal sel_reset_risingEdge	: std_logic;
 	
 	signal 	reset_init_counter	: unsigned(9 downto 0); 
-	--signal 	reset_count			: unsigned(9 downto 0);
-	signal	reset_40clk_sig		: std_logic; 
+	--signal reset_count				: unsigned(9 downto 0);
 	signal	reset_fw_sig			: std_logic;			
-	signal	reset_ch_sig			: std_logic;
-	signal 	reset_ts_sig			: std_logic;
-	signal	reset_dcsrcv_sig		: std_logic;
-	signal	reset_rm_sig			: std_logic;
-	signal	reset_dcsrsp_sig		: std_logic;  
 	signal	reset_ps_sig			: std_logic;
+	signal	reset_rm_sig			: std_logic;
+	signal	reset_ch_sig			: std_logic;
+	signal	reset_40clk_sig		: std_logic; 
 	signal	reset_rcv_sig			: std_logic;
 	signal	reset_rsp_sig			: std_logic;
+	signal	reset_dcsrcv_sig		: std_logic;
+	signal	reset_dcsrsp_sig		: std_logic;  
+	signal 	reset_ts_sig			: std_logic;
 	
-	signal   reset_init				: std_logic;
+	signal 	reset_init				: std_logic;
 	
 
 begin					  									  
@@ -110,14 +110,14 @@ begin
 				if (FABRIC_RESET_N = '0') then	-- System Init	
 					
 					sel_rst_cntl_latch	<= (others => '1');
-					reset_init  		   <=	'1';	   
+					reset_init  			<=	'1';	   
 					reset_init_counter 	<= (others => '0');	
 					
 				--(1B) Selective Reset on Rising Edge
 				elsif(sel_reset_risingEdge = '1' and reset_init = '0') then
 					   	
 					sel_rst_cntl_latch 	<= sel_rst_cntl_latch1;
-					reset_init  		   <=	'1';	   
+					reset_init  			<=	'1';	   
 					reset_init_counter	<= (others => '0');		
 					
 				elsif	(reset_init = '1') then		 
