@@ -37,7 +37,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL0_0_BYPASS:0"  \
 "GL0_0_BYPASS_EN:false"  \
 "GL0_0_DEDICATED_USED:false"  \
-"GL0_0_DIV:31"  \
+"GL0_0_DIV:6"  \
 "GL0_0_DIVSTART:0"  \
 "GL0_0_DYNAMIC_PH:false"  \
 "GL0_0_EXPOSE_EN:false"  \
@@ -45,7 +45,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL0_0_FABCLK_USED:true"  \
 "GL0_0_FREQ_SEL:false"  \
 "GL0_0_IS_USED:true"  \
-"GL0_0_OUT_FREQ:40"  \
+"GL0_0_OUT_FREQ:200"  \
 "GL0_0_PHASE_INDEX:0"  \
 "GL0_0_PHASE_SEL:false"  \
 "GL0_0_PLL_PHASE:0"  \
@@ -68,15 +68,15 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL1_0_BYPASS:0"  \
 "GL1_0_BYPASS_EN:false"  \
 "GL1_0_DEDICATED_USED:false"  \
-"GL1_0_DIV:1"  \
+"GL1_0_DIV:30"  \
 "GL1_0_DIVSTART:0"  \
 "GL1_0_DYNAMIC_PH:false"  \
 "GL1_0_EXPOSE_EN:false"  \
 "GL1_0_FABCLK_GATED_USED:false"  \
 "GL1_0_FABCLK_USED:true"  \
 "GL1_0_FREQ_SEL:false"  \
-"GL1_0_IS_USED:false"  \
-"GL1_0_OUT_FREQ:100"  \
+"GL1_0_IS_USED:true"  \
+"GL1_0_OUT_FREQ:40"  \
 "GL1_0_PHASE_INDEX:0"  \
 "GL1_0_PHASE_SEL:false"  \
 "GL1_0_PLL_PHASE:0"  \
@@ -225,7 +225,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "PLL_POSTDIVIDERADDSOFTLOGIC_0:true"  \
 "PLL_REF_CLK_SEL_0:false"  \
 "PLL_REF_CLK_SEL_1:false"  \
-"PLL_REFDIV_0:25"  \
+"PLL_REFDIV_0:1"  \
 "PLL_REFDIV_1:1"  \
 "PLL_SPREAD_MODE_0:false"  \
 "PLL_SPREAD_MODE_1:false"  \

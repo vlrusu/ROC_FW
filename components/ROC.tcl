@@ -497,7 +497,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:fifo_read_mem_en
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:LANE0_RX_CLK_R" "DTCInterface_0:RX_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:ALIGN" "TOP_SERDES_0:RX_ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:RX_RESETN" "DTCInterface_0:RX_RESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_3:D" "OUTBUF_DIFF_4:D" "EWMaker_0:clk" "TrackerCCC_0:OUT0_FABCLK_0" "SLOWCONTROLS_0:tracker_clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:tracker_clk" "OUTBUF_DIFF_3:D" "OUTBUF_DIFF_4:D" "TrackerCCC_0:OUT0_FABCLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:clk" "TrackerCCC_0:OUT1_FABCLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "SLOWCONTROLS_0:TX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"WE_N" "DDRInterface_0:WE_N" }
 
