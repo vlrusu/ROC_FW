@@ -5,8 +5,8 @@
 -- File history:
 --      	v00: Feb 25, 2015: Birthday
 --			V01: August 7th, 2015 
---          v02: August 23rd, 2020  MT cleaned unused logic. Made MODULE RD/WD registers consistent accross all Modules
---			v03: December, 2020:  MT cleans code and adds some CH_STATUS values
+--			v02: December 2, 2020:  MT cleans code and adds some CH_STATUS values
+--			v03: December 11, 2020: fix bug in DCSReadBlock caused by previous code clean
 -- Description: 
 -- CommandHandler reads 2x FIFOs
 --	* handle Readout Request(1) or Data Request(2) or DCS Request(0)
@@ -674,18 +674,29 @@ begin
 							DCS_RCV_FIFO_DATA_0(gAPB_DWIDTH-1 downto 0)								<= rcv_data;
 							DCS_RCV_FIFO_DATA_0(gAPB_AWIDTH+gAPB_DWIDTH downto gAPB_DWIDTH) 	<= '1' & dcsReq_addrs;	 		 
 								
-						elsif (dcsReq_op = DCSReadBlock or dcsReq_op = DCSWriteBlock) then 			 												 
-							rcvFifoRe0_mask			<= '0';		-- Hold the current write data
-							if(unsigned(rcv_data) = 0) then 		-- error, cant read 0 words!
+						elsif (dcsReq_op = DCSReadBlock) then	
+							if(unsigned(rcv_data) = 0) then -- error, cant read 0 words!
 								ch_state 				<= S_Drain;			 
 							end if;								   
 							
-							dcsReq_blockWordCount		<= unsigned(rcv_data) - 1;		   							
+							dcsReq_blockWordCount	<= unsigned(rcv_data);		   							
 							
 							--check for packet count, word count mismatch  
 							-- hijack dcsReq_blockWordCount_store signal for the test		   
-							dcsReq_blockWordCount_store(15 downto 0) <=  unsigned(rcv_data) + 4; -- := (word_count + 4) / 8 (divide by 8 in next step) 																		 
+							dcsReq_blockWordCount_store(15 downto 0) <=  unsigned(rcv_data) + 4; -- := (word_count + 4) / 8 (divide by 8 in next step) 
 							
+						elsif (dcsReq_op = DCSWriteBlock) then 											   		 
+							rcvFifoRe0_mask			<= '0';		--Hold the current write data
+							if(unsigned(rcv_data) = 0) then -- error, cant read 0 words!
+								ch_state 				<= S_Drain;			 
+							end if;								   
+							
+							dcsReq_blockWordCount	<= unsigned(rcv_data) - 1;		   							
+							
+							--check for packet count, word count mismatch  
+							-- hijack dcsReq_blockWordCount_store signal for the test		   
+							dcsReq_blockWordCount_store(15 downto 0) <=  unsigned(rcv_data)+ 4; -- := (word_count + 4) / 8 (divide by 8 in next step) 																		 
+														
 						else	  								  
 							ch_state <= S_Drain;								
 							ch_errors(ERROR_UndefinedPacketType) <= '1';
