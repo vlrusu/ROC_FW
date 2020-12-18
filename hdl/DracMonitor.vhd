@@ -6,7 +6,6 @@
 --      v00: June 23, 2020: first version
 --      v01: Sept 27, 2020: cleaned some unused signals. Added comments 
 --      v02: Nov. 5,  2020: Added/changed signal interface to TimeStampManager 																		
---      v03: Dec.10,  2020: Added registers for SVT 																		
 --
 -- Description: DRAC registers drivers and controller.
 --
@@ -67,7 +66,7 @@ port (
 
    --Timestamp Manager
    EVENT_START_DELAY_FINE	:	OUT	std_logic_vector(gAPB_DWIDTH - 1 downto 0);
-	EVENT_START_DELAY_FINE_EN	:	OUT	std_logic;						-- ALGO_ADDR can drive only 15 LSB, plus but(14) reserved fofr enable => max value is 2**14 = 16384 
+	EVENT_START_DELAY_FINE_EN	:	OUT	std_logic;
 	TIMESTAMP_IN				:	IN		std_logic_vector(gAPB_DWIDTH - 1 downto 0);
 	
    -- ResetController signals
@@ -77,21 +76,11 @@ port (
    -- Debugging
    DEBUG_REG_0			   	: IN  std_logic_vector(15 downto 0);
    PREREAD_PULSE	      	: OUT STD_LOGIC;
+   --RESET_SENT           	: OUT std_logic;
+	
+   -- DRAC Registers
+   PATTERN               	: OUT std_logic_vector(1 downto 0)
    
-   -- uncomment to drive LED in Eval board
-   --RESET_LED				: OUT std_logic;
-   
-   -- DRAC specific registers
-   ROCRESETN					: OUT STD_LOGIC;								-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
-	DDR3_FULL					: IN	std_logic;								-- stays highes from WRITE_PAGE_NO written to memory until all read out
-	DDRWRITE_MEM_EN			: OUT std_logic;								-- enable write of data to memory
-	DDR_DTCSIM					: OUT std_logic;								-- enable simulation of memory read
-	DDRFIFO_RDEN				: OUT std_logic;								-- enable read of 1 kB page from memory (ie simulates DATA_REQUEST from DTC)
-	DDRMEMFIFO_RDEN			: OUT std_logic;								-- enable memory data to TOP_SERDES (ie simulates DATA_REPLY to DTC)
-	PATTERN_EN					: OUT std_logic;								-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1
-   PATTERN						: OUT std_logic_vector(1 downto 0);		-- pattern generator type: 0=>+1, 1=>-1, 2=>A's,  3=>5's
-   WRITE_PAGE_NO				: OUT std_logic_vector(19 downto 0)	   -- MAX. no of 1kB pages wirtten to memory.  NB: ALGO_ADDR can drive only 15 LSB (ie MAX = 2**15 = 32768).
-																						-- Use two addresses to write/read 12 LSB (addr 9) and 8 MSB (addr 10) with a DTC double write/read packet.
    );
 end DracMonitor;
 
@@ -115,17 +104,9 @@ architecture arch of DracMonitor is
    signal dcs_we, dcs_re		: std_logic;
    signal dcs_selected_cnt		: unsigned(2 downto 0);			
 
+   signal pattern_reg			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
    signal evtstart_delay_fine_reg	: std_logic_vector(gAPB_DWIDTH-1 downto 0);
    signal evtstart_delay_en_reg		: std_logic;
-	
-	signal write_mem_en_reg		: std_logic;
-	signal ddr_sim_en_reg		: std_logic;
-	signal ddrfifo_rden_reg		: std_logic;
-	signal ddrmemfifo_rden_reg	: std_logic;
-	signal pattern_en_reg		: std_logic;
-   signal pattern_reg			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-   signal write_page_reg_LSB	: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-   signal write_page_reg_MSB	: std_logic_vector(gAPB_DWIDTH-1 downto 0);
 
    signal ram_we					: std_logic;
    signal ram_addr				: std_logic_vector(7 downto 0);
@@ -143,11 +124,8 @@ architecture arch of DracMonitor is
    signal reset_sig_latch		: std_logic;
    signal reset_cntl				: std_logic_vector(9 downto 0);
    signal reset_cntl_latch		: std_logic_vector(9 downto 0);
-
-	-- uncomment for Eval board
    --signal resetn_cnt				: std_logic_vector(31 downto 0);
-	--signal reset_seen				: std_logic;
-
+ 
 begin
    -- architecture body
    
@@ -163,37 +141,29 @@ begin
    -------------------------------------------------------------------------------			
    process (ALGO_CLK)
    begin		
-	
       if (rising_edge(ALGO_CLK)) then
          ALGO_RESET         <= '0'; 
          algo_reset_latch   <= ALGO_RESET;
+         --RESET_SENT         <= '0';
       
       -- Outside RESET
-		-- comment A block and uncomment B block for EVAL board
-		-- A block
          if (RESET_N = '0') then	   	 
             ALGO_RESET <= '1';	
          end if;
         
-		-- B block			
-         --if (RESET_N = '0') then	   	 
-            --ALGO_RESET <= '1';	
-            --reset_seen <= '0';
-         --end if;
-        --
          --if (algo_reset_latch and not ALGO_RESET) then   -- on ALGO_RESET falling edge
-            --reset_seen  <= '1';
+            --resetn_cnt <= x"00000001";
          --end if;   
 --
-         --if (reset_seen = '1') then
+         --if (resetn_cnt > x"00000000") then
             --resetn_cnt <= resetn_cnt + 1;
+            --RESET_SENT <= '1';
          --end if;
       --
-         --if (resetn_cnt = x"00FFFFFF") then
-            --reset_seen <= '0';
+         --if (resetn_cnt > x"00FFFFFF") then
             --resetn_cnt <= (others => '0'); 
          --end if;
-			
+         
       end if;      
    end process;		
 
@@ -224,30 +194,12 @@ begin
          DCS_ALIGNMENT_REQ	<= '0';
          RESET_XCVR_ERRORS <= '0';	
 
+         PATTERN           			<= pattern_reg(1 downto 0);
 			EVENT_START_DELAY_FINE		<= evtstart_delay_fine_reg;   
 			EVENT_START_DELAY_FINE_EN	<= evtstart_delay_en_reg;
-
-			ROCRESETN			<= '0';
-			DDRWRITE_MEM_EN	<=	'0';
-			DDRFIFO_RDEN		<= '0';
-			DDRMEMFIFO_RDEN	<= '0';
-			--write_mem_en_reg	<= '0';	
-			--ddrfifo_rden_reg	<= '0';	
-			--ddrmemfifo_rden_reg	<= '0';	
-			--DDRWRITE_MEM_EN	<=	write_mem_en_reg;
-			DDR_DTCSIM			<=	ddr_sim_en_reg;
-			--DDRFIFO_RDEN		<= ddrfifo_rden_reg;
-			--DDRMEMFIFO_RDEN	<= ddrmemfifo_rden_reg;
-			PATTERN_EN			<= pattern_en_reg;
-			PATTERN				<= pattern_reg(1 downto 0);
-         WRITE_PAGE_NO		<= write_page_reg_MSB(7 downto 0) & write_page_reg_LSB(11 downto 0);		
-
          ram_we            <= '0';
          fifo_we           <= '0';
          fifo_re           <= '0';
-
--- uncomment for Eval board
-         --RESET_LED          <= reset_seen;
  
          if (RESET_N = '0') then	
             dcs_selected      <= '0';
@@ -260,17 +212,10 @@ begin
             algo_wdata_sig    <= (others => '0');
             algo_addr_sig     <= (others => '0');
          
+														   
+            pattern_reg						<= (others => '0');
             evtstart_delay_fine_reg		<= (others => '0');
 				evtstart_delay_en_reg   	<= '0';				  
-														   
-				write_mem_en_reg	<= '0';	
-				ddr_sim_en_reg		<= '0';	
-				ddrfifo_rden_reg	<= '0';	
-				ddrmemfifo_rden_reg	<= '0';	
-            pattern_en_reg		<= '0';	
-            pattern_reg			<= (others => '0');
-            write_page_reg_LSB<= (others => '0');
-            write_page_reg_MSB<= (others => '0');
 
             ram_wdata         <= (others => '0');
             ram_addr          <= (others => '0');
@@ -315,7 +260,7 @@ begin
                   if (dcs_data(gAPB_AWIDTH+gAPB_DWIDTH) = '1') then
                      dcs_selected <= '0';
                   end if;
-               elsif (dcs_selected_cnt = 4) then  	-- only now read_data is ready for block operations ... Write Packet to DCS
+               elsif (dcs_selected_cnt = 4) then  -- only now read_data is ready for block operations ... Write Packet to DCS
                   if (dcs_data(gAPB_AWIDTH+gAPB_DWIDTH) = '0') then   -- write flag is '0' => READ OP
                      DCS_RESP_FIFO_WE 			<= '1';	  
                      DCS_RESP_FIFO_DATA 		<= DCS_RCV_FIFO_EMPTY & drac_mon_addrs & read_data;      
@@ -346,35 +291,18 @@ begin
                elsif (drac_mon_addrs = 4) then
                   DCS_ALIGNMENT_REQ <= '1';   		-- self clearing	  
                elsif (drac_mon_addrs = 5) then
-                  evtstart_delay_en_reg	<= drac_mon_wdata(14);				  
-						evtstart_delay_fine_reg	<= "00" & drac_mon_wdata(13 downto 0);	
+                  evtstart_delay_en_reg	<= drac_mon_wdata(15);				  
+						evtstart_delay_fine_reg	<= '0' & drac_mon_wdata(14 downto 0);	
                elsif (drac_mon_addrs = 6) then
                   RESET_XCVR_ERRORS			<= '1';	-- self clearing			  
             
                -- 8...255 are reserved for DRAC controls and registers
                elsif (drac_mon_addrs = 8) then
-                  pattern_reg <= B"000X_0000_000X_00" & drac_mon_wdata(1 downto 0);
-                  pattern_en_reg	<= drac_mon_wdata(4);				  
-                  ddr_sim_en_reg	<= drac_mon_wdata(12);				  
+                  pattern_reg <= "0000" & drac_mon_wdata(11 downto 0);
                elsif (drac_mon_addrs = 9) then
-                  write_page_reg_LSB <= X"0" & drac_mon_wdata(11 downto 0);
-                elsif (drac_mon_addrs = 10) then
-                  write_page_reg_MSB <= X"00" & drac_mon_wdata(7 downto 0);
-               elsif (drac_mon_addrs = 11) then
---						write_mem_en_reg	<= '1';	 -- self clearing
-						DDRWRITE_MEM_EN	<= '1';	 -- self clearing
-               elsif (drac_mon_addrs = 12) then
---						ddrfifo_rden_reg	<= '1';	 -- self clearing
-						DDRFIFO_RDEN		<= '1';	 -- self clearing
-               elsif (drac_mon_addrs = 13) then
---						ddrmemfifo_rden_reg<= '1';	 -- self clearing
-						DDRMEMFIFO_RDEN	<= '1';	 -- self clearing
-               elsif (drac_mon_addrs = 14) then
-						ROCRESETN			<= '1';	 -- self clearing
-               elsif (drac_mon_addrs = 126) then
                   fifo_we   <= '1';
                   fifo_wdata <= drac_mon_wdata(7 downto 0);
-                elsif (drac_mon_addrs >= 127 and drac_mon_addrs <255) then   -- allow for one register per straw
+                elsif (drac_mon_addrs >= 10 and drac_mon_addrs <138) then   -- allow for one register per straw
                   ram_we    <= '1';
                   ram_addr  <= drac_mon_addrs(7 downto 0);
                   ram_wdata <= drac_mon_wdata(7 downto 0);
@@ -408,25 +336,19 @@ begin
                                  INVALID_K & RD_ERR & B_CERR & CODE_ERR_N;
                elsif (drac_mon_addrs = 5) then		 	 
                   read_data 	<= XCVR_LOSS_COUNTER;			
-					elsif (drac_mon_addrs = 6) then		 	 
+              elsif (drac_mon_addrs = 6) then		 	 
                   read_data 	<= TIMESTAMP_IN;			
      
                -- 8...255 are reserved for DRAC controls and registers
                elsif (drac_mon_addrs = 8) then		 	 
-                  read_data <= B"000" & ddr_sim_en_reg & B"0000_000" & pattern_en_reg & "00" & pattern_reg(1 downto 0);	
+                  read_data <= pattern_reg;	
                elsif (drac_mon_addrs = 9) then		 	 
-                  read_data <= write_page_reg_LSB;	
-               elsif (drac_mon_addrs = 10) then		 	 
-                  read_data <= write_page_reg_MSB;	
-               elsif (drac_mon_addrs = 11) then
-						read_data	<=	B"0000_0000_0000_000" & DDR3_FULL;
-               elsif (drac_mon_addrs = 126) then		 	 
                   fifo_re   <= PREREAD_PULSE;
                   read_data <= "00000000" & fifo_rdata;
-               elsif (drac_mon_addrs >= 127 and drac_mon_addrs <255) then   -- allow for one register per straw
+               elsif (drac_mon_addrs >= 10 and drac_mon_addrs <138) then   -- allow for one register per straw
                   ram_we    <= '0';
                   ram_addr  <= drac_mon_addrs(7 downto 0);
-                  read_data <= "00000000" & ram_rdata;							-- only 8-bit ram data allowed!!
+                  read_data <= "00000000" & ram_rdata;
                else	
                   read_data <= drac_mon_addrs;		  --Unmapped Addresses
                end if;								  							   		   
