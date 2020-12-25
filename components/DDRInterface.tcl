@@ -11,7 +11,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {mem_wr_en} -port_direction
 sd_create_scalar_port -sd_name ${sd_name} -port_name {mem_rd_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ram_ren} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_read_mem_en} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_write_mem_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIFIFO_RE} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SERIAL_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIFIFO_EMPTY} -port_direction {IN}
@@ -23,12 +22,11 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_EMPTY} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_RE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_LAST_WORD} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDR_DTCSIM} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRFIFO_RE} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRMEMFIFO_RE} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_MEM_REN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCSMEMFIFO_RE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SYS_RESET_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TEMPFIFO_FULL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TEMPFIFO_EMPTY} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {mem_test_err_o} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIFIFO_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CKE} -port_direction {OUT}
@@ -46,9 +44,15 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD2} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA_READY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {EXT_RST_N} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_MEMFIFO} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_DATA} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_SIM_EN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_MEM_WEN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_EN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_MEM_WEN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_PATTERN_EN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_MEM_REN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SIMMEMFIFO_REN} -port_direction {IN}
 
-sd_create_bus_port -sd_name ${sd_name} -port_name {pattern_i} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hit_no} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ram_addr_i} -port_direction {IN} -port_range {[9:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DIGIFIFO_DATA} -port_direction {IN} -port_range {[31:0]}
@@ -61,8 +65,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {ram_data_o} -port_direction {
 sd_create_bus_port -sd_name ${sd_name} -port_name {err_loc_o} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {CONVERTER_q} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {CONVERTER_rdcnt} -port_direction {OUT} -port_range {[16:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {mem_start} -port_direction {IN} -port_range {[19:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {write_page_no} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {read_page_no} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DQ} -port_direction {INOUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DQS} -port_direction {INOUT} -port_range {[3:0]}
@@ -72,6 +74,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -po
 sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[14:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA_PCKTS} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {mem_offset} -port_direction {IN} -port_range {[19:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {SIM_WRITE_PAGE_NO} -port_direction {IN} -port_range {[31:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_PATTERN} -port_direction {IN} -port_range {[1:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_WRITE_PAGE_NO} -port_direction {IN} -port_range {[31:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {SIM_PATTERN} -port_direction {IN} -port_range {[1:0]}
 
 # Add AND2_1 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_1}
@@ -102,6 +109,11 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {data_ready_delay
 sd_instantiate_component -sd_name ${sd_name} -component_name {DDR3_Cntrl} -instance_name {DDR3_Cntrl_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DDR3_Cntrl_0:PLL_LOCK}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DDR3_Cntrl_0:CTRLR_READY}
+
+
+
+# Add delay_0 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay} -hdl_file {hdl\delay.v} -instance_name {delay_0}
 
 
 
@@ -142,6 +154,16 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MEMFIFO_0:RDCNT}
 
 
 
+# Add MEMFIFO_RE_generator_0 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {MEMFIFO_RE_generator} -hdl_file {hdl\MEMFIFO_RE_generator.v} -instance_name {MEMFIFO_RE_generator_0}
+
+
+
+# Add mux_dcs_sim_0 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {mux_dcs_sim} -hdl_file {hdl\mux_dcs_sim.v} -instance_name {mux_dcs_sim_0}
+
+
+
 # Add MX2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_0}
 
@@ -149,6 +171,16 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_0
 
 # Add MX2_1 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_1}
+
+
+
+# Add MX2_2 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_2}
+
+
+
+# Add MX2_3 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_3}
 
 
 
@@ -165,7 +197,6 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {pattern_gen_check
 "BURST_SIZE:3" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {pattern_gen_checker_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pattern_gen_checker_0:mem_init_done_o}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pattern_gen_checker_0:mem_test_done_o}
 
 
@@ -210,56 +241,67 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CK0_N" "DDR3_Cntrl_0:CK0_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CKE" "DDR3_Cntrl_0:CKE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CS_N" "DDR3_Cntrl_0:CS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"memdata_switch_0:B_SIM_DATA_READY" "data_ready_delay_0:sig_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:sysclk_i" "DDR3_Cntrl_0:SYS_CLK" "counter32_1:clk" "AXI4_Interconnect_0:ACLK" "REG_CTRL_0:clk_i" "TEMPFIFO_0:RCLOCK" "pulse_generator_0:clk_i" "MEMFIFO_0:WCLOCK" "pattern_gen_checker_0:clk_i" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:DDR3_full" "FIFO_converter_32to64b_0:ddr_stop" "DDR3_full" "AND2_1:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_MEM_REN" "MX2_2:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_MEM_WEN" "mux_dcs_sim_0:A_MEM_WEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_PATTERN_EN" "mux_dcs_sim_0:A_PATTERN_EN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_SIM_EN" "mux_dcs_sim_0:DCS_SIM_EN" "MX2_2:S" "MX2_3:S" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSMEMFIFO_RE" "MEMFIFO_RE_generator_0:start" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ACLK" "pulse_generator_0:clk_o" "REG_CTRL_0:clk_i" "TEMPFIFO_0:RCLOCK" "MEMFIFO_0:WCLOCK" "pattern_gen_checker_0:clk_i" "DDR3_Cntrl_0:SYS_CLK" "counter32_1:clk" "fifo_mem_cntrl_0:sysclk_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "DDR3_full" "delay_0:sig_in" "fifo_mem_cntrl_0:DDR3_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_DTCSIM" "MX2_0:S" "MX2_1:S" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRFIFO_RE" "MX2_0:B" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRMEMFIFO_RE" "MX2_1:B" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:digiclk_i" "DIGIFIFO_CLK" "TEMPFIFO_0:WCLOCK" "pattern_FIFO_filler_0:digiclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"memdata_switch_0:EN" "delay_0:sig_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_CLK" "pulse_generator_0:clk_i" "TEMPFIFO_0:WCLOCK" "FIFO_converter_32to64b_0:digiclk_i" "pattern_FIFO_filler_0:digiclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_EMPTY" "pattern_switch_0:DIGIFIFO_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_FULL" "pattern_switch_0:DIGIFIFO_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:digififo_re" "DIGIFIFO_RE" "pattern_FIFO_filler_0:fifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dvl_generator_0:data_valid" "memdata_switch_0:A_DDR_DATA_READY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "pulse_generator_0:resetn_i" "pulse_generator_1:resetn_i" "pulse_generator_2:resetn_i" "MEMFIFO_0:RESET" "pattern_FIFO_filler_0:resetn" "pattern_gen_checker_0:resetn_i" "dvl_generator_0:resetn_i" "FIFO_converter_32to64b_0:resetn_i" "fifo_mem_cntrl_0:resetn_i" "AXI4_Interconnect_0:ARESETN" "counter32_0:rst_n" "counter32_1:rst_n" "data_ready_delay_0:rst_n" "TEMPFIFO_0:RESET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ARESETN" "EXT_RST_N" "pulse_generator_0:resetn_i" "pulse_generator_1:resetn_i" "pulse_generator_2:resetn_i" "TEMPFIFO_0:RESET" "dvl_generator_0:resetn_i" "delay_0:rst_n" "FIFO_converter_32to64b_0:resetn_i" "pattern_gen_checker_0:resetn_i" "data_ready_delay_0:rst_n" "counter32_0:rst_n" "counter32_1:rst_n" "fifo_mem_cntrl_0:resetn_i" "MEMFIFO_RE_generator_0:rst_n" "pattern_FIFO_filler_0:resetn" "MEMFIFO_0:RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:tempfifo_we" "TEMPFIFO_0:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:last_write" "FIFO_converter_32to64b_0:last_write" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:MEMFIFO_WE" "MEMFIFO_0:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:tempfifo_re" "TEMPFIFO_0:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"data_ready_delay_0:sig_in" "fifo_read_mem_en" "MX2_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:ddr_start" "fifo_write_mem_en" "REG_CTRL_0:fifo_write_mem_en" "pattern_FIFO_filler_0:pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEM_CLK" "DDR3_Cntrl_0:PLL_REF_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_rd_en" "REG_CTRL_0:mem_rd_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_test_err_o" "pattern_gen_checker_0:mem_test_err_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_wr_en" "REG_CTRL_0:mem_wr_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_generator_1:gate_i" "MEMFIFO_0:AEMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_DATA_READY" "memdata_switch_0:MEMFIFO_DATA_READY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_DATA_READY" "memdata_switch_0:MEMFIFO_DATA_READY" "MEMFIFO_RE_generator_0:enable" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dvl_generator_0:end_i" "MEMFIFO_EMPTY" "MEMFIFO_0:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_FULL" "AND2_1:B" "MEMFIFO_0:FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_LAST_WORD" "pulse_generator_1:pulse_up" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_RE" "MX2_1:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_RE_generator_0:memfifo_re" "MX2_3:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"REG_CTRL_0:fifo_write_mem_en" "FIFO_converter_32to64b_0:fifo_write_mem_en" "mux_dcs_sim_0:MEM_WEN" "pattern_FIFO_filler_0:pattern_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_switch_0:pattern_en" "pattern_gen_checker_0:pattern_en" "mux_dcs_sim_0:PATTERN_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REG_CTRL_0:fifo_read_mem_en" "MX2_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_generator_2:gate_i" "MX2_1:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"counter32_0:en" "MX2_1:Y" "MEMFIFO_0:RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "MX2_2:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_1:B" "MX2_3:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ODT" "DDR3_Cntrl_0:ODT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_en" "pattern_switch_0:pattern_en" "pattern_gen_checker_0:pattern_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_switch_0:PATTERN_empty" "pattern_FIFO_filler_0:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_switch_0:PATTERN_full" "pattern_FIFO_filler_0:FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:data_in_empty" "pattern_switch_0:CONVERTER_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:data_in_full" "pattern_switch_0:CONVERTER_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:fifo_write_mem_i" "pulse_generator_0:pulse_up" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"counter32_0:en" "pulse_generator_2:pulse_up" "MEMFIFO_0:RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_generator_2:pulse_up" "MX2_3:B" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ram_ren" "pattern_gen_checker_0:ram_ren" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RAS_N" "DDR3_Cntrl_0:RAS_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"data_ready_delay_0:clk" "counter32_0:clk" "dvl_generator_0:clk_i" "READOUT_CLK" "pulse_generator_1:clk_i" "pulse_generator_2:clk_i" "MEMFIFO_0:RCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"READOUT_CLK" "pulse_generator_1:clk_i" "pulse_generator_1:clk_o" "pulse_generator_2:clk_o" "delay_0:clk" "dvl_generator_0:clk_i" "MEMFIFO_0:RCLOCK" "data_ready_delay_0:clk" "counter32_0:clk" "MEMFIFO_RE_generator_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:fifo_read_mem_i" "counter32_1:en" "REG_CTRL_0:fifo_read_mem_o" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REG_CTRL_0:mem_init_o" "pattern_gen_checker_0:mem_init_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"REG_CTRL_0:mem_init_o" "pattern_gen_checker_0:mem_write_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REG_CTRL_0:mem_test_o" "pattern_gen_checker_0:mem_test_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_N" "DDR3_Cntrl_0:RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SERIAL_CLK" "pattern_gen_checker_0:ram_clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SERIAL_CLK" "pulse_generator_2:clk_i" "pattern_gen_checker_0:ram_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD0" "DDR3_Cntrl_0:SHIELD0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD1" "DDR3_Cntrl_0:SHIELD1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD2" "DDR3_Cntrl_0:SHIELD2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD3" "DDR3_Cntrl_0:SHIELD3" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_MEMFIFO" "memdata_switch_0:SIM_MEMFIFO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_DATA" "memdata_switch_0:SIM_MEMFIFO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_MEM_REN" "MX2_2:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_MEM_WEN" "mux_dcs_sim_0:B_MEM_WEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_PATTERN_EN" "mux_dcs_sim_0:B_PATTERN_EN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIMMEMFIFO_REN" "pulse_generator_2:gate_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SYS_RESET_N" "DDR3_Cntrl_0:SYS_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:tempfifo_full" "TEMPFIFO_0:AFULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:FIFO_CONV_empty" "FIFO_converter_32to64b_0:tempfifo_empty" "TEMPFIFO_EMPTY" "TEMPFIFO_0:EMPTY" }
@@ -271,6 +313,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR3_Cntrl_0:A" "A" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR3_Cntrl_0:BA" "BA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CONVERTER_q" "FIFO_converter_32to64b_0:data_in_32bit" "pattern_switch_0:CONVERTER_q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CONVERTER_rdcnt" "FIFO_converter_32to64b_0:data_in_rdcnt" "pattern_switch_0:CONVERTER_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_PATTERN" "mux_dcs_sim_0:A_PATTERN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_WRITE_PAGE_NO" "mux_dcs_sim_0:A_WRITE_PAGE_NO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_rd_cnt" "counter32_1:cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_DATA" "pattern_switch_0:DIGIFIFO_q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIFIFO_RDCNT" "pattern_switch_0:DIGIFIFO_rdcnt" }
@@ -281,24 +325,26 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR3_Cntrl_0:DQS_N" "DQS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"err_loc_o" "pattern_gen_checker_0:err_loc_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FIFO_converter_32to64b_0:tempfifo_64bit" "TEMPFIFO_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:MEMFIFO_DATA" "MEMFIFO_0:DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hit_no" "pattern_gen_checker_0:blk_size_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hit_no" "pattern_gen_checker_0:hit_no" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_gen_checker_0:mem_offset" "mem_offset" "fifo_mem_cntrl_0:mem_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_rd_cnt" "fifo_mem_cntrl_0:mem_rd_cnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:mem_start" "mem_start" "pattern_gen_checker_0:mem_start" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_wr_cnt" "fifo_mem_cntrl_0:mem_wr_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_0:Q" "memdata_switch_0:A_DDR_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_DATA" "memdata_switch_0:MEMFIFO_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MEMFIFO_DATA_PCKTS" "memdata_switch_0:MEMFIFO_DATA_PCKTS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"memdata_switch_0:MEMFIFO_DATA_PCKTS" "MEMFIFO_DATA_PCKTS" "MEMFIFO_RE_generator_0:packet_no" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"memfifo_rd_cnt" "counter32_0:cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_gen_checker_0:pattern_i" "mux_dcs_sim_0:PATTERN" "pattern_FIFO_filler_0:pattern" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:write_page_no" "mux_dcs_sim_0:WRITE_PAGE_NO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_switch_0:PATTERN_q" "pattern_FIFO_filler_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_switch_0:PATTERN_rdcnt" "pattern_FIFO_filler_0:RDCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_i" "pattern_FIFO_filler_0:pattern" "pattern_gen_checker_0:pattern_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ram_addr_i" "pattern_gen_checker_0:ram_addr_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ram_data_o" "pattern_gen_checker_0:ram_data_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:read_page_no" "read_page_no" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_PATTERN" "mux_dcs_sim_0:B_PATTERN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_WRITE_PAGE_NO" "mux_dcs_sim_0:B_WRITE_PAGE_NO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:FIFO_CONV_DATA" "TEMPFIFO_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:FIFO_CONV_RDCNT" "TEMPFIFO_0:RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:FIFO_CONV_WRCNT" "TEMPFIFO_0:WRCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"fifo_mem_cntrl_0:write_page_no" "write_page_no" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:AXI4mslave0" "DDR3_Cntrl_0:AXI4slave0" }

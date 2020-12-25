@@ -22,7 +22,8 @@
 //-------------------------------------------------------------------------
 
 module pattern_gen_checker #(
-    parameter [7:0]     BURST_LENGTH= 8'hFF,    // burst length of 256 beats (AXI defines number beats to pass to AWLEN/ARLEN as: no-of-beats-1 ) 
+    parameter [7:0]     BURST_LENGTH= 8'hFF,    // burst length of 256 beats (AXI defines number beats to pass to AWLEN/ARLEN as: no-of-beats-1 )
+																// changed from 127(0x7F) for 1KB blocks to 0x3 for 256-bit hits in Configurator BURST_LENGHT field
     parameter [1:0]     BURST_SIZE  = 2'b11     // 8 bytes for beat (AXI defines bit in a beat as: 2**BURST_SIZE)
 ) (
 //global signals
@@ -32,14 +33,17 @@ module pattern_gen_checker #(
 //mem test signals
  input              pattern_en   /*synthesis syn_preserve=1 */, // if 0: PATTERN_GENERATOR and DIGIFIFo send to DDR3; 
                                                                 // if 1: PATTERN_FIFO send to DDR3  
- input       [7:0]  blk_size_i, // memory block size in multiples of BURST_OFFSET: ex) BURST_SIZE=3 (8-byte beat) and BURST_LENGTH=127 (128-beat burst)
-                                // corresponds to AXI burst size of  8Kb or 1KB (=> 128 beats x 64 bits/beat)
-                                // In units of 64x4=256 bits (assumed to be single tracker hit size), 1KB of memmory willfit 32 hits
- input       [1:0]  pattern_i,  //pattern generator type: 0=>+1, 1=>-1, 2=>A's,  3=>5's
- input              mem_init_i,
+// mem size input signals
+ input       [7:0]  hit_no, 		// memory block size in multiples of BURST_OFFSET: ex) BURST_SIZE=3 (8-byte beat) and BURST_LENGTH=127 (128-beat burst)
+											// corresponds to AXI burst size of  8Kb or 1KB (=> 128 beats x 64 bits/beat)
+											// In units of 64x4=256 bits (assumed to be single tracker hit size), 1KB of memmory willfit 32 hits
+ input       [1:0]  pattern_i,  	//pattern generator type: 0=>+1, 1=>-1, 2=>A's,  3=>5's
+ input              mem_write_i,	// same as mem_init_i
  input              mem_test_i,
- input      [19:0]  mem_start,       // memory offset (in units of BURST_OFFSET*BLK_SIZE)
- output reg         mem_init_done_o, 
+ input      [19:0]  mem_offset, 		// memory offset (in units of BURST_OFFSET*BLK_SIZE) for 1KB pages
+// input      [24:0]  mem_offset,		// memory offset in units of HIT or 256 bit (2**8) => fit 2**25 in 8GB
+
+ output reg         mem_write_done_o, // same as mem_init_done_o
  output reg         mem_test_done_o,
  output reg         mem_test_err_o,
  output reg  [31:0] err_loc_o,     
@@ -130,32 +134,31 @@ localparam [2:0]  axi_idle    =   3'b000,
                   axi_done    =   3'b010, axi_mem_read = 3'b010,
                   axi_next    =   3'b011, axi_pattern  = 3'b011; 
 
-
 //AXI fixed assignments
 assign  awid_o    =   0;
-//assign  awlen_o   =   8'hFF; //256 burst length
 assign  awlen_o   =   BURST_LENGTH;  
 assign  awburst_o =   1;     //INCR burst
-//assign  awsize_o  =   2'b11; //64-bit write
 assign  awsize_o  =   BURST_SIZE; 
 assign  wstrb_o   =   8'hFF; //number of bytes to write: all 1s for 8 bytes
 assign  bready_o  =   1;     //AXI write response channel is always ready
 assign  arid_o    =   0;
-//assign  arlen_o   =   8'hFF; //256 burst length
 assign  arlen_o   =   BURST_LENGTH; 
 assign  arburst_o =   1;     //INCR burst
-//assign  arsize_o  =   2'b11; //64-bit read
 assign  arsize_o  =   BURST_SIZE; //64-bit read
 
 assign wdata_int = {wdata_int_u[31:0],wdata_int_l[31:0]};
 
-// MEMORY fixed assignments
-localparam [11:0]  BURST_OFFSET = (2**BURST_SIZE) * (BURST_LENGTH+1); // this is the offset for the next burst in units of bytes: burst length in beats x bytes per beat
+// MEMORY fixed assignments: this is the offset for the next burst in units of bytes: burst length in beats x bytes per beat
+// this generates a 0x400(0x20) offset to make the data unique every 1kB page(256-bit hit), ie 1024(32) in units of memory address)
+localparam [11:0]  BURST_OFFSET = (2**BURST_SIZE) * (BURST_LENGTH+1);																	  
 
 // this generates a 0x100 offset to make the data unique for every 1kB of increasing 1 written to data (ie pattern = 0) 
-// NB: unique data is 0x00 to 0xFF in first 1kB, 0x100 to 0x1FF in second kB....
-wire    [31:0]  offset_data_i;
-assign  offset_data_i   =  {4'b0,mem_start,8'b0};               
+// NB: FIFO PATTERN data is 0x00 to 0xFF in first 1kB, 0x100 to 0x1FF in second kB....
+wire    [31:0]  offset_data;
+assign  offset_data   =  {4'b0,mem_offset,8'b0};               
+// NB: unique data every hit means 0x0000 to 0x0007 in first hit, 0x0008 to 0x000F in second hit,,,
+//     i.e.  offset must be equal to a count of 8
+//assign  offset_cnt   =  {4'b0,mem_offset,3'b0};               
 
 //write address channel
 always@(posedge clk_i, negedge resetn_i)
@@ -175,10 +178,10 @@ begin
    //wait for memory init command/signal
    axi_idle:
    begin
-      awaddr_o                <=   mem_start*BURST_OFFSET;
+      awaddr_o                <=   mem_offset*BURST_OFFSET;
       wburst_cnt              <=   0;
 //      if(mem_init_i)            
-      if(mem_init_i && pattern_en == 1'b0)             
+      if(mem_write_i && pattern_en == 1'b0)             
          waddr_state          <=  axi_valid;
    end
 
@@ -209,7 +212,7 @@ begin
    //initialization is not completed
    axi_next:
    begin
-      if(wburst_cnt == blk_size_i)            
+      if(wburst_cnt == hit_no)            
          waddr_state           <=   axi_idle;
       else
          waddr_state           <=   axi_valid;
@@ -233,7 +236,7 @@ begin
       wlast_o                  <=   0;
       wvalid_o                 <=   0;
       wdata_o                  <=   0;
-      mem_init_done_o          <=   0;
+      mem_write_done_o         <=   0;
       wdata_cnt                <=   0;
       wdburst_cnt              <=   0;
       wdata_state              <=   axi_idle;
@@ -249,7 +252,7 @@ begin
       wdata_o                  <=   wdata_int;
       wdburst_cnt              <=   0;
       wdata_cnt                <=   0;
-      mem_init_done_o          <=   1'b0;
+      mem_write_done_o         <=   1'b0;
 //      if(awvalid_o && awready_i) 
       if(awvalid_o && awready_i && pattern_en == 1'b0) 
          wdata_state           <=   axi_valid;
@@ -258,14 +261,13 @@ begin
    //perform AXI burst write
    axi_valid:
    begin        
-      mem_init_done_o       <=   1'b0;
+      mem_write_done_o      <=   1'b0;
       wvalid_o              <=   1'b1;
 
       if(wready_i)
       begin
          wdata_cnt          <=   wdata_cnt + 1'b1;
 
-         //if(wdata_cnt == 8'hFF)
          if(wdata_cnt == BURST_LENGTH)
          begin
             wlast_o         <=   1'b1;
@@ -296,9 +298,9 @@ begin
          wvalid_o              <=   1'b0;
          wlast_o               <=   1'b0;
          wdata_cnt             <=   0;   // MT added for multiple bursts
-         if(wdburst_cnt == blk_size_i)
+         if(wdburst_cnt == hit_no)
          begin
-            mem_init_done_o    <=   1'b1;
+            mem_write_done_o   <=   1'b1;
             wdata_state        <=   axi_idle;
          end
          else
@@ -343,16 +345,16 @@ begin
 
       2'h0://incremental
       begin
-         wdata_int_u[31:0]     <=   {4'h0, offset_data_i[27:0]} - 1'b1;
-         wdata_int_l[31:0]     <=   {4'h0, offset_data_i[27:0]} - 2'b10;
+         wdata_int_u[31:0]     <=   {4'h0, offset_data[27:0]} - 1'b1;
+         wdata_int_l[31:0]     <=   {4'h0, offset_data[27:0]} - 2'b10;
       end
 
       2'h1://decremental
       begin
-//         wdata_int_u           <=   {4'h0, offset_data_i[27:0]} + 1'b1;
-//         wdata_int_l           <=   {4'h0, offset_data_i[27:0]} + 2'b10;
-         wdata_int_u           <=   {4'h0, offset_data_i[27:0]} + 9'h101;
-         wdata_int_l           <=   {4'h0, offset_data_i[27:0]} + 9'h102;
+//         wdata_int_u           <=   {4'h0, offset_data[27:0]} + 1'b1;
+//         wdata_int_l           <=   {4'h0, offset_data[27:0]} + 2'b10;
+         wdata_int_u           <=   {4'h0, offset_data[27:0]} + 9'h101;
+         wdata_int_l           <=   {4'h0, offset_data[27:0]} + 9'h102;
       end
 
       2'h2://A's
@@ -396,7 +398,7 @@ begin
    axi_idle:
    begin
       rburst_cnt               <=   0;
-      araddr_o                 <=   mem_start*BURST_OFFSET;
+      araddr_o                 <=   mem_offset*BURST_OFFSET;
 //      if(mem_test_i)
       if(mem_test_i && pattern_en == 1'b0)
          raddr_state           <=   axi_valid;
@@ -417,13 +419,12 @@ begin
    axi_done:
    begin
       arvalid_o                 <=   1'b0;      
-      if(rburst_cnt == blk_size_i)            
+      if(rburst_cnt == hit_no)            
          raddr_state            <=   axi_idle;
       else if(rvalid_i && rlast_i)
       begin
-         //Address for next 2KB AXI write
-         //araddr_o               <=   araddr_o + 12'h800;
-         araddr_o               <=   araddr_o + BURST_OFFSET;
+         //Address for next AXI write														  
+		 araddr_o               <=   araddr_o + BURST_OFFSET;
          raddr_state            <=   axi_valid;
       end
    end
@@ -467,7 +468,7 @@ begin
       rdburst_cnt               <=   0;      
       mem_test_done_o           <=   0;
       mem_test_err_o            <=   0;
-      err_int_loc               <=   mem_start*BURST_OFFSET;
+      err_int_loc               <=   mem_offset*BURST_OFFSET;
       waddr_ram                 <=   {9{1'b1}};//RAM last location
       wen_ram                   <=   1'b0;       
 //      if(mem_test_i)//memory pattern check
@@ -506,7 +507,7 @@ begin
    //check AXI read data against selected pattern
    axi_valid:
    begin
-      if(rdburst_cnt == blk_size_i)
+      if(rdburst_cnt == hit_no)
       begin
          mem_test_done_o        <=   1'b1;
          rdata_state            <=   axi_idle;
@@ -524,7 +525,6 @@ begin
             end
             else
             begin
-//               err_loc_o        <=   err_loc_o + 4'h8;
                err_int_loc      <=   err_int_loc + 4'h8;
             end
 

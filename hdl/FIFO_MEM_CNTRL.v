@@ -23,6 +23,7 @@
 
 module fifo_mem_cntrl #(
     parameter [7:0]     BURST_LENGTH= 8'hFF,    // burst length of 256 beats (AXI defines number beats to pass to AWLEN/ARLEN as: no-of-beats-1 ) 
+																// changed from 127(0x7F) for 1KB blocks to 0x3 for 256-bit hits in Configurator BURST_LENGHT field
     parameter [1:0]     BURST_SIZE  = 2'b11     // 8 bytes for beat (AXI defines bit in a beat as: 2**BURST_SIZE)
 ) (
 //global signals
@@ -45,7 +46,8 @@ module fifo_mem_cntrl #(
  input              fifo_write_mem_i,
  input       [31:0] write_page_no,     // really the number of 1kB-pages to be written to DDR3 memory in multiples of 1kB -> 2**20 for 2x4Gb memories
  input        [7:0] read_page_no,      
- input      [19:0]  mem_start,       // memory offset (in units of BURST_OFFSET*BLK_SIZE)
+ input      [19:0]  mem_offset, 			// memory offset (in units of BURST_OFFSET*BLK_SIZE) for 1KB pages
+// input      [24:0]  mem_offset,		// memory offset in units of HIT or 256 bit (2**8) => fit 2**25 in 8GB
  
  output reg         fifo_read_done_o, 
  output reg         fifo_write_done_o,
@@ -284,7 +286,7 @@ end
 // 2) write data confirmed
 // 3) DDR3 not full   
 reg     ENABLE_RD_FIFO;
-always@(posedge sysclk_i, posedge wlast_o)
+always@(posedge sysclk_i, posedge reset, posedge wlast_o)
 begin
     if ( reset || wlast_o)              ENABLE_RD_FIFO <= 1'b0;
     else if (awvalid_o && awready_i)    ENABLE_RD_FIFO <= 1'b1;
@@ -311,7 +313,7 @@ begin
    //wait for memory init command/signal
    axi_idle:
    begin
-      awaddr_o                <=   BURST_OFFSET*(mem_wr_cnt+mem_start);
+      awaddr_o                <=   BURST_OFFSET*(mem_wr_cnt+mem_offset);
       wburst_cnt              <=   0;
 // Start DDR3 write on TEMPFIFO being FULL. 
 // Stop when max. no of pages have been written.           
@@ -429,17 +431,17 @@ begin
          wvalid_o              <=   1'b0;
          wlast_o               <=   1'b0;
          wdata_cnt             <=   0;   // MT added for multiple bursts
-		 wdata_o               <=    wdata_o;
+			wdata_o               <=    wdata_o;
          if(wdburst_cnt == wburst_no)
          begin
             fifo_write_done_o  <=   1'b1;
             wdata_state        <=   axi_idle;
          end
          else
-		 begin
+			begin
             fifo_write_done_o  <=   1'b0;
             wdata_state        <=   axi_next;
-		 end
+			end
       end
    end
 
@@ -448,7 +450,7 @@ begin
    begin
       if(awvalid_o)
          wdata_state           <=   axi_valid;
-   end
+		end
 
    default:
    begin
@@ -480,7 +482,7 @@ begin
    axi_idle:
    begin
       rburst_cnt               <=   0;
-      araddr_o                 <=   BURST_OFFSET*(mem_rd_cnt+mem_start);
+      araddr_o                 <=   BURST_OFFSET*(mem_rd_cnt+mem_offset);
       if(fifo_read_mem_i)
          raddr_state           <=   axi_valid;
    end
@@ -539,24 +541,24 @@ begin
    //start memory test
    axi_idle:
    begin        
-      rdburst_cnt               <=   1'b0;      
-      fifo_read_done_o          <=   1'b0;
-	  MEMFIFO_DATA        	    <=   {64{1'b1}};
-      MEMFIFO_WE                <=   1'b0; 
+      rdburst_cnt				<=   1'b0;      
+      fifo_read_done_o 		<=   1'b0;
+		MEMFIFO_DATA			<=   {64{1'b1}};
+      MEMFIFO_WE				<=   1'b0; 
       if(fifo_read_mem_i)  //memory pattern check
       begin         
-         rready_o               <=   1'b0;
-         rdata_state            <=   axi_pattern; // maybe can skip??
+         rready_o				<=   1'b0;
+         rdata_state			<=   axi_pattern; // maybe can skip??
       end
    end
 
    //initial data as per pattern
    axi_pattern:
    begin
-      rready_o                  <=   1'b1;
-	  MEMFIFO_DATA      		<=   rdata_i;
-	  MEMFIFO_WE          		<=   1'b0; 
-      rdata_state               <=   axi_valid;
+		rready_o				<=   1'b1;
+		MEMFIFO_DATA		<=   rdata_i;
+		MEMFIFO_WE			<=   1'b0; 
+      rdata_state			<=   axi_valid;
    end
 
    //check AXI read data against selected pattern
@@ -564,21 +566,21 @@ begin
    begin
       if(rdburst_cnt == read_page_no)
       begin
-         fifo_read_done_o       <=   1'b1;
-         rdata_state            <=   axi_idle;
+         fifo_read_done_o	<=   1'b1;
+         rdata_state			<=   axi_idle;
       end
       else
       begin
          if(rvalid_i)
          begin
-			MEMFIFO_DATA        <=   rdata_i;
-			MEMFIFO_WE          <=   1'b1; 
+			MEMFIFO_DATA		<=   rdata_i;
+			MEMFIFO_WE			<=   1'b1; 
          end
 		 else
-			MEMFIFO_WE          <=   1'b0; 		 
+			MEMFIFO_WE			<=   1'b0; 		 
       end
       if(rlast_i && rvalid_i)
-         rdburst_cnt            <=   rdburst_cnt + 1'b1;
+         rdburst_cnt			<=   rdburst_cnt + 1'b1;
    end
 
    default:

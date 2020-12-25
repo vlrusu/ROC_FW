@@ -3,13 +3,15 @@
 //
 // File: data_ready_delay.v
 // File history:
-//      <Revision number>: <Date>: <Comments>
+//      v1.0: Dec. 2020: Generate SIG_OUT level GATE_WIDTH clocks long, DELAY_CNT clocks after SIG_IN
 //      <Revision number>: <Date>: <Comments>
 //      <Revision number>: <Date>: <Comments>
 //
 // Description: 
 //
 // <Description here>
+//		Used to simulate MEMFIFO_DATA_REDY output to drives TOP_SERDES/DATAREQ_DATA_READY_flag.
+//    GATE_WITDH has to be long enough to allow all payload data packets data to be generated inside Top_Seres/CommandHandler.
 //
 // Targeted device: <Family::PolarFire> <Die::MPF300TS_ES> <Package::FCG1152>
 // Author: <Name>
@@ -62,4 +64,3 @@ module data_ready_delay#(
    
 
 endmodule
-
