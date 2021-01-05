@@ -41,3 +41,6 @@ import_files -library work -hdl_source hdl/PacketSender.vhd
 import_files -library work -hdl_source hdl/TimeStamp_IF_TEST.vhd
 import_files -library work -hdl_source hdl/TimeStampManager.vhd
 import_files -library work -hdl_source hdl/pulse_stretcher.v
+import_files -library work -hdl_source hdl/MEMFIFO_RE_generator.v
+import_files -library work -hdl_source hdl/delay.v
+import_files -library work -hdl_source hdl/mux_dcs_sim.v
