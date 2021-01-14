@@ -119,6 +119,9 @@ entity Registers is
 
     ROCTVS_VAL  : in std_logic_vector(15 downto 0);
     ROCTVS_ADDR : out std_logic_vector(1 downto 0);
+    
+    enable_fiber_clock : out std_logic;
+    enable_fiber_marker : out std_logic;
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -268,6 +271,9 @@ architecture synth of Registers is
     constant CR_SERDES_WRITE_FIFO : std_logic_vector(7 downto 0) := x"A9";
     constant CR_DUMMY_ADDRESS : std_logic_vector(7 downto 0) := x"AA";
     constant CR_DUMMY_STATUS_OUT : std_logic_vector(7 downto 0) := x"AB";
+    
+    constant CR_ENABLE_FIBER_CLOCK : std_logic_vector(7 downto 0) := x"B0";
+    constant CR_ENABLE_FIBER_MARKER : std_logic_vector(7 downto 0) := x"B1";
 
   -------------------------------------------------------------------------------
   -- Signal declarations
@@ -614,6 +620,9 @@ begin
       write_to_fifo <= '0';
       reset_fifo_n <= '1';
       dummy_status_address <= (others => '0');
+      
+      enable_fiber_clock <= '0';
+      enable_fiber_marker <= '0';
 
     elsif (PCLK'event and PCLK = '1') then
       ROCRESET  <= '1';
@@ -753,6 +762,11 @@ begin
             serdes_re2 <= PWDATA(2);
             serdes_re3 <= PWDATA(3);
             use_lane <= PWDATA(3 downto 0);
+            
+        when CR_ENABLE_FIBER_CLOCK =>
+            enable_fiber_clock <= PWDATA(0);
+        when CR_ENABLE_FIBER_MARKER =>
+            enable_fiber_marker <= PWDATA(0);
             
           when others =>
         end case;

@@ -18,3 +18,5 @@ set_clock_groups -name {asyn_noxcvr} -asynchronous -group [ get_clocks { CCC_0/R
 -group [ get_clocks { TOP_SERDES_0/ALGO_CLK_PLL_1/ALGO_CLK_PLL_0_0/pll_inst_0/OUT1   PF_OSC_C0_0/PF_OSC_C0_0/I_OSC_160/CLK } ] \
 -group [ get_clocks { TOP_SERDES_0/ALGO_CLK_PLL_1/ALGO_CLK_PLL_0_0/pll_inst_0/OUT0   TrackerCCC_0/TrackerCCC_0/pll_inst_0/OUT0 } ]
 set_clock_groups -name {asyn_xcvr} -asynchronous -group [ get_clocks { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/RX_CLK_R   TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R } ]
+
+set_false_path -from [ get_pins { SLOWCONTROLS_0/Registers_0/enable_fiber_clock/CLK SLOWCONTROLS_0/Registers_0/enable_fiber_marker/CLK } ]

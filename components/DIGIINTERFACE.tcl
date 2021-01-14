@@ -140,12 +140,12 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ddrfifo_data" "DigiReaderFIFO_1
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ddrfifo_rdcnt" "DigiReaderFIFO_1:RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_1:DATA" "DigiReaderFIFO_0:DATA" "DigiReaderSM_0:outfifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane0_data" "serdes_0:lane0_fifo_data_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane0_fifo_data_out" "DigiReaderSM_0:lane2_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane0_rdcnt" "serdes_0:lane0_rdcnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane2_rdcnt" "serdes_1:lane0_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane1_data" "serdes_0:lane1_fifo_data_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane1_fifo_data_out" "DigiReaderSM_0:lane3_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane1_rdcnt" "serdes_0:lane1_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane0_fifo_data_out" "DigiReaderSM_0:lane2_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane2_rdcnt" "serdes_1:lane0_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"serdes_1:lane1_fifo_data_out" "DigiReaderSM_0:lane3_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane3_rdcnt" "serdes_1:lane1_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serialfifo_data" "DigiReaderFIFO_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"serialfifo_rdcnt" "DigiReaderFIFO_0:RDCNT" }
