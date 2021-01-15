@@ -41,6 +41,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_WRITE_MEM_EN} -port_di
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_READ_MEM_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_MEMFIFO_RDEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_EN} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {EVENTMARKER} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_EVENT_WINDOW_TAG_2} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_EVENT_WINDOW_TAG_1} -port_direction {OUT} -port_range {[47:0]}
@@ -114,8 +115,8 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {DracMonitor_0} -p
 "IO_SIZE:2" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {DracMonitor_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DracMonitor_0:DEBUG_REG_0} -value {0001001000110100}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DracMonitor_0:PREREAD_PULSE}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DracMonitor_0:DEBUG_REG_0} -value {0001001000110100}
 
 
 
@@ -291,6 +292,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"timestamp_manager_0:ENABLE_FINE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:RESET_XCVR_ERRORS" "DracMonitor_0:RESET_XCVR_ERRORS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ResetController_0:SEL_RESET" "DracMonitor_0:SEL_RST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DREQ_SIM_EN" "DREQ_SIM_EN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Clock40Mhz_0:EVENTMARKER" "timestamp_manager_0:EVENTMARKER_40" "ForwardDetector_0:EVENTMARKER" "EVENTMARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "XCVR_Block_0:EXT_RST_N" "ResetController_0:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PacketSender_0:FWD_FIFO_EMPTY" "Forward:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ForwardDetector_0:FWD_FIFO_FULL" "Forward:FULL" }
@@ -298,7 +300,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"BusyMonitor_0:busy_start" "Forw
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Clock40Mhz_0:CLOCKMARKER" "ForwardDetector_0:CLOCKMARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_ForwardDetector:CRC_EN" "ForwardDetector_0:CRC_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_ForwardDetector:RST" "ForwardDetector_0:CRC_RST" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"timestamp_manager_0:EVENTMARKER_40" "Clock40Mhz_0:EVENTMARKER" "ForwardDetector_0:EVENTMARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ForwardDetector_0:FWD_FIFO_RESET" "Forward:RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ForwardDetector_0:FWD_FIFO_WE" "Forward:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"timestamp_manager_0:LOOPBACKMODE_40" "ForwardDetector_0:LOOPBACKMODE" }
