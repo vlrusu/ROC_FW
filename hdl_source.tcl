@@ -14,10 +14,10 @@ import_files -library work -hdl_source hdl/SerdesRxController.vhd
 import_files -library work -hdl_source hdl/SerdesTxController.vhd
 import_files -library work -hdl_source hdl/SerdesInitializer.vhd
 import_files -library work -hdl_source hdl/SerdesStatus.vhd
-import_files -library work -hdl_source hdl/crc_ver.v
-import_files -library work -hdl_source hdl/DTC_simulator.v
-import_files -library work -hdl_source hdl/MARKER_Simulator.v
-import_files -library work -hdl_source hdl/mux_xcvr.v													 
+#import_files -library work -hdl_source hdl/crc_ver.v
+#import_files -library work -hdl_source hdl/DTC_simulator.v
+#import_files -library work -hdl_source hdl/MARKER_Simulator.v
+#import_files -library work -hdl_source hdl/mux_xcvr.v													 
 import_files -library work -hdl_source hdl/EWMaker.vhd
 import_files -library work -hdl_source hdl/TWIMaster.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
@@ -31,9 +31,9 @@ import_files -library work -hdl_source hdl/algorithm_constants.vhd
 import_files -library work -hdl_source hdl/DracMonitor.vhd
 import_files -library work -hdl_source hdl/MainResetController_0.vhd
 import_files -library work -hdl_source hdl/INV_20bit.vhd
-import_files -library work -hdl_source hdl/ReplyPktDecoder.v
+#import_files -library work -hdl_source hdl/ReplyPktDecoder.v
 import_files -library work -hdl_source hdl/XCVR_Reset_Controller.vhd
-import_files -library work -hdl_source hdl/mux_rxout.v
+#import_files -library work -hdl_source hdl/mux_rxout.v
 import_files -library work -hdl_source hdl/crc.vhd
 import_files -library work -hdl_source hdl/CommandHandler.vhd
 import_files -library work -hdl_source hdl/ForwardDetector.vhd

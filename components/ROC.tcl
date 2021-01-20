@@ -158,26 +158,6 @@ sd_create_pin_group -sd_name ${sd_name} -group_name {PADs_OUT_0} -instance_name 
 
 
 
-# Add DTCInterface_0 instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {DTCInterface} -instance_name {DTCInterface_0}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:RF_MARKER} -pin_slices {[6:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:RF_MARKER} -pin_slices {[7]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:RF_MARKER[7]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_WINDOW_TAG} -pin_slices {[15:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_WINDOW_TAG} -pin_slices {[31:16]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:EVENT_WINDOW_TAG[31:16]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_WINDOW_TAG} -pin_slices {[47:32]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:EVENT_WINDOW_TAG[47:32]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_MODE} -pin_slices {[15:8]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:EVENT_MODE[15:8]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_MODE} -pin_slices {[23:16]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:EVENT_MODE[23:16]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_MODE} -pin_slices {[31:24]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DTCInterface_0:EVENT_MODE[31:24]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DTCInterface_0:EVENT_MODE} -pin_slices {[7:0]}
-
-
-
 # Add EWMaker_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {EWMaker} -hdl_file {hdl\EWMaker.vhd} -instance_name {EWMaker_0}
 
@@ -226,10 +206,10 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[4]} -value {GND}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ} -pin_slices {[5]}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[5]} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:JTAG_TDO_DR}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_RESETN}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_IRQ} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 
 
 
@@ -303,27 +283,41 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {SLOWCONTROLS} -ins
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DDRIN} -pin_slices {[9:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DDROFFSET} -pin_slices {[19:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMSPILLDATA} -pin_slices {[15:0]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMSPILLDATA[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMSPILLDATA} -pin_slices {[23:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMSPILLDATA[23:16]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMSPILLDATA} -pin_slices {[30:24]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMSPILLDATA[30:24]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMSPILLDATA} -pin_slices {[31]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMSPILLDATA[31]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMDATA} -pin_slices {[15:0]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMDATA[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMDATA} -pin_slices {[31:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMDATA[31:16]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMADDR} -pin_slices {[15:0]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMADDR[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMADDR} -pin_slices {[23:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMADDR[23:16]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[11:8]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[11:8]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[21:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[21:16]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[24]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[24]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[28]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[28]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[3:0]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[3:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMPARAM} -pin_slices {[7:4]}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRCS}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMPARAM[7:4]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_RESET}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRSEL}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:write_to_fifo}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re3}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re1}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re2}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMBLKEN}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMSTART}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DDRNHITS}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SERDES_HOWMANY}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_aligned} -value {GND}
@@ -344,11 +338,16 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serde
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data0} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data1} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_data2} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMBLKADDR}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMBLKDATA}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCDATAREAD} -value {GND}
 
 
 
 # Add TOP_SERDES_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {TOP_SERDES} -instance_name {TOP_SERDES_0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_SIM_EN}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DREQ_SIM_EN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DATAREQ_EVENT_WINDOW_TAG_2}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DATAREQ_EVENT_WINDOW_TAG_1}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DATAREQ_STATUS} -value {01010101}
@@ -378,7 +377,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREMAP_CE0n" "SLOWCONTROLS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"calscl" "SLOWCONTROLS_0:calscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"calsda" "SLOWCONTROLS_0:calsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAS_N" "DDRInterface_0:CAS_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SERIAL_CLK" "TrackerCCC_0:REF_CLK_0" "MIV_RV32IMC_C0_0:CLK" "DIGIINTERFACE_0:serialfifo_rclk" "DIGIINTERFACE_0:init_clk" "DTCInterface_0:HCLK" "pf_reset_0:CLK" "PF_SRAM_0:HCLK" "SLOWCONTROLS_0:HCLK" "pulse_stretcher_0:clk_i" "SLOWCONTROLS_0:PCLK" "CCC_0:OUT0_FABCLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:HCLK" "SLOWCONTROLS_0:PCLK" "MIV_RV32IMC_C0_0:CLK" "pf_reset_0:CLK" "PF_SRAM_0:HCLK" "CCC_0:OUT0_FABCLK_0" "DDRInterface_0:SERIAL_CLK" "TrackerCCC_0:REF_CLK_0" "pulse_stretcher_0:clk_i" "DIGIINTERFACE_0:init_clk" "DIGIINTERFACE_0:serialfifo_rclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_0:D" "CCC_0:OUT1_FABCLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CCC_0:OUT2_FABCLK_0" "DDRInterface_0:MEM_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:outfifo_wclk" "DIGIINTERFACE_0:ddrfifo_rclk" "CCC_0:OUT3_FABCLK_0" "DDRInterface_0:DIGIFIFO_CLK" }
@@ -443,7 +442,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CLK_DIV_C0_0:CLK_OUT" "DIGII
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_4:D" "OUTBUF_DIFF_3:D" "EWMaker_0:clk" "PF_NGMUX_C0_0:CLK_OUT" "SLOWCONTROLS_0:tracker_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CLK_DIV_C0_0:CLK_IN" "PF_OSC_C0_0:RCOSC_160MHZ_CLK_DIV" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:OSC_CLK" "PF_OSC_C0_0:RCOSC_160MHZ_GL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:HRESETN" "AND3_0:B" "pf_reset_0:FABRIC_RESET_N" "PF_SRAM_0:HRESETN" "SLOWCONTROLS_0:HRESETN" "SLOWCONTROLS_0:PRESETN" "DIGIINTERFACE_0:init_reset_n" "EWMaker_0:reset_n" "MIV_RV32IMC_C0_0:RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:HRESETN" "SLOWCONTROLS_0:PRESETN" "EWMaker_0:reset_n" "MIV_RV32IMC_C0_0:RESETN" "pf_reset_0:FABRIC_RESET_N" "PF_SRAM_0:HRESETN" "AND3_0:B" "DIGIINTERFACE_0:init_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:PLL_POWERDOWN_B" "CCC_0:PLL_POWERDOWN_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_1:A" "pulse_stretcher_0:gate_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RAS_N" "DDRInterface_0:RAS_N" }
@@ -471,18 +470,15 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD0" "DDRInterface_0:SHIELD
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD1" "DDRInterface_0:SHIELD1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD2" "DDRInterface_0:SHIELD2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SHIELD3" "DDRInterface_0:SHIELD3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRCS" "DDRInterface_0:DCS_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_MEM_REN" "SLOWCONTROLS_0:DDRFIFO_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_MEM_WEN" "SLOWCONTROLS_0:DDRFIFOWEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIMMEMFIFO_REN" "SLOWCONTROLS_0:DDRMEMFIFO_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_PATTERN_EN" "SLOWCONTROLS_0:DDRPTTREN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRREN" "DDRInterface_0:mem_rd_en" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRSEL" "DDRInterface_0:DDR_DTCSIM" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_DATA" "SLOWCONTROLS_0:DDRSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRWEN" "DDRInterface_0:mem_wr_en" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMBLKEN" "DTCInterface_0:BLK_WEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:DTC_SEL" "SLOWCONTROLS_0:DTCSIMPARAM[24]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMPARAM[28]" "TOP_SERDES_0:SIM_EN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMSPILLDATA[31]" "DTCInterface_0:ON_SPILL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMSTART" "DTCInterface_0:SIM_START" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:enable_fiber_clock" "PF_NGMUX_C0_0:SEL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "SLOWCONTROLS_0:enable_fiber_marker" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:external_ewm" "SLOWCONTROLS_0:ewm" }
@@ -521,13 +517,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCSMEMFIFO_RE" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_PATTERN_EN" "TOP_SERDES_0:DCS_PATTERN_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_MEM_REN" "TOP_SERDES_0:DCS_READ_MEM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:C" "TOP_SERDES_0:DCS_ROCRESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_SIM_EN" "TOP_SERDES_0:DCS_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_MEM_WEN" "TOP_SERDES_0:DCS_WRITE_MEM_EN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DDR_DTCSIM" "TOP_SERDES_0:DREQ_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "TOP_SERDES_0:EVENTMARKER" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:RX_CLK" "PF_NGMUX_C0_0:CLK1" "TOP_SERDES_0:LANE0_RX_CLK_R" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:ALIGN" "TOP_SERDES_0:RX_ALIGNED" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:RX_RESETN" "DTCInterface_0:RX_RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:LANE0_RX_CLK_R" "PF_NGMUX_C0_0:CLK1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TrackerCCC_0:OUT0_FABCLK_0" "PF_NGMUX_C0_0:CLK0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "SLOWCONTROLS_0:TX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"WE_N" "DDRInterface_0:WE_N" }
@@ -558,33 +550,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DM" "DDRInterface_0:DM" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DQ" "DDRInterface_0:DQ" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DQS" "DDRInterface_0:DQS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DQS_N" "DDRInterface_0:DQS_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:DATA_TO_TX" "TOP_SERDES_0:SIM_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:KCHAR_TO_TX" "TOP_SERDES_0:SIM_K_CHAR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_OUT" "SLOWCONTROLS_0:GPIO_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRIN[9:0]" "DDRInterface_0:ram_addr_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDROFFSET[19:0]" "DDRInterface_0:mem_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_WRITE_PAGE_NO" "SLOWCONTROLS_0:DDRPAGENO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_PATTERN" "SLOWCONTROLS_0:DDRPATTRN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMADDR[15:0]" "DTCInterface_0:ADDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMADDR[23:16]" "DTCInterface_0:MODULE_ID" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:BLK_ADDR" "SLOWCONTROLS_0:DTCSIMBLKADDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:BLK_DATA" "SLOWCONTROLS_0:DTCSIMBLKDATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMDATA[15:0]" "DTCInterface_0:WDATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMDATA[31:16]" "DTCInterface_0:BLOCK_CNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:PACKET_TYPE" "SLOWCONTROLS_0:DTCSIMPARAM[3:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:MARKER_TYPE" "SLOWCONTROLS_0:DTCSIMPARAM[7:4]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:SEQ_NUM" "SLOWCONTROLS_0:DTCSIMPARAM[11:8]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCInterface_0:OP_CODE" "SLOWCONTROLS_0:DTCSIMPARAM[21:16]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMSPILLDATA[15:0]" "DTCInterface_0:EVENT_WINDOW_TAG[15:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMSPILLDATA[23:16]" "DTCInterface_0:EVENT_MODE[7:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCSIMSPILLDATA[30:24]" "DTCInterface_0:RF_MARKER[6:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_early_cut" "SLOWCONTROLS_0:event_window_early_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:event_window_late_cut" "SLOWCONTROLS_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:delay" "SLOWCONTROLS_0:ewm_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:use_lane" "DIGIINTERFACE_0:use_lane" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_PATTERN" "TOP_SERDES_0:DCS_PATTERN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_WRITE_PAGE_NO[19:0]" "TOP_SERDES_0:DCS_WRITE_PAGE_NO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DTCDATAREAD" "TOP_SERDES_0:TX_DATA_OUT" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_SRAM_0:AHBSlaveInterface" "MIV_RV32IMC_C0_0:AHBL_M_SLV" }

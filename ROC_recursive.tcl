@@ -20,8 +20,8 @@ source components/DCS_FIFO.tcl
 source components/FIFO.tcl 
 source components/FIFO_Response.tcl 
 source components/CORERESET_PF_C1.tcl 
-source components/CORERESET_SYNC_RXCLK.tcl 
-source components/CORERESET_SYNC_TXCLK.tcl 
+#source components/CORERESET_SYNC_RXCLK.tcl 
+#source components/CORERESET_SYNC_TXCLK.tcl 
 source components/ResetController.tcl 
 source components/Retransmit_RAM.tcl 
 source components/CorePCS_C0.tcl 
@@ -52,9 +52,9 @@ source components/TxPLL.tcl
 source components/TxRefCLK.tcl 
 source components/SerdesIF.tcl 
 source components/DIGIINTERFACE.tcl 
-source components/BLK_TPSRAM.tcl 
-source components/PACKET_FIFO.tcl 
-source components/DTCInterface.tcl 
+#source components/BLK_TPSRAM.tcl 
+#source components/PACKET_FIFO.tcl 
+#source components/DTCInterface.tcl 
 source components/Init_Monitor.tcl 
 source components/MIV_RV32IMC_C0.tcl 
 source components/PF_CLK_DIV_C0.tcl 
@@ -76,5 +76,6 @@ source components/PF_SYSTEM_SERVICES_C0.tcl
 source components/SLOWCONTROLS.tcl 
 source components/TrackerCCC.tcl 
 source components/pf_reset.tcl 
+source components/PF_NGMUX_C0.tcl
 source components/ROC.tcl 
 build_design_hierarchy

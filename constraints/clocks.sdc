@@ -20,3 +20,4 @@ set_clock_groups -name {asyn_noxcvr} -asynchronous -group [ get_clocks { CCC_0/R
 set_clock_groups -name {asyn_xcvr} -asynchronous -group [ get_clocks { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/RX_CLK_R   TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R } ]
 
 set_false_path -from [ get_pins { SLOWCONTROLS_0/Registers_0/enable_fiber_clock/CLK SLOWCONTROLS_0/Registers_0/enable_fiber_marker/CLK } ]
+set_false_path -from [ get_pins { TOP_SERDES_0/ForwardDetector_0/fifo_rst/CLK } ]
