@@ -111,6 +111,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DM} -port_direction {OUT} -po
 sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -port_range {[2:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[14:0]}
 
+# Add AND2_0 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
+
+
+
 # Add AND3_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND3} -instance_name {AND3_0}
 
@@ -206,10 +211,10 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[4]} -value {GND}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ} -pin_slices {[5]}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[5]} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:JTAG_TDO_DR}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_RESETN}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_IRQ} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 
 
 
@@ -275,6 +280,12 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {PF_SRAM} -instance
 # Add pulse_stretcher_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_0:resetn_i} -value {VCC}
+
+
+
+# Add pulse_stretcher_1 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_1}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_1:resetn_i} -value {VCC}
 
 
 
@@ -363,6 +374,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TrackerCCC_0:PLL_LOCK_0}
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ADC_CLK_N" "OUTBUF_DIFF_0:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ADC_CLK_P" "OUTBUF_DIFF_0:PADP" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "TOP_SERDES_0:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALEVEN_N" "OUTBUF_DIFF_2:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALEVEN_P" "OUTBUF_DIFF_2:PADP" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALODD_N" "OUTBUF_DIFF_1:PADN" }
@@ -421,8 +433,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:BANK_y_VDDI_STATUS" 
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:INIT_DONE" "Init_Monitor_0:DEVICE_INIT_DONE" "DDRInterface_0:SYS_RESET_N" "TOP_SERDES_0:INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:FPGA_POR_N" "Init_Monitor_0:FABRIC_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:CTRL_ARST_N" "Init_Monitor_0:XCVR_INIT_DONE" "DIGIINTERFACE_0:CTRL_ARST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "pulse_stretcher_0:pulse_i" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:A" "INV_1:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "AND3_0:C" "AND2_0:A" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_1:Y" "AND3_0:B" "AND2_0:B" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "TOP_SERDES_0:LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_P" "TOP_SERDES_0:LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "TOP_SERDES_0:LANE0_TXD_N" }
@@ -442,16 +454,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CLK_DIV_C0_0:CLK_OUT" "DIGII
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_4:D" "OUTBUF_DIFF_3:D" "EWMaker_0:clk" "PF_NGMUX_C0_0:CLK_OUT" "SLOWCONTROLS_0:tracker_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CLK_DIV_C0_0:CLK_IN" "PF_OSC_C0_0:RCOSC_160MHZ_CLK_DIV" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:OSC_CLK" "PF_OSC_C0_0:RCOSC_160MHZ_GL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:HRESETN" "SLOWCONTROLS_0:PRESETN" "EWMaker_0:reset_n" "MIV_RV32IMC_C0_0:RESETN" "pf_reset_0:FABRIC_RESET_N" "PF_SRAM_0:HRESETN" "AND3_0:B" "DIGIINTERFACE_0:init_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:PLL_POWERDOWN_B" "CCC_0:PLL_POWERDOWN_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_1:A" "pulse_stretcher_0:gate_o" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_stretcher_1:gate_o" "INV_0:A" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RAS_N" "DDRInterface_0:RAS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "TOP_SERDES_0:REF_CLK_PAD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "TOP_SERDES_0:REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_N" "DDRInterface_0:RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_HV_DEVRST_N" "ROC_CAL_DEVRST_N" "AND3_0:Y" "DDRInterface_0:EXT_RST_N" "TOP_SERDES_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pf_reset_0:FABRIC_RESET_N" "PF_SRAM_0:HRESETN" "SLOWCONTROLS_0:HRESETN" "SLOWCONTROLS_0:PRESETN" "DIGIINTERFACE_0:init_reset_n" "EWMaker_0:reset_n" "MIV_RV32IMC_C0_0:RESETN" "AND3_0:A" "ROC_HV_DEVRST_N" "ROC_CAL_DEVRST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_CLK_N" "INBUF_DIFF_0:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROC_CLK_P" "INBUF_DIFF_0:PADP" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:EXT_RST_N" "AND3_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX" "SLOWCONTROLS_0:RX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SENSOR_MCP_CEn" "SENSOR_MCP_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SERDES_CAL_CLK_N" "DIGIINTERFACE_0:REF_CLK_PAD_N" }
@@ -485,7 +498,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:external_ewm" "SLOWCO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:enable" "SLOWCONTROLS_0:ewm_enable" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_2:D" "OUTBUF_DIFF_1:D" "SLOWCONTROLS_0:PWM0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIINTERFACE_0:FIFO_RESET" "SLOWCONTROLS_0:reset_fifo_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:A" "SLOWCONTROLS_0:ROCRESET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:ROCRESET" "pulse_stretcher_0:pulse_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SERDES_RE" "DIGIINTERFACE_0:serialfifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC0_CEn" "SLOWCONTROLS_0:SPI0_ADC0_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_ADC1_CEn" "SLOWCONTROLS_0:SPI0_ADC1_CEn" }
@@ -509,14 +522,14 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SWCLKTCK" "COREJTAGDEBUG_C0_0:T
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SWDITMS" "COREJTAGDEBUG_C0_0:TMS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TDI" "COREJTAGDEBUG_C0_0:TDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TDO" "COREJTAGDEBUG_C0_0:TDO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:READOUT_CLK" "TOP_SERDES_0:ALGO_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_stretcher_1:clk_i" "DDRInterface_0:READOUT_CLK" "TOP_SERDES_0:ALGO_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:EXT_SYS_IRQ[0]" "TOP_SERDES_0:BUSY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:MEMFIFO_RE" "TOP_SERDES_0:DATAREQ_RE_FIFO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:fifo_read_mem_en" "TOP_SERDES_0:DATAREQ_START_EVENT_REQ" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCSMEMFIFO_RE" "TOP_SERDES_0:DCS_MEMFIFO_RDEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_PATTERN_EN" "TOP_SERDES_0:DCS_PATTERN_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_MEM_REN" "TOP_SERDES_0:DCS_READ_MEM_EN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:C" "TOP_SERDES_0:DCS_ROCRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"pulse_stretcher_1:pulse_i" "TOP_SERDES_0:DCS_ROCRESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_MEM_WEN" "TOP_SERDES_0:DCS_WRITE_MEM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "TOP_SERDES_0:EVENTMARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:LANE0_RX_CLK_R" "PF_NGMUX_C0_0:CLK1" }

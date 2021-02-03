@@ -33,12 +33,12 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_EMPTY} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_FULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_SIM_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DREQ_SIM_EN} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_ROCRESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_WRITE_MEM_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_READ_MEM_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_MEMFIFO_RDEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {EVENTMARKER} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_ROCRESET} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_EVENT_WINDOW_TAG_2} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_EVENT_WINDOW_TAG_1} -port_direction {OUT} -port_range {[47:0]}
@@ -54,6 +54,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_PATTERN} -port_direction 
 # Add ALGO_CLK_PLL_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {ALGO_CLK_PLL_0} -instance_name {ALGO_CLK_PLL_1}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ALGO_CLK_PLL_1:PLL_LOCK_0}
+
+
+
+# Add AND2_0 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
 
 
@@ -87,6 +92,18 @@ sd_create_pin_group -sd_name ${sd_name} -group_name {TRACKER_INTERFACE_OUT} -ins
 
 
 
+# Add CORERESET_PF_C1_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET_PF_C1} -instance_name {CORERESET_PF_C1_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:EXT_RST_N} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:BANK_y_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:PLL_LOCK} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:SS_BUSY} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:FF_US_RESTORE} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_PF_C1_0:FPGA_POR_N} -value {VCC}
+
+
+
 # Add DCS_RCV_FIFO instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DCS_FIFO} -instance_name {DCS_RCV_FIFO}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCS_RCV_FIFO:RDCNT}
@@ -109,8 +126,8 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {DracMonitor_0} -p
 "IO_SIZE:2" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {DracMonitor_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DracMonitor_0:DEBUG_REG_0} -value {0001001000110100}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DracMonitor_0:PREREAD_PULSE}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DracMonitor_0:DEBUG_REG_0} -value {0001001000110100}
 
 
 
@@ -134,8 +151,8 @@ sd_save_core_instance_config -sd_name ${sd_name} -instance_name {ForwardDetector
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERROREVENTALIGNMENT}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERRORLOOPBACKALIGNMENT}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERRORCLOCKALIGNMENT}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERROR_CODE_FW}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERROR_FLAG_FW}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ForwardDetector_0:ERROR_CODE_FW}
 
 
 
@@ -232,10 +249,10 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timeStamp_IF_0:WE}
 
 # Add timestamp_manager_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {timeStamp_Manager} -hdl_file {hdl\TimeStampManager.vhd} -instance_name {timestamp_manager_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timestamp_manager_0:EVENT_WINDOW_TAG}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timestamp_manager_0:TIMESTAMP_RESET}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timestamp_manager_0:TCLK_ALIGNED}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timestamp_manager_0:TIMESTAMP_OF}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {timestamp_manager_0:EVENT_WINDOW_TAG}
 
 
 
@@ -251,6 +268,7 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {XCVR_Block} -insta
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PacketSender_0:ALGO_CLK" "ForwardDetector_0:ALGO_CLK" "ALGO_CLK" "ALGO_CLK_PLL_1:OUT1_FABCLK_0" "DCS_RCV_FIFO:CLK" "DCS_RESP_FIFO:CLK" "DracMonitor_0:ALGO_CLK" "CommandHandler_0:ALGO_CLK" "XCVR_Block_0:ALGO_CLK" "Receive:RCLOCK" "Response:WCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "ResetController_0:INIT_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BusyMonitor_0:BUSY" "BUSY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Clock40Mhz_0:Clk_40Mhz" "PacketSender_0:CLK40_GEN" "ForwardDetector_0:CLK40_GEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DCS_RCV_FIFO_WE_0" "DCS_RCV_FIFO:WE" }
@@ -260,8 +278,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Receive:RE" "CommandHandler_0:R
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:RCV_FIFO_RESET_0" "OR3_0:A" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:RESP_FIFO_RESET_0" "OR3_1:A" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Response:WE" "CommandHandler_0:RESP_FIFO_WE_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_PF_C1_0:FABRIC_RESET_N" "AND2_0:A" "XCVR_Block_0:INIT_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:CTRL_ARST_N" "CTRL_ARST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ResetController_0:SLOW_CLK" "XCVR_Block_0:CTRL_CLK" "CTRL_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "CORERESET_PF_C1_0:CLK" "XCVR_Block_0:CTRL_CLK" "ResetController_0:SLOW_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DATAREQ_DATA_READY_FLAG" "DATAREQ_DATA_READY_FLAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DATAREQ_LAST_WORD_FLAG" "DATAREQ_LAST_WORD_FLAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DATAREQ_RE_FIFO" "DATAREQ_RE_FIFO" }
@@ -273,7 +292,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RCV_FIFO:FULL" "DracMonitor
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DCS_READ_MEM_EN" "DCS_READ_MEM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DCS_RESP_FIFO_EMPTY_0" "DCS_RESP_FIFO:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DCS_RESP_FIFO_FULL_0" "DCS_RESP_FIFO:FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DCS_ROCRESETN" "DCS_ROCRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_ROCRESET" "DracMonitor_0:DCS_ROCRESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DCS_SIM_EN" "DCS_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DCS_WRITE_MEM_EN" "DCS_WRITE_MEM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DDR_DDR3_FULL" "DDR_DDR3_FULL" }
@@ -286,7 +305,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:RESET_XCVR_ERRORS"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ResetController_0:SEL_RESET" "DracMonitor_0:SEL_RST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DracMonitor_0:DREQ_SIM_EN" "DREQ_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Clock40Mhz_0:EVENTMARKER" "timestamp_manager_0:EVENTMARKER_40" "ForwardDetector_0:EVENTMARKER" "EVENTMARKER" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "XCVR_Block_0:EXT_RST_N" "ResetController_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "AND2_0:B" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PacketSender_0:FWD_FIFO_EMPTY" "Forward:EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ForwardDetector_0:FWD_FIFO_FULL" "Forward:FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BusyMonitor_0:busy_start" "ForwardDetector_0:BUSY_START" }
@@ -300,7 +319,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_0:A" "OR2_4:A" "OR3_0:B" "F
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Receive:WE" "ForwardDetector_0:RCV_FIFO_WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PacketSender_0:RETRANSMIT_DETECTED" "ForwardDetector_0:RETRANSMIT_DETECTED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"timeStamp_IF_0:RECORDTIMESTAMP" "INBUF_DIFF_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ResetController_0:INIT_DONE" "XCVR_Block_0:INIT_DONE" "INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "CORERESET_PF_C1_0:INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Forward:WCLOCK" "ForwardDetector_0:EPCS_RXCLK" "timeStamp_IF_0:TCLK" "timestamp_manager_0:TCLK" "LANE0_RX_CLK_R" "Clock40Mhz_0:Clk_200Mhz" "XCVR_Block_0:LANE0_RX_CLK_R" "Receive:WCLOCK" "RX_ForwardDetector:CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:LANE0_RXD_N" "LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:LANE0_RXD_P" "LANE0_RXD_P" }

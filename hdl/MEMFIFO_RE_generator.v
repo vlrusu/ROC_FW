@@ -3,9 +3,9 @@
 //
 // File: MEMFIFO_RE_generator.v
 // File history:
-//      v1.0: 12/05/2020: First version
+//      v1.0: 12/05/2020: 	First version
 //      v2.0: 12/22/2020: 	Lengthen start_latch to make sure it is captured on 40 MHz CLK.
-//									Register PACKET_NO on enable to avoid losing last packet.
+//									Register PACKET_NO on enable to avoid loosing last packet
 //      <Revision number>: <Date>: <Comments>
 //
 // Description: 
@@ -41,48 +41,35 @@ module MEMFIFO_RE_generator#(
       //===============
       // Output Ports
       //===============
+		output last_memfifo_re,
       output memfifo_re
    );
 	
-	//wire [15:0] packet_to_do;	
-	//assign packet_to_do = (packet_no << 1); 
-	
 	reg 	start_latch, start_latch1, start_latch2;
-	reg	start_seen;
+	reg	start_seen, start_seen_latch;
 	reg	enable_latch;
-	reg [3:0] cnt;
-	reg [3:0] delay_cnt;
-   reg [15:0] 	packet_cnt;
 	reg [15:0] 	packet_to_do;	
+	reg [3:0] 	cnt;
+	reg [3:0] 	delay_cnt;
+   reg [15:0] 	packet_cnt;
 
    // Synchronous logic, active low reset
 	always @(posedge clk, negedge rst_n)
    begin 
       if (rst_n == 1'b0)
       begin
-         //start_latch <= 1'b0;
-			start_seen  <= 1'b0;
+			start_seen  	<= 1'b0;
 			packet_to_do	<= 16'b0;
 		end
 		else
-		//begin
-			//start_latch <= start;
-			//if (enable)
-			//begin
-				//if (start_latch) start_seen 		<= 1'b1;
-				//begin
-					//start_seen 		<= 1'b1;
-					//packet_to_do	<= (packet_no << 1)
-				//end	
-			//end
-			//else start_seen <= 1'b0;	
-		//end
 		begin
 			start_latch <= start;
 			start_latch1<= start_latch;
 			start_latch2<= start_latch1;
 
 			enable_latch <= enable;
+
+			start_seen_latch <= start_seen;
 
 			if (enable && ~enable_latch)  packet_to_do	<= (packet_no << 1);
 			
@@ -91,6 +78,7 @@ module MEMFIFO_RE_generator#(
 		end
 	end
 
+	
    always @(posedge clk, negedge rst_n)
    begin
       if (rst_n == 1'b0)
@@ -109,11 +97,11 @@ module MEMFIFO_RE_generator#(
 					if ( packet_cnt < packet_to_do )
 					begin
 						cnt	<= cnt + 1'b1;
-						if ( cnt[3] == 1'b1 ) 
+						if ( cnt[DELAY_BIT] == 1'b1 ) 
 						begin
 							packet_cnt <= packet_cnt + 1'b1;
 							cnt <= 4'b0;
-						end	
+						end
 					end
 				end
 			end
@@ -127,6 +115,7 @@ module MEMFIFO_RE_generator#(
    end
 
 	assign memfifo_re = cnt[DELAY_BIT];
+	assign last_memfifo_re = ~start_seen && start_seen_latch;
 		
 	endmodule
 

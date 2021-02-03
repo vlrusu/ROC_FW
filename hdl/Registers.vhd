@@ -577,7 +577,7 @@ begin
   p_reg_seq : process (PRESETn, PCLK, PSEL, PENABLE, PWRITE)
   begin
     if (PRESETn = '0') then
-      ROCRESET <= '1';
+      ROCRESET <= '0';
 
       INVERTCALSPICLCK  <= '0';
       DDRCS             <= '0';
@@ -625,7 +625,7 @@ begin
       enable_fiber_marker <= '0';
 
     elsif (PCLK'event and PCLK = '1') then
-      ROCRESET  <= '1';
+      ROCRESET  <= '0';
 
       SERDES_RE <= '0';
       serdes_re0 <= '0';
@@ -653,7 +653,7 @@ begin
 
 
           when CRROCRESET =>
-            ROCRESET <= '0';
+            ROCRESET <= '1';
           when CRINVERTCALSPICLCK =>
             INVERTCALSPICLCK <= PWDATA(0);
     

@@ -8,7 +8,6 @@ auto_promote_pad_pins -promote_all 0
 # Create top level Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SLOW_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SEL_RESET} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_DCSRESP} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_FWD_N} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_PS_N} -port_direction {OUT}
@@ -19,20 +18,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_40CLK_N} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_DCSRECV} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_RSP} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_RCV} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {EXT_RST_N} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_RESET_N} -port_direction {IN}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {SEL_RST_CNTL} -port_direction {IN} -port_range {[9:0]}
-
-# Add MAIN_RESET instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET_PF_C1} -instance_name {MAIN_RESET}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:PLL_LOCK} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:SS_BUSY} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:BANK_y_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MAIN_RESET:FPGA_POR_N} -value {VCC}
-
-
 
 # Add MainResetController_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {MainResetController} -hdl_file {hdl\MainResetController_0.vhd} -instance_name {MainResetController_0}
@@ -44,9 +32,7 @@ sd_invert_pins -sd_name ${sd_name} -pin_names {MainResetController_0:RESET_DCSRE
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MAIN_RESET:FABRIC_RESET_N" "MainResetController_0:FABRIC_RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "MAIN_RESET:EXT_RST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "MAIN_RESET:INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_RESET_N" "MainResetController_0:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_40CLK_N" "MainResetController_0:RESET_40CLK_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_CH_N" "MainResetController_0:RESET_CH_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_DCSRECV" "MainResetController_0:RESET_DCSRCV_N" }
@@ -58,7 +44,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_RM_N" "MainResetControlle
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_RSP" "MainResetController_0:RESET_RESP_FIFO_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_TS_N" "MainResetController_0:RESET_TS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SEL_RESET" "MainResetController_0:SEL_RESET" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOW_CLK" "MAIN_RESET:CLK" "MainResetController_0:SLOW_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOW_CLK" "MainResetController_0:SLOW_CLK" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MainResetController_0:SEL_RST_CNTL" "SEL_RST_CNTL" }

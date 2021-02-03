@@ -3,7 +3,7 @@
 --
 -- File: Reset_Watchdog.vhd
 -- File history:
---      v1.0:  Nov. 2020: MT  Cleaned logic. Added driver for XCVR_LOSS_COUNTER
+--      v1.0:  Jan. 2021: MT  Cleaned logic. Added driver for XCVR_LOSS_COUNTER
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -31,7 +31,7 @@ entity XCVR_Reset_Controller_0 is
             gSERDES_DWIDTH  		: integer := 20; 
             gENDEC_DWIDTH   		: integer := 16;	
             IO_SIZE         		: integer := 2;
-				ALGO_LOC_ADDR 			: natural := 0
+				ALGO_LOC_ADDR 			: natural := 12
 		);               
 	port (	
 	-- RocMonitor Interface				
@@ -124,10 +124,10 @@ begin
 		RESET_CORE_N				<= not sel_rst_cntl_latch(0) and not reset_serdes;
 		RX_RESET_N					<= not sel_rst_cntl_latch(1) and not reset_serdes;
 		TX_RESET_N					<= not sel_rst_cntl_latch(2) and not reset_serdes;
-		WA_RST_N					<= not sel_rst_cntl_latch(3) and not reset_serdes;
+		WA_RST_N						<= not sel_rst_cntl_latch(3) and not reset_serdes;
 		PCS_RESET_N					<= not sel_rst_cntl_latch(4) and not reset_serdes;
 		PMA_RESET_N					<= not sel_rst_cntl_latch(5) and not reset_serdes;
-		reset_xcvr_errors_sig       <= RESET_XCVR_ERRORS or xcvr_counter_init or reset_xcvr_errors_algo;
+		reset_xcvr_errors_sig	<= RESET_XCVR_ERRORS or xcvr_counter_init or reset_xcvr_errors_algo;
 		XCVR_LOCK					<= stable_lock_latch;	  
 		XCVR_LOSS_COUNTER			<= STD_LOGIC_VECTOR(XCVR_LockLoss_Counter);		
 		
@@ -136,32 +136,34 @@ begin
 			if(rising_edge(SLOW_CLK)) then	   		
 				
 				--Latches							  
-				stable_lock_latch		<= stable_lock;
+				stable_lock_latch	<= stable_lock;
 				stable_lock_fallingEdge <= stable_lock_latch and not stable_lock;	
 				
 				aligned_latch		<= ALIGNED;
-				rx_val_latch 			<= RX_VAL;		   						
-				rx_raw_data_latch 		<= RX_DATA;  	
+				rx_val_latch 		<= RX_VAL;		   						
+				rx_raw_data_latch <= RX_DATA;  	
 				
 				xcvr_counter_init		<= '0';
 				module_init_happened	<= module_init_happened and "10101";	  --didn't happen wont be 10101 pattern.
 
 				--(0) Reset Init
-				if (INIT_RESET_N = '0') then	-- System Init	  	
+				if (INIT_RESET_N = '0') then	-- System Init	
+				
 					module_init_happened	<= (others => '1');
-					sel_rst_cntl_latch		<= (others => '0');
+					sel_rst_cntl_latch	<= (others => '0');
 					xcvr_counter_init		<= '1';	   
-					count			  		<= (others => '0');
+					count			  			<= (others => '0');
+					
 				else		 
 					
 					--(1A) Load Selective Reset
 					if (sel_reset_req = '1') then	
-					   sel_rst_cntl_latch <= sel_reset_cntl_req;	
-					   count			  <= (others => '0');
+					   sel_rst_cntl_latch 	<= sel_reset_cntl_req;	
+					   count			  			<= (others => '0');
 					--(1B) Deassert Selective Reset  					
 					else						 
 						if(count > 4) then 
-							sel_rst_cntl_latch	<= (others => '0');		 	
+							sel_rst_cntl_latch<= (others => '0');		 	
 						else
 							count <= count + 1;
 						end if;
@@ -198,7 +200,7 @@ begin
 						stable_lock				<= '0';	 
 						bit_slip_match_register	<= bit_slip_match_default;
 						bit_slip_state			<= (0 => '1', others => '0'); --goto bit slip check		  
-						bit_slip_reset_cnt 		<= (others => '1'); 
+						bit_slip_reset_cnt 	<= (others => '1'); 
 					elsif(bit_slip_state = 0 ) then -- check for bit slip alignment	
 						if(rx_val_latch = '1') then		
 							if (rx_raw_data_latch(19 DOWNTO 0) /= bit_slip_match_register and		  --check for rx_data and its 4 possible polarities.
@@ -207,7 +209,7 @@ begin
 								rx_raw_data_latch(19 DOWNTO 0) /= bit_slip_match_register(19 downto 10) & not bit_slip_match_register(9 downto 0) then
 									rx_val_count			<= rx_val_count + 1;
 									if (rx_val_count > 128) then
-										bit_slip_state <= (0 => '1', others => '0');    -- bitslip failed, reset.
+										bit_slip_state 	<= (0 => '1', others => '0');    -- bitslip failed, reset.
 										bit_slip_reset_cnt <= (others => '1'); 	
 									end if;
 								else 
@@ -216,8 +218,8 @@ begin
 						else 	  												-- check for valid being dead 
 							rx_val_count			<= (others => '0');
 							if (bit_slip_dead_cnt = 0) then		 
-								bit_slip_state <= (0 => '1', others => '0');    --go to bit reset PMA
-								bit_slip_reset_cnt <= (others => '1'); 	  
+								bit_slip_state 	<= (0 => '1', others => '0');    --go to bit reset PMA
+								bit_slip_reset_cnt<= (others => '1'); 	  
 							else				  
 								bit_slip_dead_cnt <= bit_slip_dead_cnt - 1;	
 							end if;	
@@ -228,7 +230,7 @@ begin
 						rx_val_count			<= (others => '0');
 
 						if (bit_slip_reset_cnt = 0) then		   							
-							bit_slip_state <= (others => '0'); 	 --goto bit slip check	
+							bit_slip_state 	<= (others => '0'); 	 --goto bit slip check	
 							bit_slip_dead_cnt <= (others => '1');
 						else
 							bit_slip_reset_cnt <= bit_slip_reset_cnt - 1;	
@@ -244,14 +246,14 @@ begin
 						stable_lock			<= '1';
 						
 						if(rx_val_latch = '0' or aligned_latch = '0') then		
-							bit_slip_state 		<= (others => '0'); 
-							stable_lock			<= '0';
+							bit_slip_state <= (others => '0'); 
+							stable_lock		<= '0';
 						end if;		   
 						
 						if (new_bitslip_finish = '1') then	 		
 							stable_lock			<= '0';		  
-							new_bitslip_finish 			<= '0';
-							bit_slip_state 			<= (others => '0');
+							new_bitslip_finish<= '0';
+							bit_slip_state		<= (others => '0');
 							bit_slip_match_register	<= std_logic_vector(new_bitslip_register_match);
 						end if;									 
 					end if;	
@@ -259,16 +261,16 @@ begin
 					--=========================
 					--Generate Bitslip
 					if(start_bit_slip_shift = '1' and bit_slip_shifts_req <= 20) then	  
-						bitslip_counter 			<= (others => '0');	  
+						bitslip_counter 				<= (others => '0');	  
 						bit_slip_shifts_req_latch	<= bit_slip_shifts_req;	
-						new_bitslip_register_match 	<= unsigned(bit_slip_match_default);
+						new_bitslip_register_match <= unsigned(bit_slip_match_default);
 					else	   						
 						if (bitslip_counter >= 0 and bitslip_counter < bit_slip_shifts_req_latch) then 
 							bitslip_counter				<= bitslip_counter + 1;
-							new_bitslip_register_match 	<= new_bitslip_register_match ror 1;	
+							new_bitslip_register_match <= new_bitslip_register_match ror 1;	
 						elsif (bitslip_counter = bit_slip_shifts_req_latch) then
-							bitslip_counter				<= (others => '1');
-							new_bitslip_finish					<= '1';
+							bitslip_counter			<= (others => '1');
+							new_bitslip_finish		<= '1';
 						end if;					
 					end if;	 	   
 				END IF;
@@ -279,68 +281,60 @@ begin
 	--=======================	
 	roc_mon_gen	: for i in 0 to 0 generate	   
 		--standard RocMonitor interface generate template
-		signal prev_wData					: std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	 
-		signal prev_addr					: std_logic_vector(ALGO_WADDR_WIDTH-1 DOWNTO 0);
-		
-		signal algo_rdata_sig				: std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0) := (others => 'Z');   --bus		
+		signal algo_rdata_sig			: std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0) := (others => 'Z');   --bus		
 		signal locAddr						: unsigned(ALGO_LOCADDR_WIDTH-1 DOWNTO 0);																
 		signal wAddr						: unsigned(ALGO_WADDR_WIDTH-1 DOWNTO 0);																
 		signal wData						: std_logic_vector(ALGO_WDATA_WIDTH-1 DOWNTO 0);		
-		signal old_we, we					: std_logic;				   	   
-															  									  
+		signal we, we_latch				: std_logic;				   	   														  									  
 		signal rAddr						: unsigned(ALGO_RADDR_WIDTH-1 DOWNTO 0) := (others => '1');	
-		signal rst_cnt						: unsigned(3 DOWNTO 0) := (others => '0');			 
-		
-		signal dummy_reg					: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-		
+		signal rst_cnt						: unsigned(3 DOWNTO 0) := (others => '0');			
+      signal dummy_reg					: std_logic_vector(ALGO_WDATA_WIDTH-1 DOWNTO 0);
 	begin				 
 		 
 		ALGO_RDATA 	<= algo_rdata_sig;	
-		wAddr		<= extract_algo_waddr(ALGO_ADDR); --get write address  
+		wAddr			<= extract_algo_waddr(ALGO_ADDR);   --get write address  
 		locAddr		<= extract_algo_locaddr(ALGO_ADDR); --get target location address  	 
-		wData		<= extract_algo_wdata(ALGO_WDATA); -- get write enable
+		wData			<= extract_algo_wdata(ALGO_WDATA); -- get write enable
 		
 		roc_monitor: process( ALGO_CLK )   														 
 		begin		
 			
 			if rising_edge(ALGO_CLK) then		  
 																			 
-				we <= extract_algo_we(ALGO_WDATA); -- get write enable		  
-				old_we <= we; --latch we bit		
-				algo_rdata_sig <= (others => 'Z'); --always high impedance if not addressed
+				we 		<= extract_algo_we(ALGO_WDATA); -- get write enable		  
+				we_latch <= we; --latch we bit		
+				algo_rdata_sig <= (others => 'Z'); --always high impedance if not addressed			   
 				
 				start_bit_slip_shift			<= '0';	 
-				bit_slip_shifts_req				<= (others => '0');	  
+				bit_slip_shifts_req			<= (others => '0');	  
 				
 				sel_reset_req					<= '0';
-				sel_reset_cntl_req				<= (others => '0');				  
-				reset_xcvr_errors_algo			<= '0';
+				sel_reset_cntl_req			<= (others => '0');				  
+				reset_xcvr_errors_algo		<= '0';
+				
 				-- main cases										 
 				if ALGO_RESET = '1' then					   
 					--addr							
 					reset_xcvr_errors_algo		<= '1';	
 					rAddr 						<= (others => '1');  
-					prev_wData					<= (others => '0');						   
-					prev_addr					<= (others => '0');
-				else							   	
+
+					else							   	
 					
 					if(	locAddr = to_unsigned(ALGO_LOC_ADDR, ALGO_LOCADDR_WIDTH)) then --check target address
-																	  
+			
 						--Writes
-						if (old_we = '0' and we = '1') then -- identify we rising edge
-							prev_wData						<= wData;		
-							prev_addr						<= std_logic_vector(wAddr);
-							
+						if (we_latch = '0' and we = '1') then -- identify we rising edge
+											
 							if wAddr = 0 then
-								rAddr						<= unsigned(wData(ALGO_RADDR_WIDTH-1 downto 0));
+								rAddr							<= unsigned(wData(ALGO_RADDR_WIDTH-1 downto 0));
 							elsif wAddr = 1 then 			
-								bit_slip_shifts_req			<= unsigned(wData(4 downto 0));	
+								bit_slip_shifts_req		<= unsigned(wData(4 downto 0));	
 								start_bit_slip_shift		<= '1';
 							elsif wAddr = 2 then	 
 								 sel_reset_req				<= '1';
-							 	 sel_reset_cntl_req			<= wData(9 downto 0);
+							 	 sel_reset_cntl_req		<= wData(9 downto 0);
 							elsif wAddr = 3 then
-								 reset_xcvr_errors_algo			<= '1';
+								 reset_xcvr_errors_algo	<= '1';
 							elsif wAddr = 4 then
 								dummy_reg(ALGO_WDATA_WIDTH-1 downto 0) <= wData;
 							end if;
@@ -351,15 +345,15 @@ begin
 						--Reads				
 						algo_rdata_sig <= (others => '0');		  
 						if (rAddr = 0) then		
-							algo_rdata_sig 								<= prev_wData;
+							algo_rdata_sig 				<= wData;
 						elsif (rAddr = 1) then	
-							algo_rdata_sig(7 downto 0)					<= prev_addr;		
+							algo_rdata_sig(7 downto 0)	<= std_logic_vector(wAddr);		
 						elsif (rAddr = 2) then		 
-							algo_rdata_sig 								<= std_logic_vector(XCVR_LockLoss_Counter);				  
+							algo_rdata_sig 				<= std_logic_vector(XCVR_LockLoss_Counter);				  
 						elsif (rAddr = 3) then 
-							algo_rdata_sig 								<= bit_slip_match_register(15 downto 0);
+							algo_rdata_sig 				<= bit_slip_match_register(15 downto 0);
 						elsif (rAddr = 4) then
-						  	algo_rdata_sig 								<= "00000000000000" & std_logic_vector(bit_slip_state);
+						  	algo_rdata_sig 				<= "00000000000000" & std_logic_vector(bit_slip_state);
 						end if;
 						
 					end if;	  

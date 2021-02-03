@@ -87,12 +87,12 @@ port (
 	TEMPFIFO_FULL				: IN	std_logic;								-- status of TEMPFIFO full  (contain 1kB page on the way to DDR). Read via addr=12, bit[1].
 	MEMFIFO_EMPTY				: IN	std_logic;								-- status of MEMFIFO empty  (contain 1kB page on the way out of DDR). Read via addr=12, bit[2].
 	MEMFIFO_FULL				: IN	std_logic;								-- status of MEMFIFO full  (contain 1kB page on the way out of DDR). Read via addr=12, bit[3].
-	MEM_WR_CNT					: IN  std_logic_vector(15 downto 0);	-- no. of 1KB pages written to DR3 memory. Read via addr=13.
-	MEM_RD_CNT					: IN  std_logic_vector(15 downto 0);	-- no. of 1KB pages read from DR3 memory. Read via addr=14.
-	FIFO_RD_CNT					: IN  std_logic_vector(15 downto 0);	-- no. of data payload packets. Read via addr=15. (NB: this is the number of FIFO_RD_EN/2!)
+	MEM_WR_CNT					: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of 1KB pages written to DR3 memory. Read via addr=13.
+	MEM_RD_CNT					: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of 1KB pages read from DR3 memory. Read via addr=14.
+	FIFO_RD_CNT					: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of data payload packets. Read via addr=15. (NB: this is the number of FIFO_RD_EN/2!)
 	DCS_SIM_EN					: OUT std_logic;								-- enable simulation of configuration and DataReq protocol via DCS (addr=8, bit[4])
 	DREQ_SIM_EN					: OUT std_logic;								-- enable simulation of Data Request Protocol via serial (addr=8, bit[8])
-   DCS_ROCRESETN				: OUT STD_LOGIC;								-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
+   DCS_ROCRESET				: OUT STD_LOGIC;								-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
 	DCS_WRITE_MEM_EN			: OUT std_logic;								-- enable write of data to memory
 	DCS_READ_MEM_EN			: OUT std_logic;								-- enable read of 1 kB page from memory (ie simulates DATA_REQUEST from DTC)
 	DCS_MEMFIFO_RDEN			: OUT std_logic;								-- enable memory data to TOP_SERDES (ie simulates DATA_REPLY to DTC)
@@ -149,6 +149,15 @@ architecture arch of DracMonitor is
    signal reset_sig_latch		: std_logic;
    signal reset_cntl				: std_logic_vector(9 downto 0);
    signal reset_cntl_latch		: std_logic_vector(9 downto 0);
+	
+	signal ddr_full				: std_logic;
+	signal tempfifo_e				: std_logic;
+	signal tempfifo_f				: std_logic;
+	signal memfifo_e				: std_logic;
+	signal memfifo_f				: std_logic;
+	signal mem_write_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
+	signal mem_read_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
+	signal fifo_read_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
 
 	-- uncomment for Eval board
    --signal resetn_cnt				: std_logic_vector(31 downto 0);
@@ -223,6 +232,7 @@ begin
          reset_sig_latch   <=  reset_sig;
          reset_cntl        <= (others => '0');
          reset_cntl_latch  <=  reset_cntl;
+			
          -- widen these ignals to make sure they can be latch on the 40 MHZ clock derived from the oscillator
          SEL_RST           <=  reset_sig or reset_sig_latch;
          SEL_RST_CNTL      <=  reset_cntl or reset_cntl_latch;
@@ -233,7 +243,7 @@ begin
 			EVENT_START_DELAY_FINE		<= evtstart_delay_fine_reg;   
 			EVENT_START_DELAY_FINE_EN	<= evtstart_delay_en_reg;
 
-			DCS_ROCRESETN		<= '1';
+			DCS_ROCRESET		<= '0';
 			DCS_WRITE_MEM_EN	<=	'0';
 			DCS_READ_MEM_EN	<= '0';
 			DCS_MEMFIFO_RDEN	<= '0';
@@ -246,6 +256,16 @@ begin
          ram_we            <= '0';
          fifo_we           <= '0';
          fifo_re           <= '0';
+
+-- for signal that have to change clock domain
+			ddr_full				<= DDR_DDR3_FULL;
+			tempfifo_e			<=	TEMPFIFO_EMPTY;	
+			tempfifo_f			<=	TEMPFIFO_FULL;	
+			memfifo_e			<=	MEMFIFO_EMPTY;	
+			memfifo_f			<=	MEMFIFO_FULL;	
+			mem_write_cnt		<= MEM_WR_CNT;
+			mem_read_cnt		<= MEM_RD_CNT;
+			fifo_read_cnt		<= FIFO_RD_CNT;
 
 -- uncomment for Eval board
          --RESET_LED          <= reset_seen;
@@ -367,7 +387,7 @@ begin
                elsif (drac_mon_addrs = 13) then
 						DCS_MEMFIFO_RDEN	<= '1';	 -- self clearing
                elsif (drac_mon_addrs = 14) then
-						DCS_ROCRESETN			<= '0';	 -- self clearing
+						DCS_ROCRESET			<= '1';	 -- self clearing
                elsif (drac_mon_addrs = 126) then
                   fifo_we   <= '1';
                   fifo_wdata <= drac_mon_wdata(7 downto 0);
@@ -416,15 +436,15 @@ begin
                elsif (drac_mon_addrs = 10) then		 	 
                   read_data <= write_page_reg_MSB;	
                elsif (drac_mon_addrs = 11) then
-						read_data	<=	B"0000_0000_0000_000" & DDR_DDR3_FULL;
+						read_data	<=	B"0000_0000_0000_000" & ddr_full;
                elsif (drac_mon_addrs = 12) then
-						read_data	<= B"0000_0000_0000" & MEMFIFO_FULL & MEMFIFO_EMPTY & TEMPFIFO_FULL & TEMPFIFO_EMPTY;
+						read_data	<= B"0000_0000_0000" & memfifo_f & memfifo_e & tempfifo_f & tempfifo_e;
                elsif (drac_mon_addrs = 13) then
-						read_data	<= MEM_WR_CNT;
+						read_data	<= mem_write_cnt;
                elsif (drac_mon_addrs = 14) then
-						read_data	<= MEM_RD_CNT;
+						read_data	<= mem_read_cnt;
                elsif (drac_mon_addrs = 15) then
-						read_data	<= FIFO_RD_CNT;
+						read_data	<= fifo_read_cnt;
 					elsif (drac_mon_addrs = 126) then		 	 
                   fifo_re   <= PREREAD_PULSE;
                   read_data <= "00000000" & fifo_rdata;

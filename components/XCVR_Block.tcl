@@ -11,7 +11,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {XCVR_LOCK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_XCVR_ERRORS} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_VAL} -port_direction {OUT}
@@ -23,8 +22,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ALGO_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ALGO_RESET} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {EXT_RST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ALIGNED} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_RESET_N} -port_direction {IN}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {B_CERR} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {RD_ERR} -port_direction {OUT} -port_range {[1:0]}
@@ -60,17 +59,6 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {PF_XCVR_REF_CLK_C0
 
 
 
-# Add XCVR_Controller_Init instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET_PF_C1} -instance_name {XCVR_Controller_Init}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:BANK_y_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:PLL_LOCK} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:SS_BUSY} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:FF_US_RESTORE} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_Controller_Init:FPGA_POR_N} -value {VCC}
-
-
-
 # Add XCVR_IF_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_XCVR_ERM_C0} -instance_name {XCVR_IF_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {XCVR_IF_0:LANE0_RX_SLIP} -value {GND}
@@ -94,9 +82,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:ALGO_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:ALGO_RESET" "ALGO_RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:ALIGNED" "ALIGNED" "XCVR_Reset_Controller_0_0:ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "XCVR_IF_0:CTRL_ARST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:SLOW_CLK" "CTRL_CLK" "XCVR_Controller_Init:CLK" "XCVR_IF_0:CTRL_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_RST_N" "XCVR_Controller_Init:EXT_RST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "XCVR_Controller_Init:INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "XCVR_IF_0:CTRL_CLK" "XCVR_Reset_Controller_0_0:SLOW_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:INIT_RESET_N" "INIT_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "XCVR_IF_0:LANE0_RX_CLK_R" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxVAL" "LANE0_RX_VAL" "XCVR_IF_0:LANE0_RX_VAL" "XCVR_Reset_Controller_0_0:RX_VAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "XCVR_IF_0:LANE0_RXD_N" }
@@ -109,7 +96,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_Clk_0:REF_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_Clk_0:REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:RESET_XCVR_ERRORS" "RESET_XCVR_ERRORS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_PLL_0:REF_CLK" "XCVR_Clk_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Reset_Controller_0_0:INIT_RESET_N" "XCVR_Controller_Init:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxIDLE" "XCVR_IF_0:LANE0_RX_IDLE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_READY" "XCVR_IF_0:LANE0_RX_READY" "XCVR_Reset_Controller_0_0:RX_READY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_LOCK" "XCVR_Reset_Controller_0_0:XCVR_LOCK" }

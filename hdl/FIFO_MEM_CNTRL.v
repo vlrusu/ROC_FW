@@ -149,15 +149,15 @@ assign  reset = ~resetn_i;
 
 
 wire        new_start_pulse;
-wire        new_write_pulse;
+//wire        new_write_pulse;
 wire        DDR3_pulse;
 
 reg         new_start       = 1'b0;
 reg         new_start_latch = 1'b0;
 reg         new_start_delay = 1'b0;
-reg         new_write       = 1'b0;
-reg         new_write_latch = 1'b0;
-reg         new_write_delay = 1'b0;
+//reg         new_write       = 1'b0;
+//reg         new_write_latch = 1'b0;
+//reg         new_write_delay = 1'b0;
 reg         DDR3_full_latch = 1'b0;
 reg [31:0]	write_page_no_latch = 32'b0;
 reg [31:0]	page_no_for_write   = 32'b0;
@@ -167,15 +167,15 @@ always@(posedge sysclk_i)
 begin
    new_start_latch  <= new_start;
    new_start_delay  <= new_start_latch;
-   new_write_latch  <= new_write;   
-   new_write_delay  <= new_write_latch;   
+   //new_write_latch  <= new_write;   
+   //new_write_delay  <= new_write_latch;   
    DDR3_full_latch  <= DDR3_full;																				
 end
 
 // give time to NEW_START to settle
 assign  new_start_pulse = new_start_latch && ~new_start_delay;
-//give time to WRITE_PAGE_NO_LATCH to settle
-assign  new_write_pulse = new_write_latch && ~new_write_delay; 
+////give time to WRITE_PAGE_NO_LATCH to settle
+//assign  new_write_pulse = new_write_latch && ~new_write_delay; 
 assign  DDR3_pulse      = DDR3_full && ~DDR3_full_latch;
 
 //
@@ -189,26 +189,28 @@ begin
    begin
       page_no_for_write  <= 32'hFFFF_FFFF;	 // to avoid LAST_WRITE glitch at reset 
       page_no_for_read   <= 32'hFFFF_FFFF;	
-      write_page_no_latch<= 32'b0;  // needed to generate NEW_WRITE_PULSE at the beginning!!
+//      write_page_no_latch<= 32'b0;  // needed to generate NEW_WRITE_PULSE at the beginning!!
    end  
    else 
    begin
-      write_page_no_latch  <= write_page_no;
-      if (new_write_pulse) page_no_for_write <= write_page_no_latch;
-      else if (DDR3_pulse) page_no_for_read  <= page_no_for_write;
+      //write_page_no_latch  <= write_page_no;
+      //if (new_write_pulse) page_no_for_write <= write_page_no_latch;
+      //else if (DDR3_pulse) page_no_for_read  <= page_no_for_write;
+		page_no_for_write <= write_page_no;
+      if (DDR3_pulse) page_no_for_read  <= page_no_for_write;
    end
 end
   
-// catch new value of WRITE_PAGE_NO  
-always@(posedge sysclk_i, posedge reset)
-begin										 
-   if (reset) new_write <= 1'b0;	  
-   else 
-   begin
-      if(new_write_pulse)                               new_write <= 1'b0;
-      else if (write_page_no_latch != write_page_no)    new_write <= 1'b1;
-   end
-end
+//// catch new value of WRITE_PAGE_NO  
+//always@(posedge sysclk_i, posedge reset)
+//begin										 
+   //if (reset) new_write <= 1'b0;	  
+   //else 
+   //begin
+      //if(new_write_pulse)                               new_write <= 1'b0;
+      //else if (write_page_no_latch != write_page_no)    new_write <= 1'b1;
+   //end
+//end
 
 //
 // DDR3 full logic:

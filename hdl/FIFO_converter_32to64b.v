@@ -15,6 +15,7 @@
 //               sends it to a 64-bit FWFT TEMPFIFO to be used to write 
 //               data to the DDR3 Memory. Use 2-clks of SM to keep up with data writing to DIGIFIFO.
 //    v2.0		:  12/2020   Change "data valid" logic to be data driven for VST using  "data_in_rdcnt >= 17'h100"   
+//    v3.0     :  01/2021   Added latching of "tempfifo_empty" and "last_write" to avoid timing violations
 //
 // Hierarchy   :
 //               FIFO_converter_32to64b.v            <-- This module
@@ -47,14 +48,17 @@ reg	[31:0] 	read_in1, read_in2;
 
 //
 // logic to disable data transfer from DIGIFIFO when TEMPFIFO is full until TEMPFIFO is empty
-reg    disable_re;
+reg	tempfifo_empty_latch;
+always@(posedge digiclk_i) tempfifo_empty_latch <= tempfifo_empty;
+
+reg   disable_re;
 always@(posedge digiclk_i, posedge reset)
 begin
 	if(reset == 1'b1)					disable_re <= 1'b0;
    else 
    begin
-      if      (tempfifo_full)		disable_re <= 1'b1;
-      else if (tempfifo_empty)	disable_re <= 1'b0;
+      if      (tempfifo_full)			disable_re <= 1'b1;
+      else if (tempfifo_empty_latch)disable_re <= 1'b0;
    end
 end
 
@@ -70,6 +74,9 @@ end
 //   because it uses "last_write" int its logic)
 // NB:  "data_valid" used in "digififo_re" enable cannot start BEFORE "last_write" is checked for previous 1kB block!
 // NB:  "daq_ready" connected to reset, issued when all DDRs have been fully read 
+reg	last_write_latch;
+always@(posedge digiclk_i)last_write_latch <= last_write;
+
 reg   daq_ready;
 reg	data_ready_reg, data_ready_latch;
 always@(posedge digiclk_i, posedge reset)
@@ -77,8 +84,8 @@ begin
    if(reset == 1'b1)		daq_ready <= 1'b0;
    else 
 	begin
-		if (fifo_write_mem_en)	daq_ready <= 1'b1;
-		else if (last_write)		daq_ready <= 1'b0;
+		if (fifo_write_mem_en)		daq_ready <= 1'b1;
+		else if (last_write_latch)	daq_ready <= 1'b0;
 	end
 end
 
