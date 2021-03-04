@@ -625,7 +625,7 @@ begin
       enable_fiber_marker <= '0';
 
     elsif (PCLK'event and PCLK = '1') then
-      ROCRESET  <= '1';
+      --ROCRESET  <= '1';
 
       SERDES_RE <= '0';
       serdes_re0 <= '0';
@@ -653,7 +653,7 @@ begin
 
 
           when CRROCRESET =>
-            ROCRESET <= '0';
+            ROCRESET <= PWDATA(0);
           when CRINVERTCALSPICLCK =>
             INVERTCALSPICLCK <= PWDATA(0);
     

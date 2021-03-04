@@ -257,7 +257,6 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {XCVR_Block} -insta
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PacketSender_0:ALGO_CLK" "ForwardDetector_0:ALGO_CLK" "ALGO_CLK" "ALGO_CLK_PLL_1:OUT1_FABCLK_0" "DCS_RCV_FIFO:CLK" "DCS_RESP_FIFO:CLK" "DracMonitor_0:ALGO_CLK" "CommandHandler_0:ALGO_CLK" "XCVR_Block_0:ALGO_CLK" "Receive:RCLOCK" "Response:WCLOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ALGO_CLK_PLL_1:OUT0_FABCLK_0" "XCVR_Block_0:CLK200" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BusyMonitor_0:BUSY" "BUSY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Clock40Mhz_0:Clk_40Mhz" "PacketSender_0:CLK40_GEN" "ForwardDetector_0:CLK40_GEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CommandHandler_0:DCS_RCV_FIFO_WE_0" "DCS_RCV_FIFO:WE" }

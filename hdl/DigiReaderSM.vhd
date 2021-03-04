@@ -51,7 +51,7 @@ port (
 end DigiReaderSM;
 architecture architecture_DigiReaderSM of DigiReaderSM is
 
-    type state_type is (IDLE, READ_HEADER1, READ_HEADER2, HIT_LOOP, READ_HIT_FIRSTPACKET, READ_HIT_ADC1, READ_HIT_ADC2);
+    type state_type is (IDLE, HIT_LOOP, READ_HIT_FIRSTPACKET, READ_HIT_ADC1, READ_HIT_ADC2, FINISH_HIT_LOOP);
     signal state            : state_type;
     
     signal current_channel : integer range 0 to 3;
@@ -81,7 +81,7 @@ begin
     fifo_ready(2) <= '1' when unsigned(lane2_rdcnt) >= 4 else '0';
     fifo_ready(3) <= '1' when unsigned(lane3_rdcnt) >= 4 else '0';
 
-    outfifo_data <= X"0000" & event_window_counter when outfifo_data_select = '0' else current_data;
+    outfifo_data <= current_data;
 
     process(reset_n,clk)
     begin
@@ -92,47 +92,47 @@ begin
         outfifo_we <= '0';
         hit_counter <= (others => '0');
         word_counter <= (others => '0');
-        outfifo_data_select <= '0';
+        --outfifo_data_select <= '0';
         
     elsif rising_edge(clk) then
         case state is
             when IDLE =>
                 fifo_re <= (others => '0');
                 outfifo_we <= '0';
-                if fifo_empty(current_channel) = '1' or use_lane(current_channel) = '0' then
+                if fifo_ready(current_channel) = '0' or use_lane(current_channel) = '0' then
                     current_channel <= current_channel + 1;
                 else
-                    state <= READ_HEADER1;
+                    state <= HIT_LOOP;
                     fifo_re(current_channel) <= '1';
                 end if;
                 
-            when READ_HEADER1 => 
-                fifo_re <= (others => '0');
-                state <= READ_HEADER2;
+            --when READ_HEADER1 => 
+            --    fifo_re <= (others => '0');
+            --    state <= READ_HEADER2;
                 
-            when READ_HEADER2 =>
-                event_window_counter <= current_data(15 downto 0);
-                hit_counter <= unsigned(current_data(31 downto 16));
-                state <= HIT_LOOP;
+            --when READ_HEADER2 =>
+            --    event_window_counter <= current_data(15 downto 0);
+            --    hit_counter <= unsigned(current_data(31 downto 16));
+            --    state <= HIT_LOOP;
                 
             when HIT_LOOP =>
-                outfifo_data_select <= '0';
+                --outfifo_data_select <= '0';
                 word_counter <= X"3";
-                if hit_counter = 0 then
-                    state <= IDLE;
-                    current_channel <= current_channel + 1;
-                else
-                    if fifo_ready(current_channel) = '0' then
-                        state <= HIT_LOOP;
-                    else
+                --if hit_counter = 0 then
+                --    state <= IDLE;
+                --    current_channel <= current_channel + 1;
+                --else
+                --    if fifo_ready(current_channel) = '0' then
+                --        state <= HIT_LOOP;
+                --    else
                         state <= READ_HIT_FIRSTPACKET;
                         fifo_re(current_channel) <= '1';
                         outfifo_we <= '1';
-                    end if;
-                end if;
+                --    end if;
+                --end if;
                 
             when READ_HIT_FIRSTPACKET =>
-                outfifo_data_select <= '1';
+                --outfifo_data_select <= '1';
                 word_counter <= word_counter - 1;
                 if word_counter = 0 then
                     packet_counter <= unsigned(current_data(21 downto 16));
@@ -144,7 +144,7 @@ begin
                 outfifo_we <= '0';
                 if packet_counter = 0 then
                     hit_counter <= hit_counter - 1;
-                    state <= HIT_LOOP;
+                    state <= FINISH_HIT_LOOP;
                 else
                     if fifo_ready(current_channel) = '1' then
                         packet_counter <= packet_counter - 1;
@@ -161,6 +161,11 @@ begin
                     fifo_re(current_channel) <= '0';
                     state <= READ_HIT_ADC1;
                 end if;
+                
+            when FINISH_HIT_LOOP =>
+                state <= IDLE;
+                current_channel <= current_channel + 1;
+                
                 
         end case;
     end if;
