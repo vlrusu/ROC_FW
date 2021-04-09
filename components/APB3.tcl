@@ -1,6 +1,8 @@
-# Exporting core APB3 to TCL
-# Exporting Create design command for core APB3
-create_and_configure_core -core_vlnv {Actel:DirectCore:CoreAPB3:4.1.100} -component_name {APB3} -params {\
+# Exporting Component Description of APB3 to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component APB3
+create_and_configure_core -core_vlnv {Actel:DirectCore:CoreAPB3:4.2.100} -component_name {APB3} -params {\
 "APB_DWIDTH:32"  \
 "APBSLOT0ENABLE:true"  \
 "APBSLOT1ENABLE:true"  \
@@ -37,4 +39,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:CoreAPB3:4.1.100} -compon
 "SC_14:false"  \
 "SC_15:false"  \
 "UPR_NIBBLE_POSN:6"   }
-# Exporting core APB3 to TCL done
+# Exporting Component Description of APB3 to TCL done

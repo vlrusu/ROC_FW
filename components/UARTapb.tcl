@@ -1,6 +1,8 @@
-# Exporting core UARTapb to TCL
-# Exporting Create design command for core UARTapb
-create_and_configure_core -core_vlnv {Actel:DirectCore:CoreUARTapb:5.6.102} -component_name {UARTapb} -params {\
+# Exporting Component Description of UARTapb to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component UARTapb
+create_and_configure_core -core_vlnv {Actel:DirectCore:CoreUARTapb:5.7.100} -component_name {UARTapb} -params {\
 "BAUD_VAL_FRCTN:0"  \
 "BAUD_VAL_FRCTN_EN:false"  \
 "BAUD_VALUE:1"  \
@@ -11,4 +13,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:CoreUARTapb:5.6.102} -com
 "RX_LEGACY_MODE:0"  \
 "TX_FIFO:0"  \
 "USE_SOFT_FIFO:0"   }
-# Exporting core UARTapb to TCL done
+# Exporting Component Description of UARTapb to TCL done

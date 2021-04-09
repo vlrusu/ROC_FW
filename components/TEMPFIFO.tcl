@@ -1,6 +1,8 @@
-# Exporting core TEMPFIFO to TCL
-# Exporting Create design command for core TEMPFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {TEMPFIFO} -params {\
+# Exporting Component Description of TEMPFIFO to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component TEMPFIFO
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.8.101} -component_name {TEMPFIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:true"  \
@@ -29,4 +31,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "WRCNT_EN:true"  \
 "WRITE_ACK:false"  \
 "WWIDTH:64"   }
-# Exporting core TEMPFIFO to TCL done
+# Exporting Component Description of TEMPFIFO to TCL done

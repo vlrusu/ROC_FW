@@ -1,6 +1,8 @@
-# Exporting core pwm to TCL
-# Exporting Create design command for core pwm
-create_and_configure_core -core_vlnv {Actel:DirectCore:corepwm:4.3.101} -component_name {pwm} -params {\
+# Exporting Component Description of pwm to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component pwm
+create_and_configure_core -core_vlnv {Actel:DirectCore:corepwm:4.5.100} -component_name {pwm} -params {\
 "APB_DWIDTH:32"  \
 "CONFIG_MODE:0"  \
 "DAC_MODE1:false"  \
@@ -139,4 +141,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:corepwm:4.3.101} -compone
 "TACH_EDGE16:false"  \
 "TACH_NUM:1"  \
 "TACHINT_ACT_LEVEL:false"   }
-# Exporting core pwm to TCL done
+# Exporting Component Description of pwm to TCL done

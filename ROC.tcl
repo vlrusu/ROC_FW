@@ -49,6 +49,7 @@ if {[file exists $project_dir] == 1} then {
 
     import_files -sdc ./constraints/ROC_derived_constraints.sdc
     import_files -sdc ./constraints/clocks.sdc
+    import_files -sdc ./constraints/timing_pr.sdc
     
     import_files -fp_pdc ./constraints/fp/user.pdc
 
@@ -62,6 +63,7 @@ if {[file exists $project_dir] == 1} then {
 	-file $project_dir/constraint/io/io.pdc \
 	-file $project_dir/constraint/ROC_derived_constraints.sdc \
 	-file $project_dir/constraint/clocks.sdc \
+	-file $project_dir/constraint/timing_pr.sdc \
 	-file $project_dir/constraint/fp/user.pdc \
 	-module {ROC::work} -input_type {constraint}
 
@@ -76,6 +78,8 @@ if {[file exists $project_dir] == 1} then {
     organize_tool_files -tool {VERIFYTIMING} \
 	-file $project_dir/constraint/ROC_derived_constraints.sdc \
 	-file $project_dir/constraint/clocks.sdc \
+	-file $project_dir/constraint/timing_pr.sdc \
+
 	-module {ROC::work} -input_type {constraint}
 
 

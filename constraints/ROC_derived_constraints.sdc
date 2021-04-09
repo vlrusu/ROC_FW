@@ -1,47 +1,45 @@
 # Microsemi Corp.
-# Date: 2021-Feb-22 15:50:17
+# Date: 2021-Mar-29 16:47:37
 # This file was generated based on the following SDC source files:
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/ROC_CCC/ROC_CCC_0/ROC_CCC_ROC_CCC_0_PF_CCC.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/AXI4_Interconnect/AXI4_Interconnect_0/AXI4_Interconnect.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/DDR3_Cntrl/DDR3_Cntrl.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/DDR3_Cntrl/CCC_0/DDR3_Cntrl_CCC_0_PF_CCC.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/DDR3_Cntrl/DLL_0/DDR3_Cntrl_DLL_0_PF_CCC.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/TransceiverIF/I_XCVR/TransceiverIF_I_XCVR_PF_XCVR.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/TxPLL/TxPLL_0/TxPLL_TxPLL_0_PF_TX_PLL.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/PF_CLK_DIV_C0/PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_PF_CLK_DIV_C0_0_PF_CLK_DIV.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/ALGO_CLK_PLL_0/ALGO_CLK_PLL_0_0/ALGO_CLK_PLL_0_ALGO_CLK_PLL_0_0_PF_CCC.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/PF_XCVR_ERM_C0/I_XCVR/PF_XCVR_ERM_C0_I_XCVR_PF_XCVR.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/XCVR_PLL_0/XCVR_PLL_0_0/XCVR_PLL_0_XCVR_PLL_0_0_PF_TX_PLL.sdc
-#   D:/rbonv/vst_development_versions/ROC_fw_noeventbuild/component/work/TrackerCCC/TrackerCCC_0/TrackerCCC_TrackerCCC_0_PF_CCC.sdc
-#   C:/Microsemi/Libero_SoC_v12.5/Designer/data/aPA5M/cores/constraints/osc_rc160mhz.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/AXI4_Interconnect/AXI4_Interconnect_0/AXI4_Interconnect.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/DDR3_Cntrl/DDR3_Cntrl.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/DDR3_Cntrl/CCC_0/DDR3_Cntrl_CCC_0_PF_CCC.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/DDR3_Cntrl/DLL_0/DDR3_Cntrl_DLL_0_PF_CCC.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_TX_PLL_0/PF_TX_PLL_0_0/PF_TX_PLL_0_PF_TX_PLL_0_0_PF_TX_PLL.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_XCVR_0/I_XCVR/PF_XCVR_0_I_XCVR_PF_XCVR.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_CCC_C0/PF_CCC_C0_0/PF_CCC_C0_PF_CCC_C0_0_PF_CCC.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_CCC_C1/PF_CCC_C1_0/PF_CCC_C1_PF_CCC_C1_0_PF_CCC.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_CLK_DIV_C0/PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_PF_CLK_DIV_C0_0_PF_CLK_DIV.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/PF_XCVR_ERM_C0/I_XCVR/PF_XCVR_ERM_C0_I_XCVR_PF_XCVR.sdc
+#   D:/rbonv/vst_development_versions/SERDES_ONLY/ROC_demo_litefast_markeronly_olddrac/component/work/XCVR_PLL_0/XCVR_PLL_0_0/XCVR_PLL_0_XCVR_PLL_0_0_PF_TX_PLL.sdc
+#   C:/Microsemi/Libero_SoC_v12.6/Designer/data/aPA5M/cores/constraints/osc_rc160mhz.sdc
 #
 
-create_clock -name {ROC_CLK_P} -period 20 [ get_ports { ROC_CLK_P } ]
-create_clock -name {SERDES_CAL_CLK_P} -period 10 [ get_ports { SERDES_CAL_CLK_P } ]
-create_clock -name {DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE0/TX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE0/TX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE0/RX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE0/RX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE1/TX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE1/TX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE1/RX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_0/TransceiverIF_0/I_XCVR/LANE1/RX_CLK_R } ]
-create_clock -name {SERDES_HV_CLK_P} -period 10 [ get_ports { SERDES_HV_CLK_P } ]
-create_clock -name {DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE0/TX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE0/TX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE0/RX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE0/RX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE1/TX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE1/TX_CLK_R } ]
-create_clock -name {DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE1/RX_CLK_R} -period 6.66667 [ get_pins { DIGIINTERFACE_0/serdes_1/TransceiverIF_0/I_XCVR/LANE1/RX_CLK_R } ]
-create_clock -name {PF_OSC_C0_0/PF_OSC_C0_0/I_OSC_160/CLK} -period 6.25 [ get_pins { PF_OSC_C0_0/PF_OSC_C0_0/I_OSC_160/CLK } ]
 create_clock -name {REF_CLK_PAD_P} -period 10 [ get_ports { REF_CLK_PAD_P } ]
+create_clock -name {REF_CLK_PAD_P_0} -period 10 [ get_ports { REF_CLK_PAD_P_0 } ]
+create_clock -name {DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE0/TX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE0/TX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE0/RX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE0/RX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE1/RX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_0/PF_XCVR_0_0/I_XCVR/LANE1/RX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE0/TX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE0/TX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE0/RX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE0/RX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R } ]
+create_clock -name {DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/RX_CLK_R} -period 6.66667 [ get_pins { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/RX_CLK_R } ]
+create_clock -name {ROC_CLK_P} -period 20 [ get_ports { ROC_CLK_P } ]
+create_clock -name {REF_CLK_PAD_P_1} -period 10 [ get_ports { REF_CLK_PAD_P_1 } ]
 create_clock -name {TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R} -period 5 [ get_pins { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R } ]
 create_clock -name {TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/RX_CLK_R} -period 5 [ get_pins { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/RX_CLK_R } ]
-create_generated_clock -name {CCC_0/ROC_CCC_0/pll_inst_0/OUT0} -divide_by 1 -source [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/OUT0 } ]
-create_generated_clock -name {CCC_0/ROC_CCC_0/pll_inst_0/OUT1} -divide_by 1 -source [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/OUT1 } ]
-create_generated_clock -name {CCC_0/ROC_CCC_0/pll_inst_0/OUT2} -multiply_by 20 -divide_by 9 -source [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/OUT2 } ]
-create_generated_clock -name {CCC_0/ROC_CCC_0/pll_inst_0/OUT3} -multiply_by 2 -source [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { CCC_0/ROC_CCC_0/pll_inst_0/OUT3 } ]
+create_clock -name {PF_OSC_0_0/PF_OSC_0_0/I_OSC_160/CLK} -period 6.25 [ get_pins { PF_OSC_0_0/PF_OSC_0_0/I_OSC_160/CLK } ]
 create_generated_clock -name {DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT0} -multiply_by 4 -source [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT0 } ]
 create_generated_clock -name {DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT1} -divide_by 1 -source [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT1 } ]
 create_generated_clock -name {DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT2} -multiply_by 4 -source [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT2 } ]
 create_generated_clock -name {DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT3} -multiply_by 4 -source [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/OUT3 } ]
+create_generated_clock -name {PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT0} -multiply_by 4 -source [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT0 } ]
+create_generated_clock -name {PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT1} -divide_by 1 -source [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT1 } ]
+create_generated_clock -name {PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT2} -multiply_by 20 -divide_by 9 -source [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT2 } ]
+create_generated_clock -name {PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT3} -multiply_by 4 -divide_by 5 -source [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT3 } ]
+create_generated_clock -name {PF_CCC_C1_0/PF_CCC_C1_0/pll_inst_0/OUT0} -divide_by 1 -source [ get_pins { PF_CCC_C1_0/PF_CCC_C1_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { PF_CCC_C1_0/PF_CCC_C1_0/pll_inst_0/OUT0 } ]
 create_generated_clock -name {PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_0/I_CD/Y_DIV} -divide_by 4 -source [ get_pins { PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_0/I_CD/A } ] [ get_pins { PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_0/I_CD/Y_DIV } ]
-create_generated_clock -name {TOP_SERDES_0/ALGO_CLK_PLL_1/ALGO_CLK_PLL_0_0/pll_inst_0/OUT1} -divide_by 4 -source [ get_pins { TOP_SERDES_0/ALGO_CLK_PLL_1/ALGO_CLK_PLL_0_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { TOP_SERDES_0/ALGO_CLK_PLL_1/ALGO_CLK_PLL_0_0/pll_inst_0/OUT1 } ]
-create_generated_clock -name {TrackerCCC_0/TrackerCCC_0/pll_inst_0/OUT0} -multiply_by 4 -source [ get_pins { TrackerCCC_0/TrackerCCC_0/pll_inst_0/REF_CLK_0 } ] -phase 0 [ get_pins { TrackerCCC_0/TrackerCCC_0/pll_inst_0/OUT0 } ]
 set_false_path -through [ get_nets { DDRInterface_0/AXI4_Interconnect_0/ARESETN* } ]
 set_false_path -to [ get_pins { DDRInterface_0/DDR3_Cntrl_0/DDRPHY_BLK_0/*/I_IOD_*/ARST_N } ]
 set_false_path -to [ get_pins { DDRInterface_0/DDR3_Cntrl_0/DDRPHY_BLK_0/LANE_*_CTRL/I_LANECTRL/HS_IO_CLK_PAUSE } ]
@@ -121,4 +119,5 @@ set_false_path -through [ get_pins { DDRInterface_0/DDR3_Cntrl_0/DDRPHY_BLK_0/*/
 set_false_path -to [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/PHASE_OUT0_SEL } ]
 set_false_path -to [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/PHASE_OUT2_SEL } ]
 set_false_path -to [ get_pins { DDRInterface_0/DDR3_Cntrl_0/CCC_0/pll_inst_0/PHASE_OUT3_SEL } ]
+set_false_path -through [ get_pins { PF_CCC_C1_0/PF_CCC_C1_0/pll_inst_0/OUT0 } ] -to [ get_cells { PF_CCC_C1_0/PF_CCC_C1_0/Pll_Ext_FeedBack_Mode_Soft_Logic_Inst/* } ]
 set_multicycle_path -setup_only 2 -from [ get_cells { DDRInterface_0/DDR3_Cntrl_0/DDRPHY_BLK_0/IOD_TRAINING_0/COREDDR_TIP_INT_U/TIP_CTRL_BLK/u_write_callibrator/select* } ]

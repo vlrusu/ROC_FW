@@ -6,8 +6,6 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Ports
-sd_create_scalar_port -sd_name ${sd_name} -port_name {HCLK} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {HRESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MISO} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
@@ -39,16 +37,12 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRWEN} -port_direction {O
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRREN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCRESET} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SERDES_RE} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SERDES_RESET} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SERDES_FULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SERDES_EMPTY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {calsda} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hvscl} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {calscl} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hvsda} -port_direction {INOUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {ewm} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {tracker_clk} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {ewm_enable} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRSEL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRFULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRMEMFIFOEMPTY} -port_direction {IN}
@@ -82,6 +76,22 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRPTTREN} -port_direction
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRISERR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {enable_fiber_marker} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {enable_fiber_clock} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ewm_enable_50mhz} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ewm_50mhz} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGI_RESET} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dtc_enable_reset} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pma_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane0_aligned} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_aligned} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_aligned} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_aligned} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane0_pcs_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_pcs_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane0_pma_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_pma_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pcs_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pcs_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pma_reset_n} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRNHITS} -port_direction {OUT} -port_range {[7:0]}
@@ -134,6 +144,14 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DTCDATAREAD} -port_direction 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCONVDATA} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCONVRDCNT} -port_direction {IN} -port_range {[16:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRERRLOC} -port_direction {IN} -port_range {[31:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_alignment} -port_direction {IN} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_alignment} -port_direction {IN} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_alignment} -port_direction {IN} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_alignment} -port_direction {IN} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_error_count} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_error_count} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
 
 sd_create_bif_port -sd_name ${sd_name} -port_name {APB3mmaster} -port_bif_vlnv {AMBA:AMBA2:APB:r0p0} -port_bif_role {mirroredMaster} -port_bif_mapping {\
 "PADDR:PADDR" \
@@ -306,6 +324,12 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:resetn_i" "AND2_0:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane0_aligned" "Registers_0:cal_lane0_aligned" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane0_pcs_reset_n" "Registers_0:cal_lane0_pcs_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane0_pma_reset_n" "Registers_0:cal_lane0_pma_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane1_aligned" "Registers_0:cal_lane1_aligned" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane1_pcs_reset_n" "Registers_0:cal_lane1_pcs_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane1_pma_reset_n" "Registers_0:cal_lane1_pma_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISS[0]" "CAL_PREAMP_CE0n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISS[1]" "CAL_PREAMP_CE1n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISDI" "CAL_PREAMP_MISO" }
@@ -328,14 +352,20 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRSET" "DDRSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRTEMPFIFOEMPTY" "DDRTEMPFIFOEMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRTEMPFIFOFULL" "DDRTEMPFIFOFULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRWEN" "DDRWEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DIGI_RESET" "DIGI_RESET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"dtc_enable_reset" "Registers_0:dtc_enable_reset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DTCSIMBLKEN" "DTCSIMBLKEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DTCSIMSTART" "DTCSIMSTART" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_clock" "enable_fiber_clock" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_marker" "enable_fiber_marker" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm" "ewm" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_enable" "ewm_enable" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"HCLK" "PREAMPSPI_1:PCLK" "SPI_KEY_0:PCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "HRESETN" "PREAMPSPI_1:PRESETN" "SPI_KEY_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_50mhz" "ewm_50mhz" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_enable_50mhz" "ewm_enable_50mhz" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_aligned" "Registers_0:hv_lane0_aligned" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_pcs_reset_n" "Registers_0:hv_lane0_pcs_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_pma_reset_n" "Registers_0:hv_lane0_pma_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_aligned" "Registers_0:hv_lane1_aligned" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_pcs_reset_n" "Registers_0:hv_lane1_pcs_reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_pma_reset_n" "Registers_0:hv_lane1_pma_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[0]" "HV_PREAMP_CE0n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[1]" "HV_PREAMP_CE1n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISDI" "HV_PREAMP_MISO" }
@@ -344,9 +374,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISCLKO" "HV_PREAM
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvscl" "hvscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvsda" "hvsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "INV_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PCLK" "TVS_Interface_0:clk" "TVS_Interface_0:R_CLK" "UARTapb_0:PCLK" "PREAMPSPI_0:PCLK" "counter32_0:clk" "GPIO_0:PCLK" "pwm_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "counter32_0:clk" "GPIO_0:PCLK" "PCLK" "SPI0_0:PCLK" "Registers_0:PCLK" "PREAMPSPI_1:PCLK" "pwm_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISCLKO" "MX2_0:A" "INV_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PRESETN" "UARTapb_0:PRESETN" "PREAMPSPI_0:PRESETN" "GPIO_0:PRESETN" "pwm_0:PRESETN" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "AND2_0:A" "GPIO_0:PRESETN" "PRESETN" "SPI0_0:PRESETN" "Registers_0:PRESETn" "PREAMPSPI_1:PRESETN" "pwm_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pwm_0:PWM[0]" "PWM0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "Registers_0:INVERTCALSPICLCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"counter32_0:en" "Registers_0:TIMERENABLE" }
@@ -362,7 +392,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_re0" "serdes
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_re1" "serdes_re1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_re2" "serdes_re2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_re3" "serdes_re3" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_RESET" "SERDES_RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_0:SPISS[0]" "SPI0_ADC0_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_0:SPISS[1]" "SPI0_ADC1_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_0:SPISS[2]" "SPI0_ADC2_CEn" }
@@ -379,11 +408,14 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI2_ADC0_CEn" "SPI_KEY_0:SPISS
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI2_MISO" "SPI_KEY_0:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI2_MOSI" "SPI_KEY_0:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI2_SCLK" "SPI_KEY_0:SPISCLKO" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:tracker_clk" "tracker_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"UARTapb_0:TX" "TX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:write_to_fifo" "write_to_fifo" }
 
 # Add bus net connections
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_alignment" "cal_lane0_alignment" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_error_count" "cal_lane0_error_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane1_alignment" "cal_lane1_alignment" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane1_error_count" "cal_lane1_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"counter32_0:cnt" "Registers_0:TIMERCOUNTER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRCONVDATA" "DDRCONVDATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRCONVRDCNT" "DDRCONVRDCNT" }
@@ -416,6 +448,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_early_cut" "Regist
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_late_cut" "Registers_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_delay" "Registers_0:ewm_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_alignment" "hv_lane0_alignment" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_error_count" "hv_lane0_error_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane1_alignment" "hv_lane1_alignment" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane1_error_count" "hv_lane1_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"remote_token0" "Registers_0:remote_token0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"remote_token1" "Registers_0:remote_token1" }

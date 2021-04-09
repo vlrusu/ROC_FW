@@ -1,8 +1,8 @@
-# Exporting Component Description of XCVR_PLL_0 to TCL
+# Exporting Component Description of PF_TX_PLL_0 to TCL
 # Family: PolarFire
 # Part Number: MPF300TS-1FCG1152I
-# Create and Configure the core component XCVR_PLL_0
-create_and_configure_core -core_vlnv {Actel:SgCore:PF_TX_PLL:2.0.300} -component_name {XCVR_PLL_0} -params {\
+# Create and Configure the core component PF_TX_PLL_0
+create_and_configure_core -core_vlnv {Actel:SgCore:PF_TX_PLL:2.0.300} -component_name {PF_TX_PLL_0} -params {\
 "CORE:PF_TX_PLL"  \
 "INIT:0x0"  \
 "TxPLL_AUX_LOW_SEL:true"  \
@@ -22,7 +22,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_TX_PLL:2.0.300} -component
 "TxPLL_JITTER_MODE_SEL:10G SyncE 32Bit"  \
 "TxPLL_JITTER_MODE_WANDER:15"  \
 "TxPLL_MODE:NORMAL"  \
-"TxPLL_OUT:2000.000"  \
+"TxPLL_OUT:3000.000"  \
 "TxPLL_REF:100"  \
 "TxPLL_RN_FILTER:false"  \
 "TxPLL_SOURCE:DEDICATED"  \
@@ -32,4 +32,4 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_TX_PLL:2.0.300} -component
 "TxPLL_SSM_FREQ:64"  \
 "TxPLL_SSM_RAND_PATTERN:0"  \
 "VCOFREQUENCY:1600"   }
-# Exporting Component Description of XCVR_PLL_0 to TCL done
+# Exporting Component Description of PF_TX_PLL_0 to TCL done

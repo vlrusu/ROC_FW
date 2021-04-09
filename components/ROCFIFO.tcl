@@ -1,6 +1,8 @@
-# Exporting core ROCFIFO to TCL
-# Exporting Create design command for core ROCFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {ROCFIFO} -params {\
+# Exporting Component Description of ROCFIFO to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component ROCFIFO
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.8.101} -component_name {ROCFIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:false"  \
@@ -29,4 +31,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "WRCNT_EN:true"  \
 "WRITE_ACK:false"  \
 "WWIDTH:32"   }
-# Exporting core ROCFIFO to TCL done
+# Exporting Component Description of ROCFIFO to TCL done

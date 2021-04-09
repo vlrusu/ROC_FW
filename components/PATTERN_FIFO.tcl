@@ -1,6 +1,8 @@
-# Exporting core PATTERN_FIFO to TCL
-# Exporting Create design command for core PATTERN_FIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -component_name {PATTERN_FIFO} -params {\
+# Exporting Component Description of PATTERN_FIFO to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component PATTERN_FIFO
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.8.101} -component_name {PATTERN_FIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:true"  \
@@ -29,4 +31,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.7.105} -compon
 "WRCNT_EN:false"  \
 "WRITE_ACK:false"  \
 "WWIDTH:32"   }
-# Exporting core PATTERN_FIFO to TCL done
+# Exporting Component Description of PATTERN_FIFO to TCL done

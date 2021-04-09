@@ -25,7 +25,7 @@ entity Registers is
     SERDES_DATA  : in  std_logic_vector(31 downto 0);
     SERDES_FULL  : in  std_logic;
     SERDES_EMPTY : in  std_logic;
-    SERDES_RESET : out std_logic;
+    DIGI_RESET : out std_logic;
     SERDES_RDCNT : in std_logic_vector(16 downto 0);
     SERDES_HOWMANY : out std_logic_vector(12 downto 0);
     serdes_aligned : in std_logic_vector(3 downto 0);
@@ -83,9 +83,8 @@ entity Registers is
     hvsda : inout std_logic;
     calsda : inout std_logic;
 
-    tracker_clk : in std_logic;
-    ewm : out std_logic;
-    ewm_enable : out std_logic;
+    ewm_50mhz : out std_logic;
+    ewm_enable_50mhz : out std_logic;
     ewm_delay : out std_logic_vector(15 downto 0);
     event_window_early_cut : out std_logic_vector(15 downto 0);
     event_window_late_cut : out std_logic_vector(15 downto 0);
@@ -122,6 +121,32 @@ entity Registers is
     
     enable_fiber_clock : out std_logic;
     enable_fiber_marker : out std_logic;
+    
+    cal_lane0_pcs_reset_n : out std_logic;
+    cal_lane1_pcs_reset_n : out std_logic;
+    cal_lane0_pma_reset_n : out std_logic;
+    cal_lane1_pma_reset_n : out std_logic;
+    hv_lane0_pcs_reset_n : out std_logic;
+    hv_lane1_pcs_reset_n : out std_logic;
+    hv_lane0_pma_reset_n : out std_logic;
+    hv_lane1_pma_reset_n : out std_logic;
+    
+    cal_lane0_aligned : in std_logic;
+    cal_lane1_aligned : in std_logic;
+    hv_lane0_aligned : in std_logic;
+    hv_lane1_aligned : in std_logic;
+    
+    cal_lane0_alignment : in std_logic_vector(3 downto 0);
+    cal_lane1_alignment : in std_logic_vector(3 downto 0);
+    hv_lane0_alignment : in std_logic_vector(3 downto 0);
+    hv_lane1_alignment : in std_logic_vector(3 downto 0);
+    
+    cal_lane0_error_count : in std_logic_vector(7 downto 0);
+    cal_lane1_error_count : in std_logic_vector(7 downto 0);
+    hv_lane0_error_count : in std_logic_vector(7 downto 0);
+    hv_lane1_error_count : in std_logic_vector(7 downto 0);
+    
+    dtc_enable_reset : out std_logic;
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -274,19 +299,21 @@ architecture synth of Registers is
     
     constant CR_ENABLE_FIBER_CLOCK : std_logic_vector(7 downto 0) := x"B0";
     constant CR_ENABLE_FIBER_MARKER : std_logic_vector(7 downto 0) := x"B1";
+    
+    constant CR_LANE0_RESET : std_logic_vector(7 downto 0) := x"B2";
+    constant CR_LANE1_RESET : std_logic_vector(7 downto 0) := x"B3";
+    constant CR_DTC_ENABLE_RESET : std_logic_vector(7 downto 0) := x"B4";
+    
+    constant CR_DIGI_SERDES_RESETS : std_logic_vector(7 downto 0) := x"C0";
+    constant CR_DIGI_SERDES_ALIGNED : std_logic_vector(7 downto 0) := x"C1";
+    constant CR_DIGI_SERDES_ALIGNMENT : std_logic_vector(7 downto 0) := x"C2";
+    constant CR_CAL_SERDES_ERRORS : std_logic_vector(7 downto 0) := x"C3";
+    constant CR_HV_SERDES_ERRORS : std_logic_vector(7 downto 0) := x"C4";
 
   -------------------------------------------------------------------------------
   -- Signal declarations
   -------------------------------------------------------------------------------
   signal DataOut            : std_logic_vector(APB_DATA_WIDTH-1 downto 0);
-    signal ewm_50mhz : std_logic;
-    signal ewm_1Q : std_logic;
-    signal ewm_2Q : std_logic;
-    signal ewm_3Q : std_logic;
-    signal ewm_enable_50mhz : std_logic;
-    signal ewm_enable_1Q : std_logic;
-    signal ewm_enable_2Q : std_logic;
-    signal ewm_enable_3Q : std_logic;
 
    component TWIMaster
         -- ports
@@ -423,20 +450,6 @@ begin
 
         );
 
-    process (tracker_clk)
-    begin
-    if rising_edge(tracker_clk) then
-        ewm_1Q <= ewm_50mhz;
-        ewm_2Q <= ewm_1Q;
-        ewm_3Q <= ewm_2Q;
-        ewm_enable_1Q <= ewm_enable_50mhz;
-        ewm_enable_2Q <= ewm_enable_1Q;
-    end if;
-    end process;
-
-    ewm <= (ewm_2Q and not ewm_3Q);
-    ewm_enable <= ewm_enable_2Q;
-
 
 
   PREADY  <= '1';
@@ -548,6 +561,24 @@ begin
             DataOut <= serdes_data2;
         when CRSERDES_DATA3 =>
             DataOut <= serdes_data3;
+            
+        when CR_DIGI_SERDES_ALIGNED =>
+            DataOut(0) <= cal_lane0_aligned;
+            DataOut(1) <= cal_lane1_aligned;
+            DataOut(2) <= hv_lane0_aligned;
+            DataOut(3) <= hv_lane1_aligned;
+        when CR_DIGI_SERDES_ALIGNMENT =>
+            DataOut(3 downto 0) <= cal_lane0_alignment;
+            DataOut(7 downto 4) <= cal_lane1_alignment;
+            DataOut(11 downto 8) <= hv_lane0_alignment;
+            DataOut(15 downto 12) <= hv_lane1_alignment;
+        when CR_CAL_SERDES_ERRORS =>
+            DataOut(7 downto 0) <= cal_lane0_error_count;
+            DataOut(15 downto 8) <= cal_lane1_error_count;
+        when CR_HV_SERDES_ERRORS =>
+            DataOut(7 downto 0) <= hv_lane0_error_count;
+            DataOut(15 downto 8) <= hv_lane1_error_count;
+            
 
         when others =>
           DataOut <= (others => '0');
@@ -610,7 +641,17 @@ begin
       serdes_re2 <= '0';
       serdes_re3 <= '0';
       
-      SERDES_RESET <= '1';
+      DIGI_RESET <= '1';
+      cal_lane0_pcs_reset_n <= '1';
+      cal_lane1_pcs_reset_n <= '1';
+      cal_lane0_pma_reset_n <= '1';
+      cal_lane1_pma_reset_n <= '1';
+      hv_lane0_pcs_reset_n <= '1';
+      hv_lane1_pcs_reset_n <= '1';
+      hv_lane0_pma_reset_n <= '1';
+      hv_lane1_pma_reset_n <= '1';
+      
+      dtc_enable_reset <= '0';
       
       cal_init <= '0';
       hv_init <= '0';
@@ -633,7 +674,7 @@ begin
       serdes_re2 <= '0';
       serdes_re3 <= '0';
       
-      SERDES_RESET  <= '1';
+      --DIGI_RESET  <= '1';
       --reset_fifo_n <= '1';
      
       cal_init  <= '0';
@@ -715,7 +756,7 @@ begin
             SERDES_RE <= '1';
    
           when CRSERDESRESET =>
-            SERDES_RESET <= '0';
+            DIGI_RESET <= PWDATA(0);
          
           when CRSERDESHOWMANY =>
             SERDES_HOWMANY <= PWDATA(12 downto 0);
@@ -767,6 +808,17 @@ begin
             enable_fiber_clock <= PWDATA(0);
         when CR_ENABLE_FIBER_MARKER =>
             enable_fiber_marker <= PWDATA(0);
+        when CR_DTC_ENABLE_RESET =>
+            dtc_enable_reset <= PWDATA(0);
+        when CR_DIGI_SERDES_RESETS =>
+            cal_lane0_pcs_reset_n <= PWDATA(0);
+            cal_lane1_pcs_reset_n <= PWDATA(1);
+            cal_lane0_pma_reset_n <= PWDATA(2);
+            cal_lane1_pma_reset_n <= PWDATA(3);
+            hv_lane0_pcs_reset_n <= PWDATA(4);
+            hv_lane1_pcs_reset_n <= PWDATA(5);
+            hv_lane0_pma_reset_n <= PWDATA(6);
+            hv_lane1_pma_reset_n <= PWDATA(7);
             
           when others =>
         end case;
