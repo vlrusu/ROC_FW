@@ -92,6 +92,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_pma_reset_n} -po
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pcs_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pcs_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pma_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {force_full} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {align_roc_to_digi} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRNHITS} -port_direction {OUT} -port_range {[7:0]}
@@ -323,6 +325,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 
 # Add scalar net connections
+sd_connect_pins -sd_name ${sd_name} -pin_names {"align_roc_to_digi" "Registers_0:align_roc_to_digi" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:resetn_i" "AND2_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane0_aligned" "Registers_0:cal_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"cal_lane0_pcs_reset_n" "Registers_0:cal_lane0_pcs_reset_n" }
@@ -360,6 +363,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_clock"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_marker" "enable_fiber_marker" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_50mhz" "ewm_50mhz" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_enable_50mhz" "ewm_enable_50mhz" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"force_full" "Registers_0:force_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_aligned" "Registers_0:hv_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_pcs_reset_n" "Registers_0:hv_lane0_pcs_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_pma_reset_n" "Registers_0:hv_lane0_pma_reset_n" }

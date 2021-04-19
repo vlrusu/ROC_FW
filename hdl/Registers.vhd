@@ -147,6 +147,8 @@ entity Registers is
     hv_lane1_error_count : in std_logic_vector(7 downto 0);
     
     dtc_enable_reset : out std_logic;
+    force_full : out std_logic;
+    align_roc_to_digi : out std_logic;
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -661,6 +663,8 @@ begin
       write_to_fifo <= '0';
       reset_fifo_n <= '1';
       dummy_status_address <= (others => '0');
+      force_full <= '0';
+      align_roc_to_digi <= '0';
       
       enable_fiber_clock <= '0';
       enable_fiber_marker <= '0';
@@ -819,6 +823,11 @@ begin
             hv_lane1_pcs_reset_n <= PWDATA(5);
             hv_lane0_pma_reset_n <= PWDATA(6);
             hv_lane1_pma_reset_n <= PWDATA(7);
+            
+        when X"EF" =>
+            force_full <= PWDATA(0);
+        when X"EE" =>
+            align_roc_to_digi <= PWDATA(0);
             
           when others =>
         end case;

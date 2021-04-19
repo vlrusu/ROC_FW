@@ -14,6 +14,7 @@ import_files -library work -hdl_source hdl/pattern_FIFO_cntrl.v
 import_files -library work -hdl_source hdl/pattern_switch.v
 import_files -library work -hdl_source hdl/pulse_generator.v
 import_files -library work -hdl_source hdl/RxController.vhd
+import_files -library work -hdl_source hdl/TxController.vhd
 import_files -library work -hdl_source hdl/DigiReaderSM.vhd
 import_files -library work -hdl_source hdl/EWMaker.vhd
 import_files -library work -hdl_source hdl/TWIMaster.vhd
