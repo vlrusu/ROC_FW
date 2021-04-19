@@ -1,5 +1,7 @@
-# Exporting core MIV_RV32IMC_C0 to TCL
-# Exporting Create design command for core MIV_RV32IMC_C0
+# Exporting Component Description of MIV_RV32IMC_C0 to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component MIV_RV32IMC_C0
 create_and_configure_core -core_vlnv {Microsemi:MiV:MIV_RV32IMC:2.1.100} -component_name {MIV_RV32IMC_C0} -params {\
 "AHB_END_ADDR_0:0xffff"  \
 "AHB_END_ADDR_1:0x8fff"  \
@@ -43,4 +45,4 @@ create_and_configure_core -core_vlnv {Microsemi:MiV:MIV_RV32IMC:2.1.100} -compon
 "TCM_START_ADDR_0:0x0"  \
 "TCM_START_ADDR_1:0x4000"  \
 "VECTORED_INTERRUPTS:false"   }
-# Exporting core MIV_RV32IMC_C0 to TCL done
+# Exporting Component Description of MIV_RV32IMC_C0 to TCL done

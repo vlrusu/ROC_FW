@@ -116,6 +116,7 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {data_ready_delay
 
 # Add DDR3_Cntrl_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DDR3_Cntrl} -instance_name {DDR3_Cntrl_0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DDR3_Cntrl_0:CTRLR_READY}
 
 
 

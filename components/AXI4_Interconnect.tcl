@@ -1,5 +1,7 @@
-# Exporting core AXI4_Interconnect to TCL
-# Exporting Create design command for core AXI4_Interconnect
+# Exporting Component Description of AXI4_Interconnect to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component AXI4_Interconnect
 create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.103} -component_name {AXI4_Interconnect} -params {\
 "ADDR_WIDTH:32"  \
 "CROSSBAR_MODE:0"  \
@@ -1456,4 +1458,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.
 "SLV_AXI4PRT_ADDRDEPTH:4"  \
 "SLV_AXI4PRT_DATADEPTH:4"  \
 "USER_WIDTH:1"   }
-# Exporting core AXI4_Interconnect to TCL done
+# Exporting Component Description of AXI4_Interconnect to TCL done

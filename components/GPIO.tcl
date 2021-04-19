@@ -1,5 +1,7 @@
-# Exporting core GPIO to TCL
-# Exporting Create design command for core GPIO
+# Exporting Component Description of GPIO to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component GPIO
 create_and_configure_core -core_vlnv {Actel:DirectCore:CoreGPIO:3.2.102} -component_name {GPIO} -params {\
 "APB_WIDTH:32"  \
 "FIXED_CONFIG_0:true"  \
@@ -133,4 +135,4 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:CoreGPIO:3.2.102} -compon
 "IO_VAL_30:0"  \
 "IO_VAL_31:0"  \
 "OE_TYPE:1"   }
-# Exporting core GPIO to TCL done
+# Exporting Component Description of GPIO to TCL done

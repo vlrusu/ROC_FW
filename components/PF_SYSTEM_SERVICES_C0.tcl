@@ -1,5 +1,7 @@
-# Exporting core PF_SYSTEM_SERVICES_C0 to TCL
-# Exporting Create design command for core PF_SYSTEM_SERVICES_C0
+# Exporting Component Description of PF_SYSTEM_SERVICES_C0 to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component PF_SYSTEM_SERVICES_C0
 create_and_configure_core -core_vlnv {Actel:SgCore:PF_SYSTEM_SERVICES:3.0.100} -component_name {PF_SYSTEM_SERVICES_C0} -params {\
 "AUTHBITSTREAM:false"  \
 "AUTHIAPIMG:false"  \
@@ -24,4 +26,4 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_SYSTEM_SERVICES:3.0.100} -
 "SECNVMWR:false"  \
 "SNSERVICE:true"  \
 "UCSERVICE:false"   }
-# Exporting core PF_SYSTEM_SERVICES_C0 to TCL done
+# Exporting Component Description of PF_SYSTEM_SERVICES_C0 to TCL done

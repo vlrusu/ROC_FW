@@ -1,5 +1,7 @@
-# Exporting core PF_SRAM to TCL
-# Create design TCL command for core PF_SRAM
+# Exporting Component Description of PF_SRAM to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component PF_SRAM
 create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_SRAM_AHBL_AXI:1.2.108} -component_name {PF_SRAM} -params {\
 "AXI4_AWIDTH:32" \
 "AXI4_DWIDTH:32" \
@@ -22,4 +24,4 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_SRAM_AHBL_AXI:1.2.1
 "USE_NATIVE_INTERFACE:F" \
 "WDEPTH:65536" \
 "WWIDTH:40" }
-# Exporting core PF_SRAM to TCL done
+# Exporting Component Description of PF_SRAM to TCL done

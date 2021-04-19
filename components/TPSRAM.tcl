@@ -1,5 +1,7 @@
-# Exporting core TPSRAM to TCL
-# Exporting Create design command for core TPSRAM
+# Exporting Component Description of TPSRAM to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component TPSRAM
 create_and_configure_core -core_vlnv {Actel:SgCore:PF_TPSRAM:1.1.108} -component_name {TPSRAM} -params {\
 "A_DOUT_EN_PN:R_DATA_EN"  \
 "A_DOUT_EN_POLARITY:2"  \
@@ -39,4 +41,4 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_TPSRAM:1.1.108} -component
 "WE_PN:W_EN"  \
 "WE_POLARITY:1"  \
 "WWIDTH:64"   }
-# Exporting core TPSRAM to TCL done
+# Exporting Component Description of TPSRAM to TCL done

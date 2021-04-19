@@ -1,5 +1,7 @@
-# Exporting core DDR3_Cntrl to TCL
-# Create design TCL command for core DDR3_Cntrl
+# Exporting Component Description of DDR3_Cntrl to TCL
+# Family: PolarFire
+# Part Number: MPF300TS-1FCG1152I
+# Create and Configure the core component DDR3_Cntrl
 create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR3:2.4.112} -component_name {DDR3_Cntrl} -params {\
 "ADDRESS_MIRROR:false" \
 "ADDRESS_ORDERING:CHIP_ROW_BANK_COL" \
@@ -103,4 +105,4 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR3:2.4.112} -comp
 "ZQ_CAL_INIT_TIME:512" \
 "ZQ_CAL_L_TIME:256" \
 "ZQ_CAL_S_TIME:64" }
-# Exporting core DDR3_Cntrl to TCL done
+# Exporting Component Description of DDR3_Cntrl to TCL done
