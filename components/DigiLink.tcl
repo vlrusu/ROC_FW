@@ -72,8 +72,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_TX_PLL_0_0:PLL_LOCK}
 
 # Add PF_XCVR_0_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_XCVR_0} -instance_name {PF_XCVR_0_0}
-sd_create_pin_group -sd_name ${sd_name} -group_name {LANE1_IN} -instance_name {PF_XCVR_0_0} -pin_names {"LANE1_TX_DATA" "LANE1_CDR_REF_CLK_0" "LANE1_PCS_ARST_N" "LANE1_PMA_ARST_N" "LANE1_TX_DISPFNC" "LANE1_8B10B_TX_K" "LANE1_LOS" }
-sd_create_pin_group -sd_name ${sd_name} -group_name {LANE1_OUT} -instance_name {PF_XCVR_0_0} -pin_names {"LANE1_RX_DATA" "LANE1_TX_CLK_R" "LANE1_RX_CLK_R" "LANE1_RX_IDLE" "LANE1_TX_CLK_STABLE" "LANE1_RX_CODE_VIOLATION" "LANE1_RX_DISPARITY_ERROR" "LANE1_8B10B_RX_K" "LANE1_RX_READY" "LANE1_RX_VAL" }
+#sd_create_pin_group -sd_name ${sd_name} -group_name {LANE1_IN} -instance_name {PF_XCVR_0_0} -pin_names {"LANE1_TX_DATA" "LANE1_CDR_REF_CLK_0" "LANE1_PCS_ARST_N" "LANE1_PMA_ARST_N" "LANE1_TX_DISPFNC" "LANE1_8B10B_TX_K" "LANE1_LOS" }
+#sd_create_pin_group -sd_name ${sd_name} -group_name {LANE1_OUT} -instance_name {PF_XCVR_0_0} -pin_names {"LANE1_RX_DATA" "LANE1_TX_CLK_R" "LANE1_RX_CLK_R" "LANE1_RX_IDLE" "LANE1_TX_CLK_STABLE" "LANE1_RX_CODE_VIOLATION" "LANE1_RX_DISPARITY_ERROR" "LANE1_8B10B_RX_K" "LANE1_RX_READY" "LANE1_RX_VAL" }
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_XCVR_0_0:LANE0_TX_CLK_R}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_XCVR_0_0:LANE0_RX_IDLE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_XCVR_0_0:LANE0_TX_CLK_STABLE}
