@@ -72,12 +72,12 @@ begin
         end if;
         force_full_1q <= force_full;
         force_full_2q <= force_full_1q;
+        aligned_count <= aligned_count + 1;
         
         case sm is
             when ALIGNING =>
                 data_out <= X"000000BC";
                 kchar_out <= "0001";
-                aligned_count <= aligned_count + 1;
                 if aligned_count = X"FF" then
                     sm <= START;
                 end if;
@@ -88,6 +88,10 @@ begin
                 if unsigned(wrcnt) < 2048 - 1024 and force_full_2q = '0' then
                     data_out <= X"01010101";
                     kchar_out <= "0000";
+                end if;
+                if aligned_count = X"FF" then
+                    data_out <= X"000000BC";
+                    kchar_out <= "0001";
                 end if;
                 
             when others =>

@@ -21,5 +21,10 @@ import_files -library work -hdl_source hdl/TWIMaster.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
 import_files -library work -hdl_source hdl/EventMarker.vhd
+import_files -library work -hdl_source hdl/RxPacketReader.vhd
+import_files -library work -hdl_source hdl/TxPacketWriter.vhd
 import_files -library work -hdl_source hdl/ClockAligner.vhd
-import_files -library work -hdl_source hdl/INV_20bit.vhd
+import_files -library work -hdl_source hdl/ErrorCounter.vhd
+import_files -library work -hdl_source hdl/WordAligner.vhd
+import_files -library work -hdl_source hdl/WordFlipper.vhd
+import_files -library work -hdl_source hdl/crc.vhd

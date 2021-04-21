@@ -94,6 +94,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pcs_reset_n} -por
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pma_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {force_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {align_roc_to_digi} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dtc_serdes_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_serdes_reset_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_serdes_reset_n} -port_direction {OUT}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRNHITS} -port_direction {OUT} -port_range {[7:0]}
@@ -338,6 +341,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISS[1]" "CAL_PREA
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISDI" "CAL_PREAMP_MISO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_1:SPISDO" "CAL_PREAMP_MOSI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:Y" "CAL_PREAMP_SCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_serdes_reset_n" "cal_serdes_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calscl" "calscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calsda" "calsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRCS" "DDRCS" }
@@ -357,6 +361,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRTEMPFIFOFULL" "D
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRWEN" "DDRWEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DIGI_RESET" "DIGI_RESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dtc_enable_reset" "Registers_0:dtc_enable_reset" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dtc_serdes_reset_n" "dtc_serdes_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DTCSIMBLKEN" "DTCSIMBLKEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DTCSIMSTART" "DTCSIMSTART" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_clock" "enable_fiber_clock" }
@@ -375,6 +380,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[1]" "HV_PREAM
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISDI" "HV_PREAMP_MISO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISDO" "HV_PREAMP_MOSI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISCLKO" "HV_PREAMP_SCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_serdes_reset_n" "hv_serdes_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvscl" "hvscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvsda" "hvsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "INV_0:Y" }

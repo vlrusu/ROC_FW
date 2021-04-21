@@ -333,21 +333,29 @@ set_io -port_name REF_CLK_PAD_P_1  \
     
 set_io -port_name LANE0_RXD_N_1  \
     -pin_name G32              \
+    -RX_CTLE 3GHz_+5.5dB         \
+    -RX_INSERTION_LOSS 17.0dB    \
+    -RX_POLARITY Inverted        \
     -DIRECTION INPUT
 
 
 set_io -port_name LANE0_RXD_P_1             \
     -pin_name G31              \
+    -RX_CTLE 3GHz_+5.5dB         \
+    -RX_INSERTION_LOSS 17.0dB    \
+    -RX_POLARITY Inverted        \
     -DIRECTION INPUT
 
 
 set_io -port_name LANE0_TXD_N_1  \
     -pin_name F34              \
+    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
     -DIRECTION OUTPUT
 
 
 set_io -port_name LANE0_TXD_P_1                \
     -pin_name F33              \
+    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
     -DIRECTION OUTPUT
     #-TX_EMPHASIS_AMPLITUDE 1000mV_with_-6dB  \
     #-DIRECTION OUTPUT

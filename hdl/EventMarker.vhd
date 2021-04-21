@@ -28,6 +28,8 @@ port (
     
     RX_DATA     : in std_logic_vector(15 downto 0);
     RX_K_CHAR   : in std_logic_vector(1 downto 0);
+    
+    reversed : out std_logic;
     event_marker_count : out std_logic_vector(15 downto 0);
     eventmarker : out std_logic
 );
@@ -37,7 +39,7 @@ architecture architecture_EventMarker of EventMarker is
     signal rx_k_char_latch : std_logic_vector(1 downto 0);
     signal rx_k_char_latch_prev : std_logic_vector(1 downto 0);
     signal rx_data_latch : std_logic_vector(15 downto 0);
-    signal rx_data_latch_prev : std_logic_vector(15 downto 0);                                                         
+    signal rx_data_latch_prev : std_logic_vector(15 downto 0);  
 
 begin	
 
@@ -49,9 +51,11 @@ begin
         event_marker_count <= (others => '0');
         rx_k_char_latch_prev <= (others => '0');
         rx_data_latch_prev <= (others => '0');
+        reversed <= '0';
     elsif rising_edge(EPCS_RXCLK) then			
         rx_k_char_latch	<= RX_K_CHAR;
         rx_data_latch	<= RX_DATA;	
+        
         rx_data_latch_prev 	<= rx_data_latch; 
 		rx_k_char_latch_prev	<= rx_k_char_latch;
         
@@ -69,12 +73,14 @@ begin
                 if rx_k_char_latch = "10" then
                     if (rx_data_latch_prev = X"1C10" and rx_data_latch = X"1CEF") or (rx_data_latch_prev = X"1C11" and rx_data_latch = X"1CEE") then
                         counter <= (others => '0');
+                        reversed <= '0';
                     end if;
                 end if;
             elsif rx_k_char_latch_prev = "01" then
                 if rx_k_char_latch = "01" then
                     if (rx_data_latch_prev = X"101C" and rx_data_latch = X"EF1C") or (rx_data_latch_prev = X"111C" and rx_data_latch = X"EE1C") then
                         counter <= (others => '0');
+                        reversed <= '1';
                     end if;
                 end if;
             end if;

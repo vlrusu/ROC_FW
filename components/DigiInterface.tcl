@@ -54,6 +54,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_aligned} -port_di
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_aligned} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {force_full} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {align} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N_0} -port_direction {IN}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {use_lane} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_data} -port_direction {OUT} -port_range {[31:0]}
@@ -108,7 +109,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"align" "DigiLink_1:align" "Digi
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "DigiReaderSM_0:outfifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned" "cal_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned_0" "cal_lane1_aligned" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:CTRL_ARST_N" "DigiLink_0:CTRL_ARST_N" "CTRL_ARST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:CTRL_ARST_N" "CTRL_ARST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:CTRL_ARST_N" "CTRL_ARST_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:CTRL_CLK" "DigiLink_0:CTRL_CLK" "CTRL_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_1:EMPTY" "ddrfifo_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ddrfifo_full" "AND2_0:B" "DigiReaderFIFO_1:FULL" }

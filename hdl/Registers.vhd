@@ -149,6 +149,10 @@ entity Registers is
     dtc_enable_reset : out std_logic;
     force_full : out std_logic;
     align_roc_to_digi : out std_logic;
+    
+    cal_serdes_reset_n : out std_logic;
+    hv_serdes_reset_n : out std_logic;
+    dtc_serdes_reset_n : out std_logic;
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -653,6 +657,10 @@ begin
       hv_lane0_pma_reset_n <= '1';
       hv_lane1_pma_reset_n <= '1';
       
+      cal_serdes_reset_n <= '1';
+      hv_serdes_reset_n <= '1';
+      dtc_serdes_reset_n <= '1';
+      
       dtc_enable_reset <= '0';
       
       cal_init <= '0';
@@ -828,6 +836,10 @@ begin
             force_full <= PWDATA(0);
         when X"EE" =>
             align_roc_to_digi <= PWDATA(0);
+        when X"ED" =>
+            cal_serdes_reset_n <= PWDATA(0);
+            hv_serdes_reset_n <= PWDATA(1);
+            dtc_serdes_reset_n <= PWDATA(2);
             
           when others =>
         end case;
