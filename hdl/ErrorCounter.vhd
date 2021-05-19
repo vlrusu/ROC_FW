@@ -33,6 +33,8 @@ port (
     invalid_k : in std_logic_vector(1 downto 0);
     code_err_n : in std_logic_vector(1 downto 0);
     rd_err : in std_logic_vector(1 downto 0);
+    rx_crc_error : in std_logic_vector(15 downto 0);
+    rx_packet_error : in std_logic_vector(15 downto 0);
     
     address : in std_logic_vector(3 downto 0);
     counter_out : out std_logic_vector(7 downto 0)
@@ -81,6 +83,10 @@ begin
             counter_out <= std_logic_vector(aligned_counter);
         elsif address = X"7" then
             counter_out <= std_logic_vector(clk_counter);
+        elsif address = X"8" then
+            counter_out <= rx_crc_error(7 downto 0);
+        elsif address = X"9" then
+            counter_out <= rx_packet_error(7 downto 0);
         else
             counter_out <= (others => '0');
         end if;

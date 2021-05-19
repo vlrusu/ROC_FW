@@ -20,6 +20,7 @@ import_files -library work -hdl_source hdl/EWMaker.vhd
 import_files -library work -hdl_source hdl/TWIMaster.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
+import_files -library work -hdl_source hdl/DCSProcessor.vhd
 import_files -library work -hdl_source hdl/EventMarker.vhd
 import_files -library work -hdl_source hdl/RxPacketReader.vhd
 import_files -library work -hdl_source hdl/TxPacketWriter.vhd
