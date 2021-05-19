@@ -117,8 +117,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -po
 sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[14:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {event_marker_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ALIGNMENT_LOSS_COUNTER} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {counter_out} -port_direction {OUT} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {address} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {Q_0} -port_direction {OUT} -port_range {[39:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {Q} -port_direction {OUT} -port_range {[19:16]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATA} -port_direction {IN} -port_range {[39:29]}
@@ -575,10 +573,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"word_aligned" "TOP_SERDES_0:wor
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"A" "DDRInterface_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"address" "TOP_SERDES_0:address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGNMENT_LOSS_COUNTER" "TOP_SERDES_0:ALIGNMENT_LOSS_COUNTER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BA" "DDRInterface_0:BA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"counter_out" "TOP_SERDES_0:counter_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DATA" "TOP_SERDES_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRCONVDATA" "DDRInterface_0:CONVERTER_q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRCONVRDCNT" "DDRInterface_0:CONVERTER_rdcnt" }
@@ -614,8 +610,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRIN[9:0]" "DDR
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDROFFSET[19:0]" "DDRInterface_0:mem_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_WRITE_PAGE_NO" "SLOWCONTROLS_0:DDRPAGENO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_PATTERN" "SLOWCONTROLS_0:DDRPATTRN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_error_address" "TOP_SERDES_0:address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:ewm_delay" "EWMaker_0:ewm_period_5ns" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:use_lane" "SLOWCONTROLS_0:use_lane" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_error_counter" "TOP_SERDES_0:counter_out" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_SRAM_0:AHBSlaveInterface" "MIV_RV32IMC_C0_0:AHBL_M_SLV" }

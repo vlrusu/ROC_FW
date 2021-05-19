@@ -149,6 +149,8 @@ entity Registers is
     dtc_enable_reset : out std_logic;
     force_full : out std_logic;
     align_roc_to_digi : out std_logic;
+    dtc_error_address : out std_logic_vector(3 downto 0);
+    dtc_error_counter : in std_logic_vector(7 downto 0);
     
     cal_serdes_reset_n : out std_logic;
     hv_serdes_reset_n : out std_logic;
@@ -584,6 +586,8 @@ begin
         when CR_HV_SERDES_ERRORS =>
             DataOut(7 downto 0) <= hv_lane0_error_count;
             DataOut(15 downto 8) <= hv_lane1_error_count;
+        when X"E1" =>
+            DataOut(7 downto 0) <= dtc_error_counter;
             
 
         when others =>
@@ -676,6 +680,7 @@ begin
       
       enable_fiber_clock <= '0';
       enable_fiber_marker <= '0';
+      dtc_error_address <= (others => '0');
 
     elsif (PCLK'event and PCLK = '1') then
       --ROCRESET  <= '1';
@@ -840,6 +845,9 @@ begin
             cal_serdes_reset_n <= PWDATA(0);
             hv_serdes_reset_n <= PWDATA(1);
             dtc_serdes_reset_n <= PWDATA(2);
+            
+        when X"E0" =>
+            dtc_error_address <= PWDATA(3 downto 0);
             
           when others =>
         end case;

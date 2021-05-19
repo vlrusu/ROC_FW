@@ -157,6 +157,8 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_error_count} -port_d
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_error_count} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {dtc_error_address} -port_direction {OUT} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {dtc_error_counter} -port_direction {IN} -port_range {[7:0]}
 
 sd_create_bif_port -sd_name ${sd_name} -port_name {APB3mmaster} -port_bif_vlnv {AMBA:AMBA2:APB:r0p0} -port_bif_role {mirroredMaster} -port_bif_mapping {\
 "PADDR:PADDR" \
@@ -442,6 +444,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPAGERD" "Registers_0:DDRPAGE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPAGEWR" "Registers_0:DDRPAGEWR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPATTRN" "Registers_0:DDRPATTRN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRRAM" "DDRRAM" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"dtc_error_address" "Registers_0:dtc_error_address" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"dtc_error_counter" "Registers_0:dtc_error_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCDATAREAD" "Registers_0:DTCDATAREAD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DTCSIMADDR" "DTCSIMADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMBLKADDR" "Registers_0:DTCSIMBLKADDR" }

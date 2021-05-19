@@ -47,76 +47,98 @@ architecture architecture_TxPacketWriter of TxPacketWriter is
     signal counter : integer range 0 to 5;
     signal tx_data : std_logic_vector(15 downto 0);
     signal tx_kchar : std_logic_vector(1 downto 0);
+    signal marker_counter : unsigned(11 downto 0);
 
 begin
 
     data_out <= tx_data;
     kchar_out <= tx_kchar;
-
-
+    
     process(reset_n, clk)
     begin
     if reset_n = '0' then
-        state <= IDLE;
-        counter <= 0;
         tx_data <= X"BC3C";
         tx_kchar <= "11";
-        
-        rxpacket_re <= '0';
-        crc_reset <= '1';
-        crc_en <= '0';
+        marker_counter <= (others => '0');
     elsif rising_edge(clk) then
-        tx_data <= X"BC3C";
-        tx_kchar <= "11";
-        crc_reset <= '1';
-        crc_en <= '0';
-        rxpacket_re <= '0';
-        
-        case state is
-            when IDLE =>
-                if unsigned(rxpacket_rdcnt) > 7 then
-                    state <= FIRSTREAD;
-                    rxpacket_re <= '1';
-                end if;
-                
-            when FIRSTREAD =>
-                crc_reset <= '0';
-                rxpacket_re <= '1';
-                state <= FIRSTWORD;
-                
-            
-            when FIRSTWORD =>
-                crc_reset <= '0';
-                crc_en <= '1';
-                rxpacket_re <= '1';
-                tx_data(15 downto 4) <= rxpacket_data(15 downto 4);
-                tx_data(3 downto 0) <= X"4";
-                tx_kchar <= "10";
-                state <= RUNNING;
-                counter <= 5;
-                
-            when RUNNING =>
-                crc_reset <= '0';
-                crc_en <= '1';
-                rxpacket_re <= '1';
-                tx_data <= rxpacket_data;
-                tx_kchar <= "00";
-                data_to_crc <= rxpacket_data;
-                counter <= counter - 1;
-                if counter = 0 then
-                    rxpacket_re <= '0';
-                    state <= CRCWORD;
-                end if;
-            
-            when CRCWORD =>
-                crc_reset <= '0';
-                crc_en <= '0';
-                tx_data <= data_from_crc;
-                tx_kchar <= "00";
-                state <= IDLE;
-            
-        end case;
+        marker_counter <= marker_counter + 1;
+        if marker_counter = 0 then
+            tx_kchar <= "10";
+            tx_data <= X"1C10";
+        elsif marker_counter = 1 then
+            tx_kchar <= "10";
+            tx_data <= X"1CEF";
+        else
+            tx_kchar <= "11";
+            tx_data <= X"BC3C";
+        end if;
     end if;
     end process;
+
+
+    --process(reset_n, clk)
+    --begin
+    --if reset_n = '0' then
+        --state <= IDLE;
+        --counter <= 0;
+        --tx_data <= X"BC3C";
+        --tx_kchar <= "11";
+        --
+        --rxpacket_re <= '0';
+        --crc_reset <= '1';
+        --crc_en <= '0';
+    --elsif rising_edge(clk) then
+        --tx_data <= X"BC3C";
+        --tx_kchar <= "11";
+        --crc_reset <= '1';
+        --crc_en <= '0';
+        --rxpacket_re <= '0';
+        --
+        --case state is
+            --when IDLE =>
+                --if unsigned(rxpacket_rdcnt) > 7 then
+                    --state <= FIRSTREAD;
+                    --rxpacket_re <= '1';
+                --end if;
+                --
+            --when FIRSTREAD =>
+                --crc_reset <= '0';
+                --rxpacket_re <= '1';
+                --state <= FIRSTWORD;
+                --
+            --
+            --when FIRSTWORD =>
+                --crc_reset <= '0';
+                --crc_en <= '1';
+                --rxpacket_re <= '1';
+                --tx_data(15 downto 4) <= rxpacket_data(15 downto 4);
+                --tx_data(3 downto 0) <= X"4";
+                --tx_kchar <= "10";
+                --state <= RUNNING;
+                --counter <= 5;
+                --
+            --when RUNNING =>
+                --crc_reset <= '0';
+                --crc_en <= '1';
+                --rxpacket_re <= '1';
+                --tx_data <= rxpacket_data;
+                --tx_kchar <= "00";
+                --data_to_crc <= rxpacket_data;
+                --counter <= counter - 1;
+                --if counter = 0 then
+                    --rxpacket_re <= '0';
+                    --state <= CRCWORD;
+                --end if;
+            --
+            --when CRCWORD =>
+                --crc_reset <= '0';
+                --crc_en <= '0';
+                --tx_data <= data_from_crc;
+                --tx_kchar <= "00";
+                --state <= IDLE;
+            --
+        --end case;
+    --end if;
+    --end process;
 
 end architecture_TxPacketWriter;
