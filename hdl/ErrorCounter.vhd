@@ -36,6 +36,9 @@ port (
     rx_crc_error : in std_logic_vector(15 downto 0);
     rx_packet_error : in std_logic_vector(15 downto 0);
     
+    din : in std_logic;
+    enable_alignment : out std_logic;
+    
     address : in std_logic_vector(3 downto 0);
     counter_out : out std_logic_vector(7 downto 0)
     --<other_ports>;
@@ -66,6 +69,7 @@ begin
         rd_err_counter <= (others => '0');
         clk_counter <= (others => '0');
         counter_out <= (others => '0');
+        enable_alignment <= '1';
     elsif rising_edge(clk) then
         if address = X"0" then
             counter_out <= std_logic_vector(rx_val_counter);
@@ -89,6 +93,10 @@ begin
             counter_out <= rx_packet_error(7 downto 0);
         else
             counter_out <= (others => '0');
+        end if;
+        
+        if address = X"A" then
+            enable_alignment <= din;
         end if;
         
         if rx_val = '0' then

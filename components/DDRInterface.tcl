@@ -28,19 +28,19 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {TEMPFIFO_FULL} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TEMPFIFO_EMPTY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {mem_test_err_o} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIFIFO_CLK} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {CKE} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {CS_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {ODT} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {RAS_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {CAS_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {WE_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {CK0} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {CK0_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD0} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD1} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD2} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CKE} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CS_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ODT} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {RAS_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CAS_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {WE_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CK0} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CK0_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD0} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD1} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD2} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA_READY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SIM_DATA} -port_direction {IN}
@@ -70,12 +70,12 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {err_loc_o} -port_direction {O
 sd_create_bus_port -sd_name ${sd_name} -port_name {CONVERTER_q} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {CONVERTER_rdcnt} -port_direction {OUT} -port_range {[16:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {read_page_no} -port_direction {IN} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DQ} -port_direction {INOUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DQS} -port_direction {INOUT} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DQS_N} -port_direction {INOUT} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DM} -port_direction {OUT} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -port_range {[2:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[14:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DQ} -port_direction {INOUT} -port_range {[31:0]} -port_is_pad {1}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DQS} -port_direction {INOUT} -port_range {[3:0]} -port_is_pad {1}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DQS_N} -port_direction {INOUT} -port_range {[3:0]} -port_is_pad {1}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DM} -port_direction {OUT} -port_range {[3:0]} -port_is_pad {1}
+sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -port_range {[2:0]} -port_is_pad {1}
+sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[14:0]} -port_is_pad {1}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MEMFIFO_DATA_PCKTS} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {mem_offset} -port_direction {IN} -port_range {[19:0]}
@@ -116,7 +116,6 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {data_ready_delay
 
 # Add DDR3_Cntrl_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DDR3_Cntrl} -instance_name {DDR3_Cntrl_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DDR3_Cntrl_0:CTRLR_READY}
 
 
 
@@ -162,6 +161,7 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {fifo_mem_cntrl_0}
 "BURST_SIZE:3" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {fifo_mem_cntrl_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {fifo_mem_cntrl_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {fifo_mem_cntrl_0:fifo_read_done_o}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {fifo_mem_cntrl_0:fifo_write_done_o}
 
@@ -224,6 +224,7 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {pattern_gen_check
 "BURST_SIZE:3" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {pattern_gen_checker_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {pattern_gen_checker_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pattern_gen_checker_0:mem_test_done_o}
 
 

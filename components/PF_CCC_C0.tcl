@@ -132,7 +132,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_CCC:2.2.100} -component_na
 "GL3_0_BYPASS:0"  \
 "GL3_0_BYPASS_EN:false"  \
 "GL3_0_DEDICATED_USED:false"  \
-"GL3_0_DIV:25"  \
+"GL3_0_DIV:1"  \
 "GL3_0_DIVSTART:0"  \
 "GL3_0_DYNAMIC_PH:false"  \
 "GL3_0_EXPOSE_EN:false"  \

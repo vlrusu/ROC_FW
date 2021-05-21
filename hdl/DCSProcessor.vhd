@@ -38,6 +38,7 @@ port (
     crc_data_out : out std_logic_vector(15 downto 0);
     crc_data_in : in std_logic_vector(15 downto 0);
     
+    state_count : out std_logic_vector(7 downto 0);
     error_count : out std_logic_vector(15 downto 0)
 );
 end DCSProcessor;
@@ -65,7 +66,9 @@ architecture architecture_DCSProcessor of DCSProcessor is
     signal word_count : integer range 0 to 31;
     signal error_flag : std_logic;
     signal calculated_crc : std_logic_vector(15 downto 0);
+    signal sequence_num : std_logic_vector(2 downto 0);
     
+    signal link_id : std_logic_vector(2 downto 0);
     signal write_ack : std_logic;
     signal read_write : std_logic;
     signal double_rw : std_logic;
@@ -84,6 +87,7 @@ begin
     
     
     -- DCS packet definition
+    link_id <= inbuffer(2)(10 downto 8);
     write_ack <= inbuffer(3)(3);
     opcode <= inbuffer(3)(2 downto 0);
     read_write <= '1' when opcode(0) = '0' else '0';
@@ -121,7 +125,9 @@ begin
         
         error_count <= (others => '0');
         word_count <= 0;
-
+        state_count <= (others => '0');
+        sequence_num <= (others => '0');
+        
     elsif rising_edge(clk) then
         crc_en <= '0';
         crc_rst <= '1';
@@ -132,17 +138,20 @@ begin
         
         case state is 
             when IDLE =>
+                state_count <= X"01";
                 if unsigned(fifo_rdcnt) > 9 then
                     fifo_re <= '1';
                     state <= FIRSTREAD;
                 end if;
             
             when FIRSTREAD =>
+                state_count <= X"02";
                 fifo_re <= '1';
                 word_count <= 0;
                 state <= SECONDREAD;
                 
             when SECONDREAD =>
+                state_count <= X"03";
                 fifo_re <= '1';
                 inbuffer(word_count) <= fifo_data_in;
                 crc_data_out <= fifo_data_in;
@@ -163,6 +172,7 @@ begin
                 end if;
                 
             when CHECKCRC =>
+                state_count <= X"04";
                 word_count <= 0;
                 calculated_crc <= crc_data_in;
                 if crc_data_in /= read_crc then
@@ -173,6 +183,7 @@ begin
                 end if;
                 
             when RW1 =>
+                state_count <= X"05";
                 reg_address <= op1_address;
                 reg_data_in <= op1_data;
                 if read_write = '1' then
@@ -183,9 +194,11 @@ begin
                 end if;
                 
             when RW2 =>
+                state_count <= X"06";
                 state <= RW3;
             
             when RW3 =>
+                state_count <= X"07";
                 if read_write = '1' then
                     inbuffer(5) <= reg_data_out;
                 end if;
@@ -200,22 +213,27 @@ begin
                     end if;
                 else
                     if read_write = '1' then
+                        state <= SENDPACKET;
+                    else
                         state <= IDLE; -- FIXME WRITE ACK
                     end if;
                 end if;
                 
             when RW4 =>
+                state_count <= X"08";
                 state <= RW5;
             
             when RW5 =>
+                state_count <= X"09";
                 inbuffer(7) <= reg_data_out;
                 state <= SENDPACKET;
                 
             when SENDPACKET =>
+                state_count <= X"0A";
                 word_count <= word_count + 1;
                 fifo_we <= '1';
                 if word_count = 0 then
-                    fifo_data_out <= "10" & X"1C04";  -- k28.0 & D4.y
+                    fifo_data_out <= "10" & X"1C" & sequence_num & "0" & X"4";  -- k28.0 & D4.y
                     crc_rst <= '0';
                     crc_en <= '0';
                 elsif word_count = 1 then
@@ -224,8 +242,8 @@ begin
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 2 then
-                    fifo_data_out <= "00" & X"8040"; -- valid & reserved & roc_id & packet_type & hop_count
-                    crc_data_out <= X"8040";
+                    fifo_data_out <= "00" & "10000" & link_id & X"40"; -- valid & reserved & roc_id & packet_type & hop_count
+                    crc_data_out <= "10000" & link_id & X"40";
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 3 then
@@ -262,17 +280,21 @@ begin
                 end if;
                 
             when CALCULATECRC =>
+                state_count <= X"0B";
                 fifo_we <= '0';
                 crc_rst <= '0';
                 crc_en <= '1';
                 state <= WRITECRC;
                 
             when WRITECRC =>
+                state_count <= X"0C";
                 fifo_we <= '1';
                 fifo_data_out <= "00" & crc_data_in;
+                sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
                 state <= IDLE;                
             
             when others =>
+                state_count <= X"FF";
                 --pass
         end case;
     end if;

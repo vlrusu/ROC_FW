@@ -323,7 +323,7 @@ architecture synth of Registers is
   -------------------------------------------------------------------------------
   signal DataOut            : std_logic_vector(APB_DATA_WIDTH-1 downto 0);
 
-   component TWIMaster
+   component TWIController
         -- ports
         port( 
             -- Inputs
@@ -344,7 +344,7 @@ architecture synth of Registers is
         );
     end component;
 
-    --component SPIMaster
+    --component SPIController
     --port (
         --reset_n : in std_logic;
         --clk : in std_logic;
@@ -380,7 +380,7 @@ architecture synth of Registers is
 
 begin
 
-     --calSPIMaster : SPIMaster
+     --calSPIController : SPIController
         --port map(
             --reset_n => PRESETn,
             --clk => PCLK,
@@ -399,7 +399,7 @@ begin
         --);
 --
 --
-     --hvSPIMaster : SPIMaster
+     --hvSPIController : SPIController
         --port map(
             --reset_n => PRESETn,
             --clk => PCLK,
@@ -418,7 +418,7 @@ begin
         --);
 
 
-    hvTWIMaster_0 : TWIMaster
+    hvTWIController_0 : TWIController
         -- port map
         port map( 
             -- Inputs
@@ -438,7 +438,7 @@ begin
 
         );
 
-  calTWIMaster_0 : TWIMaster
+  calTWIController_0 : TWIController
         -- port map
         port map( 
             -- Inputs

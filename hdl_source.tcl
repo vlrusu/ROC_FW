@@ -17,7 +17,7 @@ import_files -library work -hdl_source hdl/RxController.vhd
 import_files -library work -hdl_source hdl/TxController.vhd
 import_files -library work -hdl_source hdl/DigiReaderSM.vhd
 import_files -library work -hdl_source hdl/EWMaker.vhd
-import_files -library work -hdl_source hdl/TWIMaster.vhd
+import_files -library work -hdl_source hdl/TWIController.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
 import_files -library work -hdl_source hdl/DCSProcessor.vhd

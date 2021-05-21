@@ -590,6 +590,7 @@ set_io -port_name ewm_cal  \
     -pin_name M2           \
     -fixed true            \
     -io_std LVCMOS25       \
+    -OUT_DRIVE 12          \
     -DIRECTION OUTPUT
 
 
@@ -597,6 +598,7 @@ set_io -port_name ewm_hv  \
     -pin_name M1          \
     -fixed true           \
     -io_std LVCMOS25      \
+    -OUT_DRIVE 12          \
     -DIRECTION OUTPUT
     
     

@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- Company: <Name>
 --
--- File: TWIMaster.vhd
+-- File: TWIController.vhd
 -- File history:
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
@@ -21,7 +21,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity TWIMaster is
+entity TWIController is
   generic(
     a_width : integer := 9;
     d_width : integer := 16);
@@ -39,9 +39,9 @@ port (
     scl : out std_logic;
     sda : inout std_logic
 );
-end TWIMaster;
+end TWIController;
 
-architecture architecture_TWIMaster of TWIMaster is
+architecture architecture_TWIController of TWIController is
 
     type sm is(IDLE,RUNNING);
     signal state : sm;
@@ -165,4 +165,4 @@ end process;
 
 
 
-end architecture_TWIMaster;
+end architecture_TWIController;

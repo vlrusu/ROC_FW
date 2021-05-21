@@ -263,6 +263,7 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {Registers_0} -par
 "SERDES_ADDRESS_WIDTH:10" }\
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {Registers_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {Registers_0}
 
 
 

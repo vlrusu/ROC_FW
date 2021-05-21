@@ -6,12 +6,12 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Ports
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
@@ -71,6 +71,7 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {crc} -hdl_file {
 
 # Add DCSProcessor_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DCSProcessor} -hdl_file {hdl\DCSProcessor.vhd} -instance_name {DCSProcessor_0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:state_count}
 
 
 
@@ -130,7 +131,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:reset_n" "CORERE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_PF_C0_2:FABRIC_RESET_N" "RxPacketFIFO_0:RESET" "RxPacketReader_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:CTRL_ARST_N" "CTRL_ARST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "XCVR_Block_0:CTRL_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:clk" "dcs_clk" "crc_0:CLK" "CORERESET_PF_C0_1:CLK" "RxPacketFIFO_1:WCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:RCLOCK" "CORERESET_PF_C0_1:CLK" "crc_0:CLK" "RxPacketFIFO_1:WCLOCK" "dcs_clk" "DCSProcessor_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_en" "crc_0:CRC_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_rst" "crc_0:RST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_re" "RxPacketFIFO_0:RE" }
@@ -154,7 +155,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"TxPacketWriter_0:fifo_re" "RxPa
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:word_aligned" "word_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:ALIGNED" "EventMarker_0:RESET_N" "RxPacketReader_0:aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:LANE0_RX_READY" "CORERESET_PF_C0_2:PLL_LOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:LANE0_TX_CLK_R" "CORERESET_PF_C0_0:CLK" "RxPacketFIFO_0:RCLOCK" "TxPacketWriter_0:clk" "RxPacketFIFO_1:RCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_PF_C0_0:CLK" "RxPacketFIFO_1:RCLOCK" "TxPacketWriter_0:clk" "XCVR_Block_0:LANE0_TX_CLK_R" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:LANE0_TX_CLK_STABLE" "CORERESET_PF_C0_0:PLL_LOCK" }
 
 # Add bus net connections

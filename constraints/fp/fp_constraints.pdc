@@ -28,7 +28,7 @@
 
 #set_location -inst_name PF_CCC_01_0/PF_CCC_01_0/pll_inst_0 -fixed true -x 0 -y 377
 
-set_location -inst_name TOP_SERDES_0/XCVR_Block_0/XCVR_Clk_0/PF_XCVR_REF_CLK_C0_0/I_IO -fixed true -x 2466 -y 71
+set_location -inst_name TOP_SERDES_0/XCVR_Block_0/XCVR_CLK_0/PF_XCVR_REF_CLK_C0_0/I_IO -fixed true -x 2466 -y 71
 set_location -inst_name TOP_SERDES_0/XCVR_Block_0/XCVR_PLL_0_inst_0/XCVR_PLL_0_0/txpll_isnt_0 -fixed true -x 2460 -y 20
 set_location -inst_name TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0 -fixed true -x 2460 -y 17
 

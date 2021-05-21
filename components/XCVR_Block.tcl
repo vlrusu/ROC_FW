@@ -6,17 +6,15 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Ports
-sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_VAL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_STABLE} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ALIGNED} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_N} -port_direction {IN}
@@ -24,6 +22,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {CLOCK_ALIGNED} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ENABLE_ALIGNMENT} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {word_aligned} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_READY} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN} -port_is_pad {1}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {B_CERR} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {RD_ERR} -port_direction {OUT} -port_range {[1:0]}
@@ -64,6 +64,8 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:DISP_SEL}
 
 # Add ErrorCounter_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ErrorCounter} -hdl_file {hdl\ErrorCounter.vhd} -instance_name {ErrorCounter_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ErrorCounter_0:din} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ErrorCounter_0:enable_alignment}
 
 
 
@@ -82,8 +84,8 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {WordFlipper} -hd
 
 
 
-# Add XCVR_Clk_0 instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {PF_XCVR_REF_CLK_C0} -instance_name {XCVR_Clk_0}
+# Add XCVR_CLK_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {PF_XCVR_REF_CLK_C0} -instance_name {XCVR_CLK_0}
 
 
 
@@ -119,11 +121,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_TX_CLK_R" "LANE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_TX_CLK_STABLE" "LANE0_TX_CLK_STABLE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "XCVR_IF_0:LANE0_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "XCVR_IF_0:LANE0_TXD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_Clk_0:REF_CLK_PAD_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_Clk_0:REF_CLK_PAD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_PLL_0:REF_CLK" "XCVR_CLK_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK_PAD_N" "REF_CLK_PAD_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK_PAD_P" "REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_N" "AND2_0:A" "ClockAligner_0:RX_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"word_aligned" "WordAligner_0:word_aligned" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_PLL_0:REF_CLK" "XCVR_Clk_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxIDLE" "XCVR_IF_0:LANE0_RX_IDLE" }
 
 # Add bus net connections
