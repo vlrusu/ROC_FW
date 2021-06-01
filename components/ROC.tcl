@@ -180,6 +180,11 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DDRInterface_0:DCS_P
 
 
 
+# Add DFN1_0 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {DFN1} -instance_name {DFN1_0}
+
+
+
 # Add DigiClkReset_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DigiClkReset} -instance_name {DigiClkReset_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DigiClkReset_0:EXT_RST_N} -value {VCC}
@@ -441,7 +446,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_empt
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_full" "SLOWCONTROLS_0:SERDES_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CCC_C1_0:PLL_POWERDOWN_N_0" "DigiReset_0:PLL_POWERDOWN_B" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:ewm" "MX2_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_cal" "ewm_hv" "MX2_0:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:Y" "DFN1_0:D" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_cal" "ewm_hv" "DFN1_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_CLK_OUT2_N" "OUTBUF_DIFF_3:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_CLK_OUT2_P" "OUTBUF_DIFF_3:PADP" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_CLK_OUT_N" "OUTBUF_DIFF_1:PADN" }
@@ -488,7 +494,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiFIFOReset_0:CLK" "DigiInter
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:MEM_CLK" "PF_CCC_C0_0:OUT2_FABCLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:READOUT_CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiFIFOReset_0:PLL_LOCK" "DigiClkReset_0:PLL_LOCK" "CORERESET_PF_C0_0:PLL_LOCK" "DDRInterface_0:PLL_LOCK" "Reset50MHz:PLL_LOCK" "PF_CCC_C0_0:PLL_LOCK_0" "TOP_SERDES_0:PLL_LOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiClkReset_0:CLK" "OUTBUF_DIFF_0:D" "OUTBUF_DIFF_1:D" "OUTBUF_DIFF_2:D" "OUTBUF_DIFF_3:D" "PF_CCC_C1_0:OUT0_FABCLK_0" "DigiReset_0:CLK" "EWMaker_0:digi_clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_0:D" "OUTBUF_DIFF_2:D" "OUTBUF_DIFF_1:D" "OUTBUF_DIFF_3:D" "PF_CCC_C1_0:OUT0_FABCLK_0" "DFN1_0:CLK" "DigiClkReset_0:CLK" "DigiReset_0:CLK" "EWMaker_0:digi_clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CCC_C1_0:PLL_LOCK_0" "DigiReset_0:PLL_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CTRL_CLK" "TOP_SERDES_0:CTRL_CLK" "PF_CLK_DIV_C0_0:CLK_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_CCC_C1_0:REF_CLK_0" "PF_NGMUX_C0_0:CLK_OUT" }
@@ -603,6 +609,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDROFFSET[19:0]"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_WRITE_PAGE_NO" "SLOWCONTROLS_0:DDRPAGENO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SIM_PATTERN" "SLOWCONTROLS_0:DDRPATTRN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_error_address" "TOP_SERDES_0:address" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:event_window_expected" "SLOWCONTROLS_0:event_window_expected" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:ewm_delay" "EWMaker_0:ewm_period_5ns" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:use_lane" "SLOWCONTROLS_0:use_lane" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_error_counter" "TOP_SERDES_0:counter_out" }

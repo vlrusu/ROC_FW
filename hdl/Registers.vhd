@@ -155,6 +155,8 @@ entity Registers is
     cal_serdes_reset_n : out std_logic;
     hv_serdes_reset_n : out std_logic;
     dtc_serdes_reset_n : out std_logic;
+    
+    event_window_expected : out std_logic_vector(15 downto 0);
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -848,6 +850,8 @@ begin
             
         when X"E0" =>
             dtc_error_address <= PWDATA(3 downto 0);
+        when X"F0" =>
+            event_window_expected <= PWDATA(15 downto 0);
             
           when others =>
         end case;

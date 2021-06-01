@@ -30,6 +30,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {ALIGNMENT_LOSS_COUNTER} -port
 sd_create_bus_port -sd_name ${sd_name} -port_name {event_marker_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {address} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {counter_out} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_expected} -port_direction {IN} -port_range {[15:0]}
 
 # Add CORERESET_PF_C0_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET_PF_C0} -instance_name {CORERESET_PF_C0_0}
@@ -137,7 +138,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_rst" "crc_0:
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_re" "RxPacketFIFO_0:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_we" "RxPacketFIFO_1:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ENABLE_ALIGNMENT" "XCVR_Block_0:ENABLE_ALIGNMENT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"eventwindowmarker" "EventMarker_0:eventmarker" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:ewm" "eventwindowmarker" "EventMarker_0:eventmarker" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_PF_C0_2:FPGA_POR_N" "CORERESET_PF_C0_0:FPGA_POR_N" "CORERESET_PF_C0_1:FPGA_POR_N" "FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_PF_C0_2:INIT_DONE" "CORERESET_PF_C0_0:INIT_DONE" "CORERESET_PF_C0_1:INIT_DONE" "INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RX_CLK_R" "CORERESET_PF_C0_2:CLK" "XCVR_Block_0:LANE0_RX_CLK_R" "EventMarker_0:EPCS_RXCLK" "RxPacketFIFO_0:WCLOCK" "RxPacketReader_0:clk" }
@@ -167,6 +168,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_data_out" "c
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:rx_crc_error" "DCSProcessor_0:error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_out" "RxPacketFIFO_1:DATA[17:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_marker_count" "EventMarker_0:event_marker_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_expected" "XCVR_Block_0:event_window_expected" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:Q[15:0]" "DCSProcessor_0:fifo_data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:RDCNT" "DCSProcessor_0:fifo_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:Q[17:0]" "TxPacketWriter_0:fifo_data_in" }

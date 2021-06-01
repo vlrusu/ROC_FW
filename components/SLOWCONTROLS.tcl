@@ -159,6 +159,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_error_count} -port_
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dtc_error_address} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dtc_error_counter} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_expected} -port_direction {OUT} -port_range {[15:0]}
 
 sd_create_bif_port -sd_name ${sd_name} -port_name {APB3mmaster} -port_bif_vlnv {AMBA:AMBA2:APB:r0p0} -port_bif_role {mirroredMaster} -port_bif_mapping {\
 "PADDR:PADDR" \
@@ -460,6 +461,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"dummy_status_out1" "Registers_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dummy_status_out2" "Registers_0:dummy_status_out2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dummy_status_out3" "Registers_0:dummy_status_out3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_early_cut" "Registers_0:event_window_early_cut" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:event_window_expected" "event_window_expected" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_late_cut" "Registers_0:event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm_delay" "Registers_0:ewm_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }

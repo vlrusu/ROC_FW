@@ -38,6 +38,8 @@ port (
     
     din : in std_logic;
     enable_alignment : out std_logic;
+    ewm : in std_logic;
+    event_window_expected : in std_logic_vector(15 downto 0);
     
     address : in std_logic_vector(3 downto 0);
     counter_out : out std_logic_vector(7 downto 0)
@@ -54,6 +56,8 @@ architecture architecture_ErrorCounter of ErrorCounter is
     signal invalid_k_counter : unsigned(7 downto 0);
     signal code_err_n_counter : unsigned(7 downto 0);
     signal rd_err_counter : unsigned(7 downto 0);
+    signal ewm_counter : unsigned(15 downto 0);
+    signal event_window_missed : std_logic_vector(7 downto 0);
 
 begin
 
@@ -70,6 +74,8 @@ begin
         clk_counter <= (others => '0');
         counter_out <= (others => '0');
         enable_alignment <= '1';
+        ewm_counter <= (others => '0');
+        event_window_missed <= (others => '0');
     elsif rising_edge(clk) then
         if address = X"0" then
             counter_out <= std_logic_vector(rx_val_counter);
@@ -91,6 +97,8 @@ begin
             counter_out <= rx_crc_error(7 downto 0);
         elsif address = X"9" then
             counter_out <= rx_packet_error(7 downto 0);
+        elsif address = X"A" then
+            counter_out <= event_window_missed(7 downto 0);
         else
             counter_out <= (others => '0');
         end if;
@@ -121,6 +129,14 @@ begin
             rd_err_counter <= rd_err_counter + 1;
         end if;
         clk_counter <= clk_counter + 1;
+        
+        ewm_counter <= ewm_counter + 1;
+        if ewm = '1' then
+            ewm_counter <= (others => '0');
+            if std_logic_vector(ewm_counter) /= event_window_expected then
+                event_window_missed <= std_logic_vector(unsigned(event_window_missed) + 1);
+            end if;
+        end if;
     end if;
     end process;
 
