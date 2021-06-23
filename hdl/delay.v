@@ -4,22 +4,18 @@
 // File: delay.v
 // File history:
 //      v1.0: 12/19/2020:  Delay copy of input by DELAY_CLK
+//      v2.0: 02/09/2021:  Must delay DDR3_FULL longer to keep DATA_PKTS = 0x40 until Data Header is made inside CommandHandler
 //
 // Description: 
 //
 // Targeted device: <Family::PolarFire> <Die::MPF300TS_ES> <Package::FCG1152>
-// Author: <Name>
+// Author: MT
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 //`timescale <time_units> / <precision>
 
-module delay#(
-      //==============================
-      // Top level block parameters
-      //==============================
-      parameter DELAY_CLK  = 5              // number of delay cycles + 1
-   ) (
+module delay(
       //===============
       // Input Ports
       //===============
@@ -35,10 +31,10 @@ module delay#(
 
 	
    // Synchronous logic, active low reset
-   reg [7:0] tmp;
+   reg [15:0] tmp;
    always @(posedge clk, negedge rst_n)
    begin
-		if (rst_n == 1'b0)	tmp	<= 8'b0;
+		if (rst_n == 1'b0)	tmp	<= 16'b0;
 		else		
 		begin
 			tmp 	<= tmp << 1;
@@ -46,6 +42,6 @@ module delay#(
 		end
    end
    
-   assign sig_out = tmp[DELAY_CLK];
+   assign sig_out = tmp[8];
 
 endmodule

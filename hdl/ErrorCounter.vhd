@@ -35,6 +35,9 @@ port (
     rd_err : in std_logic_vector(1 downto 0);
     rx_crc_error : in std_logic_vector(15 downto 0);
     rx_packet_error : in std_logic_vector(15 downto 0);
+    dreq_crc_error : in std_logic_vector(15 downto 0);
+    dtc_seq_error : in std_logic_vector(15 downto 0);
+    marker_error : in std_logic_vector(15 downto 0);
     
     din : in std_logic;
     enable_alignment : out std_logic;
@@ -99,6 +102,12 @@ begin
             counter_out <= rx_packet_error(7 downto 0);
         elsif address = X"A" then
             counter_out <= event_window_missed(7 downto 0);
+        elsif address = X"B" then
+            counter_out <= dreq_crc_error(7 downto 0);
+        elsif address = X"C" then
+            counter_out <= dtc_seq_error(7 downto 0);
+        elsif address = X"D" then
+            counter_out <= marker_error(7 downto 0);
         else
             counter_out <= (others => '0');
         end if;

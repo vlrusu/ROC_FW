@@ -9,15 +9,19 @@
 //  IN ADVANCE IN WRITING.
 //
 //-------------------------------------------------------------------------
-// Title       : <pattern_gen_checker>
-// Created     : <August 2017>
+// Title       : <fifo_men_cntrl>
+// Created     : <August 2018>
 // Description : This module initilizes the memory with AXI interface with
 //               different patterns and checks the memory against the 
 //               selected pattern. It performs 256 beat burst AXI read/write 
-//               operations  
+//               operations 
+//   v1.0   02/2021:  cleared and commented code      
+//   v2.0	02/2021:  added DDR3_FULL to "fifo_read_mem_i" to avoid increading MEM_RD_CNT when on Data Requests with empty memory 
+//   v3.0	02/2021:  added DDR3_FULL to "fifo_read_mem_i" also inside "raddr_state" and "rdata_state" and 
+//							 reply to such Data Request with empty memory with DDR3_EMPTY
 //
 // Hierarchy   :
-//               pattern_gen_checker.v            <-- This module
+//               fifo_em_cntrl.v            <-- This module
 //                           
 //-------------------------------------------------------------------------
 
@@ -31,30 +35,25 @@ module fifo_mem_cntrl #(
  input              resetn_i,
 
 // input from/to FIFO_CONV
-// input              FIFO_CONV_full,
- input              FIFO_CONV_empty,
- input      [63:0]  FIFO_CONV_DATA,
- input       [7:0]  FIFO_CONV_RDCNT,
- input       [7:0]  FIFO_CONV_WRCNT,
- output             tempfifo_re,
+ input              TEMPFIFO_EMPTY,
+ input      [63:0]  TEMPFIFO_DATA,
+ output	           TEMPFIFO_RE,
 
  output reg [63:0]  MEMFIFO_DATA,
  output reg         MEMFIFO_WE,
 
 //control signals
- input              fifo_read_mem_i,
- input              fifo_write_mem_i,
- input       [31:0] write_page_no,     // really the number of 1kB-pages to be written to DDR3 memory in multiples of 1kB -> 2**20 for 2x4Gb memories
- input        [7:0] read_page_no,      
- input      [19:0]  mem_offset, 			// memory offset (in units of BURST_OFFSET*BLK_SIZE) for 1KB pages
-// input      [24:0]  mem_offset,		// memory offset in units of HIT or 256 bit (2**8) => fit 2**25 in 8GB
+ input				fifo_read_mem_i,
+ input				fifo_write_mem_i,
+ input  	[31:0] 	write_page_no,     	// the number of 1kB-pages to be written to DDR3 memory in multiples of 1kB -> 2**20 for 2x4Gb memories
+ input   [7:0]		read_page_no,      	// unused
+ input	[31:0]  	mem_offset, 			// memory offset (in units of BURST_OFFSET*BLK_SIZE) for 1KB pages
  
- output reg         fifo_read_done_o, 
- output reg         fifo_write_done_o,
- output reg         DDR3_full,          // this is true when no of 1kB pages written to DDR3 reaches WRITE_PAGE_NO until all are read out
- output reg         last_write,         // when number of 1KB-page written reaches WRITE_PAGE_NO
- output reg  [31:0] mem_wr_cnt,         // no. of 1KB pages written to DR3 memory
- output reg  [31:0] mem_rd_cnt,         // no. of 1KB pages read from DR3 memory 
+ output reg         DDR3_empty,			// this is true when "FIFO_READ_MEM_I" request comes but memory is not ready
+ output reg         DDR3_full,			// this is true when no of 1kB pages written to DDR3 reaches WRITE_PAGE_NO until all are read out
+ output reg         last_write,			// when number of 1KB-page written reaches WRITE_PAGE_NO
+ output reg  [31:0] mem_wr_cnt,			// no. of 1KB pages written to DR3 memory
+ output reg  [31:0] mem_rd_cnt,			// no. of 1KB pages read from DR3 memory 
 
  //AXI Master IF
  // Write Address Channel 
@@ -119,7 +118,7 @@ localparam [2:0]  axi_idle    =   3'b000,
                   axi_valid   =   3'b001,
                   axi_done    =   3'b010, axi_mem_read = 3'b010,
                   axi_next    =   3'b011, axi_pattern  = 3'b011; 
-
+						
 // this is the offset for the next burst in units of bytes: 
 //     burst length in beats x bytes-per-beat/2
 // NB: we need to divide the bytes-per-beat because we write to 2 memories at the same time
@@ -138,7 +137,7 @@ assign  arburst_o =   1;     //INCR burst
 assign  arsize_o  =   BURST_SIZE; //64-bit read
 
 
-// read FIFO_CONV data in chunks of 128x64-bits (since BURST_LENGTH is passed as 127)
+// read TEMPFIFO data in chunks of 128x64-bits (since BURST_LENGTH is passed as 127)
 wire    [7:0]   wburst_no;
 //assign          wburst_no = write_page_no;
 // with one 1KB page to DDR3 at the time, we have to count the numbers of FIFO_MEM_WRITE_I
@@ -147,41 +146,44 @@ assign          wburst_no = 8'b1;
 wire    reset;
 assign  reset = ~resetn_i;
 
-
-wire        new_start_pulse;
-wire        new_write_pulse;
-wire        DDR3_pulse;
+reg			fifo_write_done_o;
+reg			fifo_read_done_o;
 
 reg         new_start       = 1'b0;
 reg         new_start_latch = 1'b0;
 reg         new_start_delay = 1'b0;
-reg         new_write       = 1'b0;
-reg         new_write_latch = 1'b0;
-reg         new_write_delay = 1'b0;
 reg         DDR3_full_latch = 1'b0;
-reg [31:0]	write_page_no_latch = 32'b0;
+
 reg [31:0]	page_no_for_write   = 32'b0;
 reg [31:0]	page_no_for_read    = 32'b0;
 
+wire        new_start_pulse;
+wire        DDR3_pulse;
+
+//
+// generate edge sensitive signals
 always@(posedge sysclk_i)
 begin
    new_start_latch  <= new_start;
    new_start_delay  <= new_start_latch;
-   new_write_latch  <= new_write;   
-   new_write_delay  <= new_write_latch;   
    DDR3_full_latch  <= DDR3_full;																				
 end
 
-// give time to NEW_START to settle
 assign  new_start_pulse = new_start_latch && ~new_start_delay;
-//give time to WRITE_PAGE_NO_LATCH to settle
-assign  new_write_pulse = new_write_latch && ~new_write_delay; 
 assign  DDR3_pulse      = DDR3_full && ~DDR3_full_latch;
 
 //
+// generate DDR3_empty signal, used to reply to a Data Request with no data in DDR3 Memoty
+// with DATA_READY and generate a Header packer with zeto packets
+always@(posedge sysclk_i)
+begin
+	DDR3_empty <= (fifo_read_mem_i && !DDR3_full)? 1'b1 : 1'b0;
+end
+
+//
 // WRITE/READ PAGE_NO control logic:
-//  - save number of pages for write, to be used in DDR3_FULL logic, when a new value is set
-//  - save number of pages for read, to be used in NEW_START logic, when a DDR3 is full
+//  - save number of pages for write based on requested value: to be used in DDR3_FULL logic
+//  - save number of pages for read the moment DDR3 is full: to be used in NEW_START logic 
 //
 always@(posedge sysclk_i, posedge reset)
 begin										 
@@ -189,99 +191,63 @@ begin
    begin
       page_no_for_write  <= 32'hFFFF_FFFF;	 // to avoid LAST_WRITE glitch at reset 
       page_no_for_read   <= 32'hFFFF_FFFF;	
-      write_page_no_latch<= 32'b0;  // needed to generate NEW_WRITE_PULSE at the beginning!!
    end  
    else 
    begin
-      write_page_no_latch  <= write_page_no;
-      if (new_write_pulse) page_no_for_write <= write_page_no_latch;
-      else if (DDR3_pulse) page_no_for_read  <= page_no_for_write;
+		page_no_for_write 	<= write_page_no;
+      if (DDR3_pulse)
+			page_no_for_read	<= page_no_for_write;
    end
 end
   
-// catch new value of WRITE_PAGE_NO  
-always@(posedge sysclk_i, posedge reset)
-begin										 
-   if (reset) new_write <= 1'b0;	  
-   else 
-   begin
-      if(new_write_pulse)                               new_write <= 1'b0;
-      else if (write_page_no_latch != write_page_no)    new_write <= 1'b1;
-   end
-end
-
 //
-// DDR3 full logic:
-//  - set by PAGE_NO fully written to memory 
-//  - clear by PAGE_NO fully read from memory
+// Control outputs logic
+//  LAST_WRITE/READ: when number of written/read back pages reaches requested value 
+//  DDR3_FULL: set by end of last write to memory, cleared by end of last read from memory
+//  NEW_START: signal end of last read from memory
 
 always@(posedge sysclk_i, posedge reset)
 begin
-   if (reset)   last_write <= 1'b0;
+   if (reset)   
+	begin 
+		last_write 	<= 1'b0;
+		DDR3_full 	<= 1'b0;
+		new_start 	<= 1'b0;
+	end	
    else
    begin
-      if (mem_wr_cnt==page_no_for_write)    last_write <= 1'b1;
+
+		if (mem_wr_cnt==page_no_for_write)    last_write <= 1'b1;
       else                                  last_write <= 1'b0;
-   end
+
+      if 		(new_start_pulse)               		DDR3_full <= 1'b0;
+      else if 	(last_write && fifo_write_done_o)	DDR3_full <= 1'b1;
+
+		if 		(new_start_pulse)													new_start <= 1'b0;
+		else if (fifo_read_done_o && mem_rd_cnt == page_no_for_read)   new_start <= 1'b1;
+		
+	end
 end
-
-
-always@(posedge sysclk_i, posedge reset)
-begin
-   if (reset)   DDR3_full <= 1'b0;
-   else
-   begin
-      if (new_start_pulse)                      DDR3_full <= 1'b0;
-      else if (last_write && fifo_write_done_o) DDR3_full <= 1'b1;
-   end
-end
-
-//
-// when all written memory pages are read out, generate reset to clear DDR3_full and written/read page no 
-always@(posedge sysclk_i, posedge reset)
-begin
-   if (reset)  new_start <= 1'b0;
-   else
-   begin
-     if (new_start_pulse)                                           new_start <= 1'b0;
-     else if (fifo_read_done_o && mem_rd_cnt == page_no_for_read)   new_start <= 1'b1;
-   end
-end
-
 
 //
 // Memory writes counter:
-// - incremented by TEMPFIFO FULL
+// - incremented by start of a new write (driven by TEMPFIFO FULL)
 // - used in LAST_WRITE/DDR3_full logic and to set the address of the memory write 
-always@(posedge sysclk_i, posedge reset)
+always@(posedge sysclk_i, posedge reset, posedge new_start_pulse)
 begin
-   if (reset)                   mem_wr_cnt <= 32'b0;
-   else
-   begin
-      if (new_start_pulse)      mem_wr_cnt <= 32'b0;
-      else if(fifo_write_mem_i) mem_wr_cnt <= mem_wr_cnt + 1'b1;
-   end
+   if (reset || new_start_pulse) 
+	begin
+		mem_wr_cnt <= 32'b0;
+		mem_rd_cnt <= 32'b0;
+	end
+   else 
+	begin
+		if(fifo_write_mem_i)					mem_wr_cnt <= mem_wr_cnt + 1'b1;
+      if(fifo_read_mem_i && DDR3_full) mem_rd_cnt <= mem_rd_cnt + 1'b1; // NB: this goes up at the beginning of the read
+	end
 end
-
 //
-// Memory reads counter:
-// - incremented by start of a new read
-// - used in restarting a new write to memory, after the last read is done
-always@(posedge sysclk_i, posedge reset)
-begin
-   if (reset)                   mem_rd_cnt <= 32'b0;
-   else
-   begin
-      if (new_start_pulse)      mem_rd_cnt <= 32'b0;
-      else if(fifo_read_mem_i)  mem_rd_cnt <= mem_rd_cnt + 1'b1; // NB: this goes up at the beginning of the read
-   end
-end
-
-														 
-														 
-
-//
-// Logic to control FIFO_CONV read enable:
+// Logic to control TEMPFIFO read enable:
 // 1) write address seen and last write not received
 // 2) write data confirmed
 // 3) DDR3 not full   
@@ -291,8 +257,7 @@ begin
     if ( reset || wlast_o)              ENABLE_RD_FIFO <= 1'b0;
     else if (awvalid_o && awready_i)    ENABLE_RD_FIFO <= 1'b1;
 end
-assign tempfifo_re = (~FIFO_CONV_empty && wready_i && ENABLE_RD_FIFO && ~DDR3_full); 
-
+assign TEMPFIFO_RE = (~TEMPFIFO_EMPTY && wready_i && ENABLE_RD_FIFO && ~DDR3_full); 
 
 
 //write address channel
@@ -343,7 +308,7 @@ begin
       end
    end
 
-   //perform next AXI write if selected number of word from FIFO_CONV is reached
+   //perform next AXI write if selected number of word from TEMPFIFO is reached
    //initialization is not completed
    axi_next:
    begin
@@ -368,13 +333,13 @@ always@(posedge sysclk_i, posedge reset)
 begin
    if(reset == 1'b1)
    begin
-      wlast_o                  <=   0;
-      wvalid_o                 <=   0;
-      wdata_o                  <=   0;
-      fifo_write_done_o        <=   0;
-      wdata_cnt                <=   0;
-      wdburst_cnt              <=   0;
-      wdata_state              <=   axi_idle;
+      wlast_o				<=	1'b0;
+      wvalid_o				<=	1'b0;
+      wdata_o				<= 1'b0;
+      fifo_write_done_o	<= 1'b0;
+      wdata_cnt			<= 1'b0;
+      wdburst_cnt			<= 1'b0;
+      wdata_state 		<=	axi_idle;
    end
    else
    begin
@@ -384,10 +349,13 @@ begin
    //wait for AXI IF ready
    axi_idle:
    begin
-      wdata_o                  <=   64'b0;
-      wdburst_cnt              <=   0;
-      wdata_cnt                <=   0;
-      fifo_write_done_o        <=   1'b0;
+      wlast_o				<=	1'b0;
+      wvalid_o				<=	1'b0;
+      wdata_o				<= 1'b0;
+      fifo_write_done_o	<= 1'b0;
+      wdata_cnt			<= 1'b0;
+      wdburst_cnt			<= 1'b0;
+
       if(awvalid_o && awready_i) 
       begin
          wdata_state <=   axi_valid;
@@ -398,49 +366,50 @@ begin
    //perform AXI burst write
    axi_valid:
    begin        
-	  fifo_write_done_o     <=   1'b0;
-//      wvalid_o              <=   1'b1;
-// must prevent further AXI writes if FIFO_CONV is starved...
-      if(~FIFO_CONV_empty)
+	  fifo_write_done_o		<=	1'b0;
+//   wvalid_o              <= 1'b1;
+// must prevent further AXI writes if TEMPFIFO is starved...
+      if(~TEMPFIFO_EMPTY)
       begin
-         wvalid_o              <=   1'b1;
+         wvalid_o				<=   1'b1;
 
          if(wready_i)
 // this generate lost writes!! If WVALID is issued, WREADY must be listened to!
-//      if(wready_i && ~FIFO_CONV_empty)
+//      if(wready_i && ~TEMPFIFO_EMPTY)
          begin
-            wdata_cnt          <=   wdata_cnt + 1'b1;
-            wdata_o            <=   FIFO_CONV_DATA;
+            wdata_cnt			<=	wdata_cnt + 1'b1;
+            wdata_o				<=	TEMPFIFO_DATA;
 
             if(wdata_cnt == BURST_LENGTH)
             begin
-               wlast_o         <=   1'b1;
-               wdburst_cnt     <=   wdburst_cnt + 1'b1;
-               wdata_state     <=   axi_done;
+               wlast_o			<=	1'b1;
+               wdburst_cnt		<=	wdburst_cnt + 1'b1;
+               wdata_state		<=	axi_done;
             end
 		 
          end
       end
+		
    end      // axi_valid state
 
    //generate memory initialization complete
    axi_done:
    begin 
       if(wready_i)
-      begin
-         wvalid_o              <=   1'b0;
-         wlast_o               <=   1'b0;
-         wdata_cnt             <=   0;   // MT added for multiple bursts
-			wdata_o               <=    wdata_o;
+      begin				
+         wvalid_o			<=	1'b0;
+         wlast_o			<=	1'b0;
+         wdata_cnt		<=	1'b0;   // MT added for multiple bursts
+			wdata_o			<=	wdata_o;
          if(wdburst_cnt == wburst_no)
          begin
-            fifo_write_done_o  <=   1'b1;
-            wdata_state        <=   axi_idle;
+            fifo_write_done_o	<=	1'b1;
+            wdata_state			<=	axi_idle;
          end
          else
 			begin
-            fifo_write_done_o  <=   1'b0;
-            wdata_state        <=   axi_next;
+            fifo_write_done_o	<=	1'b0;
+            wdata_state			<=	axi_next;
 			end
       end
    end
@@ -449,12 +418,18 @@ begin
    axi_next:
    begin
       if(awvalid_o)
-         wdata_state           <=   axi_valid;
+         wdata_state	<=   axi_valid;
 		end
 
    default:
    begin
-      wdata_state              <=   axi_idle;
+      wlast_o				<=	1'b0;
+      wvalid_o				<=	1'b0;
+      wdata_o				<= 1'b0;
+      fifo_write_done_o	<= 1'b0;
+      wdata_cnt			<= 1'b0;
+      wdburst_cnt			<= 1'b0;
+      wdata_state			<=	axi_idle;
    end
 
    endcase
@@ -483,7 +458,8 @@ begin
    begin
       rburst_cnt               <=   0;
       araddr_o                 <=   BURST_OFFSET*(mem_rd_cnt+mem_offset);
-      if(fifo_read_mem_i)
+//      if(fifo_read_mem_i)
+		if (fifo_read_mem_i && DDR3_full)
          raddr_state           <=   axi_valid;
    end
 
@@ -518,7 +494,7 @@ begin
    end
 
    endcase
-end
+	end
 end
 
 //read data channel
@@ -545,7 +521,8 @@ begin
       fifo_read_done_o 		<=   1'b0;
 		MEMFIFO_DATA			<=   {64{1'b1}};
       MEMFIFO_WE				<=   1'b0; 
-      if(fifo_read_mem_i)  //memory pattern check
+//      if(fifo_read_mem_i)
+		if (fifo_read_mem_i && DDR3_full)
       begin         
          rready_o				<=   1'b0;
          rdata_state			<=   axi_pattern; // maybe can skip??

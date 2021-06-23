@@ -1,10 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Company: <Name>
 //
-// File: pulse_stretcher.v
+// File: pulse_generator.v
 // File history:
 //      <1.0>: <12/2018>: MT   First version
-//      <2.0>: <12/2020>: MT   Add time domain crossing capability, assuming clk_i is faster than clk_o
+//      <2.0>: <02/2021>: MT   Add time domain crossing capability
 //      <Revision number>: <Date>: <Comments>
 //
 // Description: 
@@ -19,7 +19,6 @@
 //`timescale <time_units> / <precision>
 
 module pulse_generator(
- input   clk_i, 
  input   clk_o, 
  input   resetn_i, 
  input   gate_i,	 
@@ -27,35 +26,16 @@ module pulse_generator(
  output  pulse_dn 
 );
    
-// stretch "gae_i" to make sure it is seen by clk_o
-reg gate_latch1, gate_latch2, gate_latch3;
-always@(posedge clk_i)
-begin
-	gate_latch1	<= gate_i;
-	gate_latch2	<= gate_latch1;
-	gate_latch3	<= gate_latch2;
-end
-
-wire		gate;
-assign 	gate = gate_i || gate_latch1 || gate_latch2 || gate_latch3;
-
 // generate pulse on rising/falling edge using clk_o
-reg	gate_seen, gate_reg;
-always@(posedge clk_o, negedge resetn_i)
+reg	gate_latch, gate_reg, gate_sync;
+always@(posedge clk_o)
 begin
-    if(resetn_i == 1'b0)
-    begin
-        gate_seen 	<= 1'b0;
-        gate_reg 	<= 1'b0;
-    end
-    else
-    begin
-		gate_seen 	<= gate;
-		gate_reg  	<=	gate_seen; 
-    end
+	gate_latch 	<= gate_i;
+	gate_sync  	<=	gate_latch; // this is the first not-metastable register step 
+	gate_reg  	<=	gate_sync; 
 end
 
-assign pulse_up = gate_seen && ~gate_reg;   
-assign pulse_dn = ~gate_seen && gate_reg;
+assign pulse_up = gate_sync && ~gate_reg;   
+assign pulse_dn = ~gate_sync && gate_reg;
 
 endmodule

@@ -31,8 +31,7 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pattern_FIFO_cnt
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:digiclk" "PATTERN_FIFO_0:RCLOCK" "PATTERN_FIFO_0:WCLOCK" "digiclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern_empty" "PATTERN_FIFO_0:EMPTY" "EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PATTERN_FIFO_0:RE" "fifo_re" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PATTERN_FIFO_0:FULL" "FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern_full" "PATTERN_FIFO_0:AFULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"FULL" "PATTERN_FIFO_0:FULL" "pattern_FIFO_cntrl_0:pattern_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern_we" "PATTERN_FIFO_0:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern_init" "pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:resetn" "PATTERN_FIFO_0:RESET" "resetn" }
@@ -41,7 +40,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:resetn" "P
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern" "pattern" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_cntrl_0:pattern_data" "PATTERN_FIFO_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PATTERN_FIFO_0:Q" "Q" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PATTERN_FIFO_0:RDCNT" "pattern_FIFO_cntrl_0:pattern_rd_cnt" "RDCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RDCNT" "PATTERN_FIFO_0:RDCNT" }
 
 
 # Re-enable auto promotion of pins of type 'pad'

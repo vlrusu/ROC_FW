@@ -26,58 +26,89 @@ port (
     reset_n : in std_logic;
     clk : in std_logic;
     
-    fifo_rdcnt : in std_logic_vector(10 downto 0);
-    fifo_re : out std_logic;
-    fifo_data_in : in std_logic_vector(17 downto 0);
+    dcs_fifo_rdcnt : in std_logic_vector(10 downto 0);
+    dcs_fifo_re : out std_logic;
+    dcs_fifo_data_in : in std_logic_vector(17 downto 0);
+
+    dreq_fifo_rdcnt : in std_logic_vector(10 downto 0);
+    dreq_fifo_re : out std_logic;
+    dreq_fifo_data_in : in std_logic_vector(17 downto 0);
     
-    data_out : out std_logic_vector(15 downto 0);
-    kchar_out : out std_logic_vector(1 downto 0)
+    tx_data_out : out std_logic_vector(15 downto 0);
+    tx_kchar_out : out std_logic_vector(1 downto 0)
 );
 end TxPacketWriter;
 architecture architecture_TxPacketWriter of TxPacketWriter is
 
 
-    type state_type is (IDLE, RUNNING);
-    signal state      : state_type;
+    type tx_state_type is (IDLE, RUNNING1, RUNNING2);
+    signal tx_state      : tx_state_type;
     signal tx_data : std_logic_vector(15 downto 0);
     signal tx_kchar : std_logic_vector(1 downto 0);
-    signal word_count : integer range 0 to 31;
+    signal tx_word_count : integer range 0 to 31;
+    signal sequence_num : std_logic_vector(2 downto 0);
 
 begin
 
-    data_out <= tx_data;
-    kchar_out <= tx_kchar;
+    tx_data_out <= tx_data;
+    tx_kchar_out <= tx_kchar;
     
     process(reset_n, clk)
     begin
     if reset_n = '0' then
         tx_data <= X"BC3C";
         tx_kchar <= "11";
-        word_count <= 0;
-        state <= IDLE;
+        tx_word_count <= 0;
+        tx_state <= IDLE;
+        sequence_num <= (others => '0');
     elsif rising_edge(clk) then
-        fifo_re <= '0';
+        dcs_fifo_re <= '0';
+        dreq_fifo_re <= '0';
         tx_data <= X"BC3C";
         tx_kchar <= "11";
-        case state is
+        case tx_state is
             when IDLE =>
-                word_count <= 0;
-                if unsigned(fifo_rdcnt) > 9 then
-                    fifo_re <= '1';
-                    state <= RUNNING;
+                tx_word_count <= 0;
+                if unsigned(dcs_fifo_rdcnt) > 9 then  -- give priority to DCS packets 
+                    dcs_fifo_re <= '1';
+                    tx_state <= RUNNING1;
+                elsif unsigned(dreq_fifo_rdcnt) > 9 then
+                    dreq_fifo_re <= '1';
+                    tx_state <= RUNNING2;
                 end if;
                 
-            when RUNNING =>
-                word_count <= word_count + 1;
-                if word_count < 9 then
-                    fifo_re <= '1';
+            when RUNNING1 =>
+                tx_word_count <= tx_word_count + 1;
+                if tx_word_count < 9 then
+                    dcs_fifo_re <= '1';
                 end if;
-                if word_count > 0 then
-                    tx_data <= fifo_data_in(15 downto 0);
-                    tx_kchar <= fifo_data_in(17 downto 16);
+                if tx_word_count = 1 then
+                    tx_data <= dcs_fifo_data_in(15 downto 8) & sequence_num & dcs_fifo_data_in(4 downto 0);
+                    tx_kchar <= dcs_fifo_data_in(17 downto 16);
+                elsif tx_word_count > 1 then
+                    tx_data <= dcs_fifo_data_in(15 downto 0);
+                    tx_kchar <= dcs_fifo_data_in(17 downto 16);
                 end if;
-                if word_count = 10 then
-                    state <= IDLE;
+                if tx_word_count = 10 then
+						  sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    tx_state <= IDLE;
+                end if;
+                
+            when RUNNING2 =>
+                tx_word_count <= tx_word_count + 1;
+                if tx_word_count < 9 then
+                    dreq_fifo_re <= '1';
+                end if;
+                if tx_word_count = 1 then
+                    tx_data <= dreq_fifo_data_in(15 downto 8) & sequence_num & dreq_fifo_data_in(4 downto 0);
+                    tx_kchar <= dreq_fifo_data_in(17 downto 16);
+                elsif tx_word_count > 1 then
+                    tx_data <= dreq_fifo_data_in(15 downto 0);
+                    tx_kchar <= dreq_fifo_data_in(17 downto 16);
+                end if;
+                if tx_word_count = 10 then
+						  sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    tx_state <= IDLE;
                 end if;
         end case;
     end if;

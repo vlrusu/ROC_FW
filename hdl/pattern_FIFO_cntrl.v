@@ -3,16 +3,14 @@
 //
 // File: pattern_FIFO_cntrl.v
 // File history:
-//      <Revision number>: <Date>: <Comments>
-//      <Revision number>: <Date>: <Comments>
-//      <Revision number>: <Date>: <Comments>
+//      v2.0:  02/2021:  Change PATTERN_START logic to avoid refilling PATTERN_FIFO on every FIFO_WRITE_MEM
 //
 // Description: 
 //
 // <Description here>
 //
 // Targeted device: <Family::PolarFire> <Die::MPF300TS> <Package::FCG1152>
-// Author: <Name>
+// Author:Monica Tecchio
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -25,9 +23,8 @@ module pattern_FIFO_cntrl(
 
     input       [1:0]  pattern,  //pattern generator type: 0=>INCR+1, 1=>DECR-1, 2=>all A's,  3=>all 5's
     input              pattern_init,
-    input              pattern_full,  // PATTERN_FIFO ALMOST_full (to stop PATTERN_FIFO_RE)
+    input              pattern_full,  // PATTERN_FIFO ALMOST_full: UNUSED
     input              pattern_empty, // PATTERN_FIFO empty, to restart pattern generation
-    input       [16:0] pattern_rd_cnt, // PATTERN_FIFO rd_cnt, to restart pattern generation
     output reg         pattern_we   /*synthesis syn_preserve=1 */,    // PATTERN_FIFO WR_EN
     output reg [31:0]  pattern_data /*synthesis syn_preserve=1 */     // PATTERN_FIFO input data
 );
@@ -37,7 +34,8 @@ reg    [32:0]   int_data_alt;
 reg    [1:0]    index;
 reg    [15:0]   word_cnt;
 reg    [15:0]   blk_cnt;
-reg             pattern_init_disable;
+reg             pattern_init_first;
+reg				 pattern_empty_latch;
 wire            pattern_start;
 
 // state machine
@@ -96,21 +94,23 @@ begin
    end // if (resetn == 1'b0)
 end
 
-// deal with spurious PATTERN_INIT when reset generates a PATTERN_FIFO EMPTY
+//
+// PATTERN_FIFO is filled either by he very first "FIFO_WRITE_MEM" command
+// or by any PATTERN_FIFO_EMPTY signal after that
 always@(posedge digiclk, negedge resetn)
 begin
-   if(resetn == 1'b0)
-   begin
-      if (pattern_empty == 1'b1)    pattern_init_disable <= 1'b1;
-      else                          pattern_init_disable <= 1'b0;
-   end
-   else
-   begin
-      if (pattern_empty == 1'b0)    pattern_init_disable <= 1'b0;
-   end
+   if(resetn == 1'b0)		
+	begin
+		pattern_init_first <= 1'b1;
+	end
+	else 
+	begin
+		pattern_empty_latch	<= pattern_empty;
+		if (pattern_init)	pattern_init_first <= 1'b0;
+	end
 end
-assign  pattern_start = pattern_init || (pattern_empty && ~pattern_init_disable);
-
+assign  pattern_start = (pattern_init && pattern_init_first) || 
+								( ~pattern_init_first && (pattern_empty && ~pattern_empty_latch) );
 
 //pattern output state machine
 always@(posedge digiclk, negedge resetn)

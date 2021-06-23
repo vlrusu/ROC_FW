@@ -166,7 +166,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RCLOCK" "seria
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RE" "serialfifo_re" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_alignment" "DigiLink_1:alignment_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment" "cal_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:error_count" "cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_0" "cal_lane1_alignment" }
@@ -180,6 +179,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderSM_0:lane3_data" "Dig
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_1:DATA" "DigiReaderSM_0:outfifo_data" "DigiReaderFIFO_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_alignment" "DigiLink_1:alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane0_error_count" "DigiLink_1:error_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_alignment" "DigiLink_1:alignment_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hv_lane1_error_count" "DigiLink_1:error_count_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:Q" "serialfifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RDCNT" "serialfifo_rdcnt" }

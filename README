@@ -1,6 +1,13 @@
 There is a problem with the automatic timing derivation, remove ARESETN* from DDR_Interface in ROC_derived_constraints
 
 
-To run, in Libero do Prokect/ExecutScript ROC.tcl
+To run, in Libero do Project/ExecutScript ROC.tcl
 
 it will create a ROC folder in the local dir. 
+
+
+MT (06/2021) 
+When building from TCL with v2021:
+
+components/fifo_mem_cntrl.tcl      must remove all of "hdl_core_delete_parameters" statements from line 35 to end
+components/pattern_gen_checker     must remove all of "hdl_core_delete_parameters" statements from line 35 to end

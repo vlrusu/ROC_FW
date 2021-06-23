@@ -11,17 +11,25 @@ source components/Registers.tcl
 build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
-source components/AXI4_Interconnect.tcl 
+source components/COREJTAGDEBUG_C0.tcl 
 source components/CORERESET_PF_C0.tcl 
+source components/CORERESET_PF_C2.tcl 
+source components/AXI4_Interconnect.tcl 
 source components/DDR3_Cntrl.tcl 
 source components/MEMFIFO.tcl 
+source components/TEMPFIFO.tcl 
+source components/data_err.tcl 
+source components/data_expc.tcl 
+source components/data_true.tcl 
+source components/read_fifo.tcl 
+source components/TPSRAM.tcl 
+source components/write_fifo.tcl 
 source components/PATTERN_FIFO.tcl 
 source components/pattern_FIFO_filler.tcl 
-source components/TEMPFIFO.tcl 
 source components/DDRInterface.tcl 
-source components/COREJTAGDEBUG_C0.tcl 
-source components/CORERESET_PF_C2.tcl 
-source components/TPSRAM.tcl 
+source components/BLK_TPSRAM.tcl 
+source components/PACKET_FIFO.tcl 
+source components/DTCInterface.tcl 
 source components/DigiClkReset.tcl 
 source components/DigiFIFOReset.tcl 
 source components/CORERESET_PF_C1.tcl 

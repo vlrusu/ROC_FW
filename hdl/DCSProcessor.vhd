@@ -37,6 +37,13 @@ port (
     crc_rst : out std_logic;
     crc_data_out : out std_logic_vector(15 downto 0);
     crc_data_in : in std_logic_vector(15 downto 0);
+		
+	 ready_reg	:	in	 std_logic;
+	 read_reg	:	out std_logic;
+	 write_reg	:	out std_logic;
+	 reg_address : out std_logic_vector(15 downto 0);
+    reg_data_in : out std_logic_vector(15 downto 0);
+    reg_data_out : in std_logic_vector(15 downto 0);
     
     state_count : out std_logic_vector(7 downto 0);
     error_count : out std_logic_vector(15 downto 0)
@@ -44,13 +51,10 @@ port (
 end DCSProcessor;
 architecture architecture_DCSProcessor of DCSProcessor is
 
-    type state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, RW1, RW2, RW3, RW4, RW5, SENDPACKET, CALCULATECRC, WRITECRC);
+    type state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, RW1, RW2, RW3, RW4, RW5, RW6, SENDPACKET, CALCULATECRC, WRITECRC);
     signal state      : state_type;
     signal counter : integer range 0 to 5;
     
-    signal reg_address : std_logic_vector(15 downto 0);
-    signal reg_data_in : std_logic_vector(15 downto 0);
-    signal reg_data_out : std_logic_vector(15 downto 0);
     signal reg_we : std_logic;
     signal register_0 : std_logic_vector(15 downto 0);
     signal register_1 : std_logic_vector(15 downto 0);
@@ -85,7 +89,6 @@ begin
     corrupted <= '0';
     dcs_fifo_empty <= '0';
     
-    
     -- DCS packet definition
     link_id <= inbuffer(2)(10 downto 8);
     write_ack <= inbuffer(3)(3);
@@ -111,6 +114,9 @@ begin
         fifo_data_out <= (others => '0');
         reg_we <= '0';
         reg_data_in <= (others => '0');
+		  
+		  read_reg <= '0';
+		  write_reg <= '0';
         
         inbuffer(0) <= (others => '0');
         inbuffer(1) <= (others => '0');
@@ -135,7 +141,10 @@ begin
         fifo_we <= '0';
         reg_we <= '0';
         reg_data_in <= (others => '0');
-        
+				
+		  read_reg <= '0';
+		  write_reg <= '0';
+				
         case state is 
             when IDLE =>
                 state_count <= X"01";
@@ -187,15 +196,20 @@ begin
                 reg_address <= op1_address;
                 reg_data_in <= op1_data;
                 if read_write = '1' then
+						  read_reg	<= '1';
                     state <= RW2;
                 else
                     reg_we <= '1';
+						  write_reg	<= '1';
                     state <= RW3;
                 end if;
                 
             when RW2 =>
                 state_count <= X"06";
-                state <= RW3;
+					 read_reg	<= '1';
+					 if (ready_reg = '1') then
+							state <= RW3;
+					 end if;
             
             when RW3 =>
                 state_count <= X"07";
@@ -206,21 +220,37 @@ begin
                 reg_data_in <= op2_data;
                 if double_rw = '1' then
                     if read_write = '1' then
+								read_reg	<= '1';
                         state <= RW4;
                     else
                         reg_we <= '1';
-                        state <= IDLE; -- FIXME WRITE ACK
+								write_reg	<= '1';
+                        --state <= IDLE; 
+								if (write_ack = '1') then -- to deal with WRITE_ACK, need to wait for second WRITE_REG to happen before issuing READ_REG
+									state <= RW6;
+								else
+									state <= IDLE;
+								end if;
                     end if;
                 else
                     if read_write = '1' then
                         state <= SENDPACKET;
                     else
-                        state <= IDLE; -- FIXME WRITE ACK
+                        --state <= IDLE; 
+								if (write_ack = '1') then -- deal with WRITE_ACK
+									read_reg	<= '1';
+									if (ready_reg) then 
+										state <= SENDPACKET;
+									end if;
+								else
+									state <= IDLE;
+								end if;
                     end if;
                 end if;
                 
             when RW4 =>
                 state_count <= X"08";
+					 read_reg	<= '1';
                 state <= RW5;
             
             when RW5 =>
@@ -228,7 +258,14 @@ begin
                 inbuffer(7) <= reg_data_out;
                 state <= SENDPACKET;
                 
-            when SENDPACKET =>
+            when RW6 =>
+                state_count <= X"0D";
+					 read_reg	<= '1';
+					 if (ready_reg) then 
+						 state <= SENDPACKET;
+					 end if;
+					 
+				when SENDPACKET =>
                 state_count <= X"0A";
                 word_count <= word_count + 1;
                 fifo_we <= '1';
@@ -290,7 +327,7 @@ begin
                 state_count <= X"0C";
                 fifo_we <= '1';
                 fifo_data_out <= "00" & crc_data_in;
-                sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                --sequence_num <= std_logic_vector(unsigned(sequence_num) + 1); -- done in TxPacketWriter now
                 state <= IDLE;                
             
             when others =>
@@ -300,51 +337,5 @@ begin
     end if;
     end process;
     
-    process(reset_n, clk)
-    begin
-    if reset_n = '0' then
-        register_0 <= (others => '0');
-        register_1 <= X"DEAD";
-        register_2 <= X"1111";
-        register_3 <= X"2222";
-        reg_data_out <= (others => '0');
-    elsif rising_edge(clk) then
-        if reg_we = '1' then
-            case reg_address is
-                when X"0000" =>
-                    register_0 <= reg_data_in;
-                when X"0001" =>
-                    register_1 <= reg_data_in;
-                when X"0002" =>
-                    register_2 <= reg_data_in;
-                when X"0003" =>
-                    register_3 <= reg_data_in;
-                when others =>
-                    -- pass
-            end case;
-        end if;
-        case reg_address is
-            when X"0000" =>
-                reg_data_out <= register_0;
-            when X"0001" =>
-                reg_data_out <= register_1;
-            when X"0002" =>
-                reg_data_out <= register_2;
-            when X"0003" =>
-                reg_data_out <= register_3;
-            when others =>
-                reg_data_out <= X"BEEF";
-        end case;
-    end if;
-    end process;
-
-
-
-
-
-
-
-
-
    -- architecture body
 end architecture_DCSProcessor;
