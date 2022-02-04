@@ -14,7 +14,7 @@ for new_path in new_files:
     basefn = os.path.basename(new_path) 
     old_path = os.path.join(old_dir,basefn)
     if not old_path in old_files:
-        print "New file",basefn
+        print("New file",basefn)
         copyfile(new_path, old_path)
 
 for old_path in old_files:
@@ -22,7 +22,7 @@ for old_path in old_files:
     new_path = os.path.join(new_dir,basefn)
     if not new_path in new_files:
         os.remove(old_path)
-        print "Deleted file",basefn
+        print("Deleted file",basefn)
     elif not filecmp.cmp(old_path,new_path):
         old_lines = open(old_path).readlines()
         new_lines = open(new_path).readlines()
@@ -72,4 +72,4 @@ for old_path in old_files:
             fout.write(line)
         fout.close()
 
-        print "Changed",basefn
+        print("Changed",basefn)

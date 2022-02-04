@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-1FCG1152I
 # Create and Configure the core component MEMFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:2.8.101} -component_name {MEMFIFO} -params {\
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {MEMFIFO} -params {\
 "AE_STATIC_EN:true"  \
 "AEVAL:2"  \
 "AF_STATIC_EN:false"  \

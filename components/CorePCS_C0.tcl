@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-1FCG1152I
 # Create and Configure the core component CorePCS_C0
-create_and_configure_core -core_vlnv {Actel:DirectCore:CorePCS:3.5.106} -component_name {CorePCS_C0} -params {\
+create_and_configure_core -core_vlnv {Actel:DirectCore:CorePCS:3.6.103} -component_name {CorePCS_C0} -params {\
 "COMMA_DETECT_SEL:0"  \
 "EPCS_DWIDTH:20"  \
 "LANE_MODE:2"  \

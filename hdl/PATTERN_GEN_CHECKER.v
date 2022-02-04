@@ -766,7 +766,8 @@ WRITE_FIFO write_fifo_0(
 	 .DATA(write_timer), 		// [31:0]
 	 .RCLOCK(fifo_clk),
 	 .RE(write_ren),
-	 .RESET(resetn_i),			// neg. logic
+	 .WRESET_n(resetn_i),			// neg. logic
+	 .RRESET_n(resetn_i),			// neg. logic
 	 .WCLOCK(clk_i),
 	 .WE(wlast_o),
 	 //Output
@@ -781,7 +782,8 @@ READ_FIFO read_fifo_0(
 	 .DATA(read_timer), 		// [31:0]
 	 .RCLOCK(fifo_clk),
 	 .RE(read_ren),
-	 .RESET(resetn_i),			// neg. logic
+	 .WRESET_n(resetn_i),			// neg. logic
+	 .RRESET_n(resetn_i),			// neg. logic
 	 .WCLOCK(clk_i),
 	 .WE(rlast_pulse),
 	 //Output
@@ -796,7 +798,8 @@ DATA_TRUE data_true_0(
 	 .DATA(true_data), 		// [63:0]
 	 .RCLOCK(fifo_clk),
 	 .RE(err_ren),
-	 .RESET(resetn_i),			// neg. logic
+	 .WRESET_n(resetn_i),			// neg. logic
+	 .RRESET_n(resetn_i),			// neg. logic
 	 .WCLOCK(clk_i),
 	 .WE(err_wen),
 	 //Output
@@ -811,7 +814,8 @@ DATA_EXPC data_expc_0(
 	 .DATA(expc_data), 		// [63:0]
 	 .RCLOCK(fifo_clk),
 	 .RE(err_ren),
-	 .RESET(resetn_i),			// neg. logic
+	 .WRESET_n(resetn_i),			// neg. logic
+	 .RRESET_n(resetn_i),			// neg. logic
 	 .WCLOCK(clk_i),
 	 .WE(err_wen),
 	 //Output
@@ -826,7 +830,8 @@ DATA_ERR data_err_0(
 	 .DATA(error_data), 		// [31:0]
 	 .RCLOCK(fifo_clk),
 	 .RE(err_ren),
-	 .RESET(resetn_i),			// neg. logic
+	 .WRESET_n(resetn_i),			// neg. logic
+	 .RRESET_n(resetn_i),			// neg. logic
 	 .WCLOCK(clk_i),
 	 .WE(err_wen),
 	 //Output

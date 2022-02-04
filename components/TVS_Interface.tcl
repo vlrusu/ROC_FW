@@ -5,13 +5,17 @@ create_smartdesign -sd_name ${sd_name}
 # Disable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 0
 
-# Create top level Ports
-sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_i} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {clk} -port_direction {IN}
+# Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {R_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {clk} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_i} -port_direction {IN}
 
+
+# Create top level Bus Ports
 sd_create_bus_port -sd_name ${sd_name} -port_name {R_ADDR} -port_direction {IN} -port_range {[1:0]}
+
 sd_create_bus_port -sd_name ${sd_name} -port_name {R_DATA} -port_direction {OUT} -port_range {[15:0]}
+
 
 # Add PF_TVS_C0_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_TVS_C0} -instance_name {PF_TVS_C0_0}
@@ -38,11 +42,11 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {TVS_Cntrl} -hdl_
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_CLK" "clk" "TVS_Cntrl_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALID" "TVS_Cntrl_0:valid_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:R_CLK" "R_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"resetn_i" "TVS_Cntrl_0:resetn_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_CLK" "clk" "TVS_Cntrl_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_EN" "TVS_Cntrl_0:w_en_o" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"resetn_i" "TVS_Cntrl_0:resetn_i" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:CHANNEL" "TVS_Cntrl_0:channel_i" }
