@@ -122,6 +122,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DQ} -port_direction {INOUT} -
 # Add AND2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
+# Create top level Bus Ports
 
 
 # Add AND2_3 instance
@@ -162,8 +163,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {CORERESET_PF_C0_0:FABRIC_RES
 # Add DDRInterface_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DDRInterface} -instance_name {DDRInterface_0}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:memfifo_rd_cnt} -pin_slices {[16:1]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:mem_wr_cnt} -pin_slices {[15:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:mem_rd_cnt} -pin_slices {[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:MEMFIFO_DATA} -pin_slices {[31:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:MEMFIFO_DATA} -pin_slices {[63:32]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {DDRInterface_0:expc_out} -pin_slices {[31:0]}
@@ -701,10 +700,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRNHITS" "DDRIn
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRLOCRAM" "DDRInterface_0:loc_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRERRCNT" "DDRInterface_0:mem_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDROFFSET" "DDRInterface_0:mem_offset" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_rd_cnt" "SLOWCONTROLS_0:DDRPAGERD" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_rd_cnt[15:0]" "TOP_SERDES_0:MEM_RD_CNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_wr_cnt" "SLOWCONTROLS_0:DDRPAGEWR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_wr_cnt[15:0]" "TOP_SERDES_0:MEM_WR_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:memfifo_rd_cnt" "SLOWCONTROLS_0:DDRDIAG0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:memfifo_rd_cnt[16:1]" "TOP_SERDES_0:FIFO_RD_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DDRRAMADDR" "DDRInterface_0:ram_addr_i" }
@@ -751,6 +746,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:event_window_expec
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_SRAM_0:AHBSlaveInterface" "MIV_RV32IMC_C0_0:AHBL_M_SLV" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MIV_RV32IMC_C0_0:APB_MSTR" "SLOWCONTROLS_0:APB3mmaster" }
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:DCS_FORCE_MEMRD" "TOP_SERDES_0:DCS_FORCE_MEMRD" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:SERIAL_FORCE_MEMRD" "SLOWCONTROLS_0:DDRFORCERD" }
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_rd_cnt" "SLOWCONTROLS_0:DDRDIAG0" "SLOWCONTROLS_0:DDRPAGERD" "TOP_SERDES_0:MEM_RD_CNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRInterface_0:mem_wr_cnt" "SLOWCONTROLS_0:DDRPAGEWR" "TOP_SERDES_0:MEM_WR_CNT" }
+
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

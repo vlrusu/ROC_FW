@@ -47,14 +47,15 @@ port (
 	TEMPFIFO_FULL		: IN	std_logic;								-- status of TEMPFIFO full  (contain 1kB page on the way to DDR). Read via addr=12, bit[1].
 	MEMFIFO_EMPTY		: IN	std_logic;								-- status of MEMFIFO empty  (contain 1kB page on the way out of DDR). Read via addr=12, bit[2].
 	MEMFIFO_FULL		: IN	std_logic;								-- status of MEMFIFO full  (contain 1kB page on the way out of DDR). Read via addr=12, bit[3].
-	MEM_WR_CNT			: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of 1KB pages written to DR3 memory. Read via addr=13.
-	MEM_RD_CNT			: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of 1KB pages read from DR3 memory. Read via addr=14.
-	FIFO_RD_CNT			: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);	-- no. of data payload packets. Read via addr=15. (NB: this is the number of FIFO_RD_EN/2!)
+	MEM_WR_CNT			: IN  std_logic_vector(31 DOWNTO 0);	-- no. of 1KB pages written to DR3 memory. Read via addr=13/14 (LSB/MSB).
+	MEM_RD_CNT			: IN  std_logic_vector(31 DOWNTO 0);	-- no. of 1KB pages read from DR3 memory. Read via addr=15/16 (LSB/MSB).
+	FIFO_RD_CNT			: IN  std_logic_vector(15 DOWNTO 0);	-- no. of data payload packets. Read via addr=17. (NB: this is the number of FIFO_RD_EN/2!)
 	DCS_DREQ_SEL		: OUT std_logic;								-- enable simulation of Data Request Protocol via serial (addr=8, bit[4])
    DCS_DDRRESET		: OUT STD_LOGIC;								-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
 	DCS_WRITE_MEM_EN	: OUT std_logic;								-- enable write of data to memory
 	DCS_READ_MEM_EN	: OUT std_logic;								-- enable read of 1 kB page from memory (ie simulates DATA_REQUEST from DTC)
 	DCS_MEMFIFO_REN	: OUT std_logic;								-- enable memory data to TOP_SERDES (ie simulates DATA_REPLY to DTC)
+	DCS_FORCE_MEMRD	: OUT std_logic;								-- force DDR3_FULL=1 .AND. MEM_RD_CNT=0 to allow for new DDR3 memory read
 	DCS_PATTERN_EN		: OUT std_logic;								-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[3])
    DCS_PATTERN			: OUT std_logic_vector(1 downto 0);		-- pattern generator type: 0=>+1, 1=>-1, 2=>A's,  3=>5's (addr=8, bit[1,0])
    DCS_WRITE_PAGE_NO	: OUT std_logic_vector(19 downto 0)	   -- MAX. no of 1kB pages wirtten to memory.  NB: ALGO_ADDR can drive only 15 LSB (ie MAX = 2**15 = 32768).
@@ -82,9 +83,9 @@ architecture architecture_DRACRegisters of DRACRegisters is
 	signal tempfifo_f				: std_logic;
 	signal memfifo_e				: std_logic;
 	signal memfifo_f				: std_logic;
-	signal mem_write_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-	signal mem_read_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-	signal fifo_read_cnt			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
+	signal mem_write_cnt			: std_logic_vector(31 downto 0);
+	signal mem_read_cnt			: std_logic_vector(31 downto 0);
+	signal fifo_read_cnt			: std_logic_vector(15 downto 0);
 	
 	signal dreq_sel_reg			: std_logic;
 	signal pattern_en_reg		: std_logic;
@@ -137,6 +138,7 @@ begin
 		DCS_WRITE_MEM_EN	<=	'0';
 		DCS_READ_MEM_EN	<= '0';
 		DCS_MEMFIFO_REN	<= '0';
+		DCS_FORCE_MEMRD	<= '0';
 		DCS_DREQ_SEL		<=	dreq_sel_reg;
 		DCS_PATTERN_EN		<= pattern_en_reg;
 		DCS_PATTERN			<= pattern_reg(1 downto 0);
@@ -197,6 +199,8 @@ begin
 				DCS_MEMFIFO_REN	<= '1';	 -- self clearing
 			elsif (drac_addrs = 14) then
 				DCS_DDRRESET		<= '1';	 -- self clearing
+			elsif (drac_addrs = 15) then
+				DCS_FORCE_MEMRD	<= '1';	 -- self clearing
 			--elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -248,10 +252,14 @@ begin
 			elsif (drac_addrs = 12) then
 				DATA_OUT	<= B"0000_0000_0000" & memfifo_f & memfifo_e & tempfifo_f & tempfifo_e;
 			elsif (drac_addrs = 13) then
-				DATA_OUT	<= mem_write_cnt;
+				DATA_OUT	<= mem_write_cnt(15 downto 0);
 			elsif (drac_addrs = 14) then
-				DATA_OUT	<= mem_read_cnt;
+				DATA_OUT	<= mem_write_cnt(31 downto 16);
 			elsif (drac_addrs = 15) then
+				DATA_OUT	<= mem_read_cnt(15 downto 0);
+			elsif (drac_addrs = 16) then
+				DATA_OUT	<= mem_read_cnt(31 downto 16);
+			elsif (drac_addrs = 17) then
 				DATA_OUT	<= fifo_read_cnt;
 			--elsif (drac_addrs = 126) then		 	 
 				--fifo_re   <= PREREAD_PULSE;

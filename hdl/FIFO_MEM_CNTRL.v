@@ -19,6 +19,7 @@
 //   v2.0	02/2021:  added DDR3_FULL to "fifo_read_mem_i" to avoid increading MEM_RD_CNT when on Data Requests with empty memory 
 //   v3.0	02/2021:  added DDR3_FULL to "fifo_read_mem_i" also inside "raddr_state" and "rdata_state" and 
 //							 reply to such Data Request with empty memory with DDR3_EMPTY
+//   v4.0	07/2021:  add logic to force DR3 memory read
 //
 // Hierarchy   :
 //               fifo_em_cntrl.v            <-- This module
@@ -49,6 +50,9 @@ module fifo_mem_cntrl #(
  input   [7:0]		read_page_no,      	// unused
  input	[31:0]  	mem_offset, 			// memory offset (in units of BURST_OFFSET*BLK_SIZE) for 1KB pages
  
+// logic to force DDR3 memory read
+ input				force_mem_rd,			// serial or DCS signal to force DDR3_FULL = 1 .AND. MEM_RD_CNT = 0
+
  output reg         DDR3_empty,			// this is true when "FIFO_READ_MEM_I" request comes but memory is not ready
  output reg         DDR3_full,			// this is true when no of 1kB pages written to DDR3 reaches WRITE_PAGE_NO until all are read out
  output reg         last_write,			// when number of 1KB-page written reaches WRITE_PAGE_NO
@@ -221,7 +225,7 @@ begin
       else                                  last_write <= 1'b0;
 
       if 		(new_start_pulse)               		DDR3_full <= 1'b0;
-      else if 	(last_write && fifo_write_done_o)	DDR3_full <= 1'b1;
+      else if 	((last_write && fifo_write_done_o) || force_mem_rd)	DDR3_full <= 1'b1;
 
 		if 		(new_start_pulse)													new_start <= 1'b0;
 		else if (fifo_read_done_o && mem_rd_cnt == page_no_for_read)   new_start <= 1'b1;
@@ -238,6 +242,10 @@ begin
    if (reset || new_start_pulse) 
 	begin
 		mem_wr_cnt <= 32'b0;
+		mem_rd_cnt <= 32'b0;
+	end
+	else if (force_mem_rd) 
+	begin
 		mem_rd_cnt <= 32'b0;
 	end
    else 

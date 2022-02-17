@@ -115,6 +115,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DDRERRLOC} -port_direction {I
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDREXPCH} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDREXPCL} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRFIFODIA} -port_direction {IN} -port_range {[15:0]}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRFORCERD} -port_direction {OUT}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRMEMFIFODATA0} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRMEMFIFODATA1} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRPAGERD} -port_direction {IN} -port_range {[31:0]}
@@ -194,11 +195,13 @@ sd_create_bif_port -sd_name ${sd_name} -port_name {APB3mmaster} -port_bif_vlnv {
 "PREADY:PREADY" \
 "PSLVERR:PSLVERR" } 
 
+# Create top level Bus Ports
 # Add AND2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
 
 
+# Create top level Bus interface Ports
 # Add APB3_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {APB3} -instance_name {APB3_0}
 
@@ -268,7 +271,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PREAMPSPI_1:SPIOEN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PREAMPSPI_1:SPIMODE}
 
 
-
 # Add pwm_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {pwm} -instance_name {pwm_0}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {pwm_0:PWM} -pin_slices {[0:0]}
@@ -288,7 +290,6 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {Registers_0} -par
 -validate_rules 0
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {Registers_0}
 sd_update_instance -sd_name ${sd_name} -instance_name {Registers_0}
-
 
 
 # Add SPI0_0 instance
@@ -323,7 +324,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SPI0_1:SPIOEN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SPI0_1:SPIMODE}
 
 
-
 # Add SPI_KEY_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {SPI_KEY} -instance_name {SPI_KEY_0}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SPI_KEY_0:SPISS} -pin_slices {[0:0]}
@@ -338,10 +338,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SPI_KEY_0:SPIOEN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SPI_KEY_0:SPIMODE}
 
 
-
 # Add TVS_Interface_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {TVS_Interface} -instance_name {TVS_Interface_0}
-
 
 
 # Add UARTapb_0 instance
@@ -542,6 +540,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave6" "PREAMPSPI_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave7" "PREAMPSPI_1:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave8" "PF_SYSTEM_SERVICES_C0_0:APBSlave" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave9" "SPI_KEY_0:APB_bif" }
+
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRFORCERD" "Registers_0:DDRFORCERD" }
+
+
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

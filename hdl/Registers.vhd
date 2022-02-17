@@ -48,6 +48,7 @@ entity Registers is
     DDRWRTREN: out std_logic;
     DDRRDTREN: out std_logic;
 	 DDRRAMREN: out std_logic;
+    DDRFORCERD  : out std_logic;
 		
     DDRWRTIME: in  std_logic_vector(31 downto 0);
     DDRRDTIME: in  std_logic_vector(31 downto 0);
@@ -224,6 +225,7 @@ architecture synth of Registers is
    constant CRDDRRAMREN: 	std_logic_vector(7 downto 0)	:= x"2B";  -- read enable for RAM with latest DDR read values: auto-clearing 
    constant CRDDRERRLOC: 	std_logic_vector(7 downto 0) := x"2C";  -- 32-bit DDR error location (x8 to determine DDR address with error)
    constant CRDDRPTTREN: 	std_logic_vector(7 downto 0) := x"2D";  -- a WR_EN that has to be set high and low by hand
+   constant CRDDRFORCERD:	std_logic_vector(7 downto 0) := x"2E";  -- set DDR3_FULL=1 .AND. MEM_RD_CNT=0 to force DDR3 read: auto-clearing
 		
    constant CRDDRSEL   : std_logic_vector(7 downto 0) := x"30";   -- 1-bit serial readout select (1 => DIGIFIFO readout via DDR3, 0 => DIGIFIFO readout directly)
    constant CRDDRFULL  : std_logic_vector(7 downto 0) := x"31";   --  DDR3 full flag: if 1, DDRPAGENO have been written to memory. When DDRPAGENO have been readout, goes back to 0 
@@ -700,6 +702,8 @@ begin
       DDRRAMADDR        <= x"FFFF_FFFF";
       DDRLOCRAM         <= x"0000_0000"; 
 		
+		DDRFORCERD		<= '0';
+		
       DTCSIMSTART    <= '0';
       DTCSIMBLKEN    <= '0';
       DTCSIMPARAM    <= x"0000_0000";
@@ -772,6 +776,8 @@ begin
       DDRRDTREN     <= '0';
 		DDRRAMREN     <= '0';
 
+		DDRFORCERD		<= '0';
+
       DTCSIMSTART    <= '0';
       DTCSIMBLKEN    <= '0';
       
@@ -823,6 +829,9 @@ begin
           when CRDDRSET =>
             DDRSET <= PWDATA(0);
 
+          when CRDDRFORCERD =>
+            DDRFORCERD <= '1';
+				
           when CRDDRRWEN =>
             DDRRWEN <= '1';
           when CRDDRERRREN =>

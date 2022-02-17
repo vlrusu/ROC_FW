@@ -67,9 +67,64 @@ for old_path in old_files:
                     newer_lines.append(line)
             else:
                 newer_lines.append(line)
+        
         fout = open(old_path,"w")
-        for line in newer_lines:
-            fout.write(line)
-        fout.close()
+        oldi = 0
+        newi = 0
+        ignore = 0
+        changed = 0
+        while newi < len(newer_lines) and oldi < len(old_lines):
+          nline = newer_lines[newi]
+          oline = old_lines[oldi]
+          if not oline in newer_lines[newi:]:
+            oldi += 1
+            changed += 1
+          elif nline == oline:
+            fout.write(nline)
+            newi += 1
+            oldi += 1
+          elif not nline in old_lines[oldi:]:
+            fout.write(nline)
+            newi += 1
+            changed += 1
+          else:
+            fout.write(oline)
+            oldi += 1
+            newer_lines.pop(newer_lines.index(oline))
+            ignore += 1
+        for i in range(newi,len(newer_lines)):
+          nline = newer_lines[newi]
+          fout.write(nline)
+          changed += 1
 
-        print("Changed",basefn)
+        #fout = open(old_path,"w")
+        #for line in newer_lines:
+        #    fout.write(line)
+        #fout.close()
+        #os.system("rm temp.patch")
+        #os.system("git diff %s > temp.patch" % (old_path))
+        #fpatch = open("temp.patch")
+        #plines = fpatch.readlines()
+        #if len(plines) > 0:
+        #  import pdb;pdb.set_trace()
+        #  ignore = []
+        #  for i in range(len(plines)):
+        #    for j in range(i+1,len(plines)):
+        #      if plines[j].startswith('diff'): 
+        #        pass
+        #      else:
+        #        if [plines[i][0],plines[j][0]] in [['+','-'],['-','+']] and plines[i][1:] == plines[j][1:]:
+        #          ignore.append(i)
+        #          ignore.append(j)
+        #  fpatch.close()
+        #  os.system("rm temp2.patch")
+        #  fpatch2 = open("temp2.patch","w")
+        #  for i in range(len(plines)):
+        #    if not i in ignore:
+        #      fpatch2.write(plines[i])
+        #  fpatch2.close()
+        #  os.system("git checkout %s > /dev/null" % (old_path))
+        #  os.system("git apply temp2.patch")
+
+        if changed+ignore > 0:
+          print("Changed",basefn,changed,"(ignored",ignore,"changes)")

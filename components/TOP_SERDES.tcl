@@ -49,14 +49,13 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {word_aligned} -port_direct
 
 
 # Create top level Bus Ports
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_FORCE_MEMRD} -port_direction {OUT}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_DATA} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_PACKETS_IN_EVENT} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_STATUS} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIM_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIM_KCHAR} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {FIFO_RD_CNT} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {MEM_RD_CNT} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {MEM_WR_CNT} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_KCHAR} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {address} -port_direction {IN} -port_range {[3:0]}
@@ -74,6 +73,9 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {counter_out} -port_direction 
 # Add crc_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {crc} -hdl_file {hdl\crc.vhd} -instance_name {crc_0}
 
+# Create top level Bus Ports
+sd_create_bus_port -sd_name ${sd_name} -port_name {MEM_RD_CNT} -port_direction {IN} -port_range {[31:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {MEM_WR_CNT} -port_direction {IN} -port_range {[31:0]}
 
 
 # Add crc_1 instance
@@ -342,6 +344,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:TX_K_CHAR" "TxPack
 sd_connect_pins -sd_name ${sd_name} -pin_names {"address" "XCVR_Block_0:address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"counter_out" "XCVR_Block_0:counter_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_expected" "XCVR_Block_0:event_window_expected" }
+
+
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_FORCE_MEMRD" "DRACRegisters_0:DCS_FORCE_MEMRD" }
+
 
 
 # Re-enable auto promotion of pins of type 'pad'
