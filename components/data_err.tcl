@@ -8,6 +8,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "AF_STATIC_EN:false"  \
 "AFVAL:1020"  \
 "CTRL_TYPE:2"  \
+"DIE_SIZE:15"  \
 "ECC:0"  \
 "ESTOP:true"  \
 "FSTOP:true"  \
@@ -16,16 +17,15 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "OVERFLOW_EN:false"  \
 "PIPE:1"  \
 "PREFETCH:false"  \
-"RCLK_EDGE:1"  \
+"RAM_OPT:0"  \
 "RDCNT_EN:false"  \
 "RDEPTH:1024"  \
 "RE_POLARITY:0"  \
 "READ_DVALID:false"  \
-"RESET_POLARITY:0"  \
 "RWIDTH:32"  \
 "SYNC:0"  \
+"SYNC_RESET:0"  \
 "UNDERFLOW_EN:false"  \
-"WCLK_EDGE:1"  \
 "WDEPTH:1024"  \
 "WE_POLARITY:0"  \
 "WRCNT_EN:true"  \
