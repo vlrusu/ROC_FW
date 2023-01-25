@@ -42,23 +42,41 @@ port (
 	SEL_RST				: OUT std_logic;
 
    -- DRAC specific registers
-	DDR_DDR3_FULL		: IN	std_logic;								-- stays highes from WRITE_PAGE_NO written to memory until all read out. Read via addr=11.
-	TEMPFIFO_EMPTY		: IN	std_logic;								-- status of TEMPFIFO empty (contain 1kB page on the way to DDR). Read via addr=12, bit[0].
-	TEMPFIFO_FULL		: IN	std_logic;								-- status of TEMPFIFO full  (contain 1kB page on the way to DDR). Read via addr=12, bit[1].
-	MEMFIFO_EMPTY		: IN	std_logic;								-- status of MEMFIFO empty  (contain 1kB page on the way out of DDR). Read via addr=12, bit[2].
-	MEMFIFO_FULL		: IN	std_logic;								-- status of MEMFIFO full  (contain 1kB page on the way out of DDR). Read via addr=12, bit[3].
-	MEM_WR_CNT			: IN  std_logic_vector(31 DOWNTO 0);	-- no. of 1KB pages written to DR3 memory. Read via addr=13/14 (LSB/MSB).
-	MEM_RD_CNT			: IN  std_logic_vector(31 DOWNTO 0);	-- no. of 1KB pages read from DR3 memory. Read via addr=15/16 (LSB/MSB).
-	FIFO_RD_CNT			: IN  std_logic_vector(15 DOWNTO 0);	-- no. of data payload packets. Read via addr=17. (NB: this is the number of FIFO_RD_EN/2!)
-	DCS_DREQ_SEL		: OUT std_logic;								-- enable simulation of Data Request Protocol via serial (addr=8, bit[4])
+   DCS_CAL_LANE0_EMPTY  : IN std_logic;             -- ROCFIFO for CAL Lane 0 is empty
+   DCS_CAL_LANE1_EMPTY  : IN std_logic;             -- ROCFIFO for CAL Lane 1 is empty
+   DCS_HV_LANE0_EMPTY   : IN std_logic;             -- ROCFIFO for HV  Lane 0 is empty
+   DCS_HV_LANE1_EMPTY   : IN std_logic;             -- ROCFIFO for HV  Lane 1 is empty
+   DCS_EVT_ERR       : IN  std_logic;                -- error seen for EVENT Tag number
+   DCS_HDR1_ERR      : IN  std_logic;                -- error seen in header 1
+   DCS_HDR2_ERR      : IN  std_logic;                -- error seen in header 2
+   DCS_DATA_ERR      : IN  std_logic;                -- error seen for pattern data
+   DCS_ERR_EXPC      : IN  std_logic_vector(63 DOWNTO 0);   -- one of four expected 64-bit with error
+   DCS_ERR_SEEN      : IN  std_logic_vector(63 DOWNTO 0);   -- one of four seen 64-bit with error
+   DCS_DREQ_FIFO_FULL: IN  std_logic;                -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
+   DCS_STORE_POS     : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
+   DCS_STORE_CNT     : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
+   DCS_DREQ_FIFO_EMPTY:IN  std_logic;                -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
+   DCS_FETCH_POS     : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes fetched from a partially read FIFO entry (0 to 2)
+   DCS_FETCH_CNT     : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully read DREQ FIFO read entries
+   DCS_HBCNT         : IN  std_logic_vector(31 DOWNTO 0);   -- number of HB seen
+   DCS_NULLHBCNT     : IN  std_logic_vector(31 DOWNTO 0);   -- number of null HB seen
+   DCS_HBONHOLD      : IN  std_logic_vector(31 DOWNTO 0);   -- number of HB not processed
+   DCS_PREFCNT       : IN  std_logic_vector(31 DOWNTO 0);   -- number of Prefetch seen
+   DCS_DREQCNT       : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request seen
+   DCS_DREQREAD      : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request read from DDR
+   DCS_DREQSENT      : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request sent to DTC
+   DCS_DREQNULL      : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request with null payload
+   DCS_SPILLCNT      : IN  std_logic_vector(19 DOWNTO 0);   -- number of HB from start of SPILL
+   DCS_HBTAG         : IN  std_logic_vector(47 DOWNTO 0);   -- last HB tag
+   DCS_PREFTAG       : IN  std_logic_vector(47 DOWNTO 0);   -- last PREFETCH tag
+   DCS_FETCHTAG      : IN  std_logic_vector(47 DOWNTO 0);   -- last FETCH tag
+   DCS_DREQTAG       : IN  std_logic_vector(47 DOWNTO 0);   -- last DREQ tag
+   DCS_OFFSETTAG     : IN  std_logic_vector(47 DOWNTO 0);   -- offset TAG in present SPILL
    DCS_DDRRESET		: OUT STD_LOGIC;								-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
-	DCS_WRITE_MEM_EN	: OUT std_logic;								-- enable write of data to memory
-	DCS_READ_MEM_EN	: OUT std_logic;								-- enable read of 1 kB page from memory (ie simulates DATA_REQUEST from DTC)
-	DCS_MEMFIFO_REN	: OUT std_logic;								-- enable memory data to TOP_SERDES (ie simulates DATA_REPLY to DTC)
-	DCS_FORCE_MEMRD	: OUT std_logic;								-- force DDR3_FULL=1 .AND. MEM_RD_CNT=0 to allow for new DDR3 memory read
-	DCS_PATTERN_EN		: OUT std_logic;								-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[3])
-   DCS_PATTERN			: OUT std_logic_vector(1 downto 0);		-- pattern generator type: 0=>+1, 1=>-1, 2=>A's,  3=>5's (addr=8, bit[1,0])
-   DCS_WRITE_PAGE_NO	: OUT std_logic_vector(19 downto 0)	   -- MAX. no of 1kB pages wirtten to memory.  NB: ALGO_ADDR can drive only 15 LSB (ie MAX = 2**15 = 32768).
+	DCS_PATTERN_EN		: OUT std_logic;								-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[4])
+   DCS_USE_LANE		: OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
+   DCS_ERR_REQ		   : OUT std_logic_vector(1 downto 0);		-- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
+   DCS_TAG_OFFSET		: OUT std_logic_vector(47 downto 0)		-- set EWTAG offset
 );
 end DRACRegisters;
 
@@ -78,21 +96,14 @@ architecture architecture_DRACRegisters of DRACRegisters is
 		
 	--signal sel_rst					: std_logic;
 	signal reset_sig				: std_logic;
-	signal ddr_full				: std_logic;
-	signal tempfifo_e				: std_logic;
-	signal tempfifo_f				: std_logic;
-	signal memfifo_e				: std_logic;
-	signal memfifo_f				: std_logic;
-	signal mem_write_cnt			: std_logic_vector(31 downto 0);
-	signal mem_read_cnt			: std_logic_vector(31 downto 0);
-	signal fifo_read_cnt			: std_logic_vector(15 downto 0);
-	
-	signal dreq_sel_reg			: std_logic;
+
 	signal pattern_en_reg		: std_logic;
-   signal pattern_reg			: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-   signal write_page_reg_LSB	: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-   signal write_page_reg_MSB	: std_logic_vector(gAPB_DWIDTH-1 downto 0);
-		
+   signal use_lane_reg			: std_logic_vector(3 downto 0);
+   signal err_req_reg			: std_logic_vector(1 downto 0);
+   signal expc_reg_15_0,   expc_reg_31_16,   expc_reg_47_32,   expc_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
+   signal seen_reg_15_0,   seen_reg_31_16,   seen_reg_47_32,   seen_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
+   signal offset_reg_15_0, offset_reg_31_16, offset_reg_47_32                 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
+   
 begin	
 		
    -- architecture body
@@ -100,7 +111,7 @@ begin
    drac_write	<= WRITE_REG;
    drac_addrs 	<= ADDR_IN; 
    drac_wdata 	<= DATA_IN;
-	
+   
 	-------------------------------------------------------------------------------
    -- Process Read/Write Commands
    -------------------------------------------------------------------------------
@@ -113,16 +124,24 @@ begin
 		writeCounter 		<= (others => '0');  
 		readCounter 		<= (others => '0'); 
 			
-		dreq_sel_reg		<= '0';	
 		pattern_en_reg		<= '0';	
-		pattern_reg			<= (others => '0');
-		write_page_reg_LSB<= (others => '0');
-		write_page_reg_MSB<= (others => '0');
-					
-		--ram_wdata         <= (others => '0');
-		--ram_addr          <= (others => '0');
-		--fifo_wdata        <= (others => '0');
-	elsif rising_edge(DCS_CLK) then
+		use_lane_reg	   <= (others => '0');
+      err_req_reg	      <= (others => '0');
+      
+      offset_reg_15_0   <= (others => '0');
+      offset_reg_31_16  <= (others => '0');
+      offset_reg_47_32  <= (others => '0');
+      
+      expc_reg_15_0     <= (others => '0');      
+      expc_reg_31_16    <= (others => '0');      
+      expc_reg_47_32    <= (others => '0');      
+      expc_reg_63_48    <= (others => '0');      
+      seen_reg_15_0     <= (others => '0');      
+      seen_reg_31_16    <= (others => '0');      
+      seen_reg_47_32    <= (others => '0');      
+      seen_reg_63_48    <= (others => '0');      
+      
+   elsif rising_edge(DCS_CLK) then
 			
 		READY_REG		<= '0'; 
 			
@@ -135,24 +154,20 @@ begin
 		SEL_RST			<= '0';
 				
 		DCS_DDRRESET		<= '0';
-		DCS_WRITE_MEM_EN	<=	'0';
-		DCS_READ_MEM_EN	<= '0';
-		DCS_MEMFIFO_REN	<= '0';
-		DCS_FORCE_MEMRD	<= '0';
-		DCS_DREQ_SEL		<=	dreq_sel_reg;
+		DCS_USE_LANE		<= use_lane_reg(3 downto 0);
+      DCS_ERR_REQ       <= err_req_reg(1 downto 0);
+      DCS_TAG_OFFSET    <= offset_reg_47_32 & offset_reg_31_16 & offset_reg_15_0;
 		DCS_PATTERN_EN		<= pattern_en_reg;
-		DCS_PATTERN			<= pattern_reg(1 downto 0);
-		DCS_WRITE_PAGE_NO	<= write_page_reg_MSB(7 downto 0) & write_page_reg_LSB(11 downto 0);		
 				
+      expc_reg_15_0     <= DCS_ERR_EXPC(15 downto 0);      
+      expc_reg_31_16    <= DCS_ERR_EXPC(31 downto 16);      
+      expc_reg_47_32    <= DCS_ERR_EXPC(47 downto 32);      
+      expc_reg_63_48    <= DCS_ERR_EXPC(63 downto 48);      
+      seen_reg_15_0     <= DCS_ERR_SEEN(15 downto 0);      
+      seen_reg_31_16    <= DCS_ERR_SEEN(31 downto 16);      
+      seen_reg_47_32    <= DCS_ERR_SEEN(47 downto 32);      
+      seen_reg_63_48    <= DCS_ERR_SEEN(63 downto 48);      
 -- for signal that have to change clock domain
-		ddr_full				<= DDR_DDR3_FULL;
-		tempfifo_e			<=	TEMPFIFO_EMPTY;	
-		tempfifo_f			<=	TEMPFIFO_FULL;	
-		memfifo_e			<=	MEMFIFO_EMPTY;	
-		memfifo_f			<=	MEMFIFO_FULL;	
-		mem_write_cnt		<= MEM_WR_CNT;
-		mem_read_cnt		<= MEM_RD_CNT;
-		fifo_read_cnt		<= FIFO_RD_CNT;
 		
 		----------------------------------			
 		-- DCS REGISTER WRITE
@@ -164,7 +179,7 @@ begin
 				writeCounter <= writeCounter + 1;
 			end if;
 						
-			-- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
+   -- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
 			if (drac_addrs = 0) then			-- RESET ALL
 				SEL_RST	<= '1';
 			elsif (drac_addrs = 1) then		-- SELECTIVE RESET 
@@ -182,25 +197,21 @@ begin
 			--elsif (drac_addrs = 6) then
 				--RESET_XCVR_ERRORS			<= '1';	-- self clearing			  
             
-			-- 8...255 are reserved for DRAC controls and registers
+   -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then
-				pattern_reg 	<= B"000X_0000_000X_00" & drac_wdata(1 downto 0);
-				pattern_en_reg	<= drac_wdata(3);				  
-				dreq_sel_reg	<= drac_wdata(4);	
-			elsif (drac_addrs = 9) then
-				write_page_reg_LSB <= X"0" & drac_wdata(11 downto 0);
-				elsif (drac_addrs = 10) then
-				write_page_reg_MSB <= X"00" & drac_wdata(7 downto 0);
-			elsif (drac_addrs = 11) then
-				DCS_WRITE_MEM_EN	<= '1';	 -- self clearing
-			elsif (drac_addrs = 12) then
-				DCS_READ_MEM_EN	<= '1';	 -- self clearing
-			elsif (drac_addrs = 13) then
-				DCS_MEMFIFO_REN	<= '1';	 -- self clearing
+				use_lane_reg 	<= drac_wdata(3 downto 0);
+				pattern_en_reg	<= drac_wdata(4);				  
 			elsif (drac_addrs = 14) then
 				DCS_DDRRESET		<= '1';	 -- self clearing
-			elsif (drac_addrs = 15) then
-				DCS_FORCE_MEMRD	<= '1';	 -- self clearing
+   -- addr 9 to 15 were used in older DDRInterface
+         elsif (drac_addrs = 18) then
+				err_req_reg    <= drac_wdata(1 downto 0);
+         elsif (drac_addrs = 19) then
+				offset_reg_15_0   <= drac_wdata(15 downto 0);
+         elsif (drac_addrs = 20) then
+				offset_reg_31_16  <= drac_wdata(15 downto 0);
+         elsif (drac_addrs = 21) then
+				offset_reg_47_32  <= drac_wdata(15 downto 0);
 			--elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -240,34 +251,111 @@ begin
 			--elsif (drac_addrs = 6) then		 	 
 				--DATA_OUT 	<= TIMESTAMP_IN;			
 					
-			-- 8...255 are reserved for DRAC controls and registers
+   -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then		 	 
-				DATA_OUT <= B"0000_0000_000" & dreq_sel_reg  & pattern_en_reg & "0" & pattern_reg(1 downto 0);	
-			elsif (drac_addrs = 9) then		 	 
-				DATA_OUT <= write_page_reg_LSB;	
-			elsif (drac_addrs = 10) then		 	 
-				DATA_OUT <= write_page_reg_MSB;	
-			elsif (drac_addrs = 11) then
-				DATA_OUT	<=	B"0000_0000_0000_000" & ddr_full;
-			elsif (drac_addrs = 12) then
-				DATA_OUT	<= B"0000_0000_0000" & memfifo_f & memfifo_e & tempfifo_f & tempfifo_e;
-			elsif (drac_addrs = 13) then
-				DATA_OUT	<= mem_write_cnt(15 downto 0);
-			elsif (drac_addrs = 14) then
-				DATA_OUT	<= mem_write_cnt(31 downto 16);
-			elsif (drac_addrs = 15) then
-				DATA_OUT	<= mem_read_cnt(15 downto 0);
-			elsif (drac_addrs = 16) then
-				DATA_OUT	<= mem_read_cnt(31 downto 16);
-			elsif (drac_addrs = 17) then
-				DATA_OUT	<= fifo_read_cnt;
+				DATA_OUT <= B"0000_0000_000" & pattern_en_reg & use_lane_reg(3 downto 0);	
+   -- addresses 9 to 17 used in old DDRINterface
+			elsif (drac_addrs = 18) then		 	 
+				DATA_OUT <= B"00" & err_req_reg & 
+                            DCS_HV_LANE1_EMPTY & DCS_HV_LANE0_EMPTY & DCS_CAL_LANE1_EMPTY & DCS_CAL_LANE0_EMPTY & 
+                            B"0000" & DCS_DATA_ERR & DCS_HDR2_ERR & DCS_HDR1_ERR & DCS_EVT_ERR;	
+			elsif (drac_addrs = 19) then	
+				DATA_OUT <= expc_reg_15_0;    
+			elsif (drac_addrs = 20) then
+				DATA_OUT <= expc_reg_31_16;  
+			elsif (drac_addrs = 21) then
+				DATA_OUT <= expc_reg_47_32;   
+			elsif (drac_addrs = 22) then
+				DATA_OUT <= expc_reg_63_48;    
+			elsif (drac_addrs = 60) then	
+				DATA_OUT <= seen_reg_15_0;    
+			elsif (drac_addrs = 61) then
+				DATA_OUT <= seen_reg_31_16;  
+			elsif (drac_addrs = 62) then
+				DATA_OUT <= seen_reg_47_32;   
+			elsif (drac_addrs = 63) then
+				DATA_OUT <= seen_reg_63_48;    
+			elsif (drac_addrs = 23) then		 	 
+				DATA_OUT <= DCS_STORE_CNT(15 downto 0);	
+			elsif (drac_addrs = 24) then		 	 
+				DATA_OUT <= B"000" & DCS_DREQ_FIFO_FULL & B"00" & DCS_STORE_POS & B"0000" & DCS_STORE_CNT(19 downto 16);	
+			elsif (drac_addrs = 25) then		 	 
+				DATA_OUT <= DCS_FETCH_CNT(15 downto 0);	
+			elsif (drac_addrs = 26) then		 	 
+				DATA_OUT <= B"000" & DCS_DREQ_FIFO_EMPTY & B"00" & DCS_FETCH_POS & B"0000" & DCS_FETCH_CNT(19 downto 16);	
+			elsif (drac_addrs = 27) then		 	 
+				DATA_OUT <= DCS_HBCNT(15 downto 0);
+			elsif (drac_addrs = 28) then		 	 
+				DATA_OUT <= DCS_HBCNT(31 downto 16);
+			elsif (drac_addrs = 29) then		 	 
+				DATA_OUT <= DCS_NULLHBCNT(15 downto 0);
+			elsif (drac_addrs = 30) then		 	 
+				DATA_OUT <= DCS_NULLHBCNT(31 downto 16);
+			elsif (drac_addrs = 31) then		 	 
+				DATA_OUT <= DCS_HBONHOLD(15 downto 0);
+			elsif (drac_addrs = 32) then		 	 
+				DATA_OUT <= DCS_HBONHOLD(31 downto 16);
+			elsif (drac_addrs = 33) then		 	 
+				DATA_OUT <= DCS_PREFCNT(15 downto 0);
+			elsif (drac_addrs = 34) then		 	 
+				DATA_OUT <= DCS_PREFCNT(31 downto 16);
+			elsif (drac_addrs = 35) then		 	 
+				DATA_OUT <= DCS_DREQCNT(15 downto 0);
+			elsif (drac_addrs = 36) then		 	 
+				DATA_OUT <= DCS_DREQCNT(31 downto 16);
+			elsif (drac_addrs = 37) then		 	 
+				DATA_OUT <= DCS_DREQREAD(15 downto 0);
+			elsif (drac_addrs = 38) then		 	 
+				DATA_OUT <= DCS_DREQREAD(31 downto 16);
+			elsif (drac_addrs = 39) then		 	 
+				DATA_OUT <= DCS_DREQSENT(15 downto 0);
+			elsif (drac_addrs = 40) then		 	 
+				DATA_OUT <= DCS_DREQSENT(31 downto 16);
+			elsif (drac_addrs = 41) then		 	 
+				DATA_OUT <= DCS_DREQNULL(15 downto 0);
+			elsif (drac_addrs = 42) then		 	 
+				DATA_OUT <= DCS_DREQNULL(31 downto 16);
+			elsif (drac_addrs = 43) then		 	 
+				DATA_OUT <= DCS_SPILLCNT(15 downto 0);
+			elsif (drac_addrs = 44) then		 	 
+				DATA_OUT <= X"000" & DCS_SPILLCNT(19 downto 16);
+			elsif (drac_addrs = 45) then		 	 
+				DATA_OUT <= DCS_HBTAG(15 downto 0);
+			elsif (drac_addrs = 46) then		 	 
+				DATA_OUT <= DCS_HBTAG(31 downto 16);
+			elsif (drac_addrs = 47) then		 	 
+				DATA_OUT <= DCS_HBTAG(47 downto 32);
+			elsif (drac_addrs = 48) then		 	 
+				DATA_OUT <= DCS_PREFTAG(15 downto 0);
+			elsif (drac_addrs = 49) then		 	 
+				DATA_OUT <= DCS_PREFTAG(31 downto 16);
+			elsif (drac_addrs = 50) then		 	 
+				DATA_OUT <= DCS_PREFTAG(47 downto 32);
+			elsif (drac_addrs = 51) then		 	 
+				DATA_OUT <= DCS_FETCHTAG(15 downto 0);
+			elsif (drac_addrs = 52) then		 	 
+				DATA_OUT <= DCS_FETCHTAG(31 downto 16);
+			elsif (drac_addrs = 53) then		 	 
+				DATA_OUT <= DCS_FETCHTAG(47 downto 32);
+			elsif (drac_addrs = 54) then		 	 
+				DATA_OUT <= DCS_DREQTAG(15 downto 0);
+			elsif (drac_addrs = 55) then		 	 
+				DATA_OUT <= DCS_DREQTAG(31 downto 16);
+			elsif (drac_addrs = 56) then		 	 
+				DATA_OUT <= DCS_DREQTAG(47 downto 32);
+			elsif (drac_addrs = 57) then		 	 
+				DATA_OUT <= DCS_OFFSETTAG(15 downto 0);
+			elsif (drac_addrs = 58) then		 	 
+				DATA_OUT <= DCS_OFFSETTAG(31 downto 16);
+			elsif (drac_addrs = 59) then		 	 
+				DATA_OUT <= DCS_OFFSETTAG(47 downto 32);
 			--elsif (drac_addrs = 126) then		 	 
 				--fifo_re   <= PREREAD_PULSE;
 				--DATA_OUT <= "00000000" & fifo_rdata;
 			--elsif (drac_addrs >= 127 and drac_addrs <255) then   -- allow for one register per straw
 				--ram_we    <= '0';
 				--ram_addr  <= drac_addrs(7 downto 0);
-				--DATA_OUT <= "00000000" & ram_rdata;							-- only 8-bit ram data allowed!!
+				----DATA_OUT <= "00000000" & ram_rdata;							-- only 8-bit ram data allowed!!
 			else	
 				DATA_OUT <= drac_addrs;		  --Unmapped Addresses
 			end if;								  							   		   

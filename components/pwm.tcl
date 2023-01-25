@@ -1,6 +1,6 @@
 # Exporting Component Description of pwm to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component pwm
 create_and_configure_core -core_vlnv {Actel:DirectCore:corepwm:4.5.100} -component_name {pwm} -params {\
 "APB_DWIDTH:32"  \

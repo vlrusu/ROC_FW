@@ -1,6 +1,6 @@
 # Exporting Component Description of ROCFIFO to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component ROCFIFO
 create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {ROCFIFO} -params {\
 "AE_STATIC_EN:false"  \
@@ -12,7 +12,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "ECC:0"  \
 "ESTOP:true"  \
 "FSTOP:true"  \
-"FWFT:false"  \
+"FWFT:true"  \
 "NUM_STAGES:2"  \
 "OVERFLOW_EN:false"  \
 "PIPE:1"  \

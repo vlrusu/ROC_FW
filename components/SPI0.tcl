@@ -1,6 +1,6 @@
 # Exporting Component Description of SPI0 to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component SPI0
 create_and_configure_core -core_vlnv {Actel:DirectCore:CORESPI:5.2.104} -component_name {SPI0} -params {\
 "APB_DWIDTH:32"  \

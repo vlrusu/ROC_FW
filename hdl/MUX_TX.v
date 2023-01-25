@@ -23,7 +23,7 @@ module MUX_TX(
    input            PRBS_EN,  // if 1, PRBS data to TX (highest priority) else others
    input    [15:0]  PRBS_DATA,
    input    [1:0]   PRBS_KCHAR,
-   input            DTCSIM_EN,  // if 0, PacketSender data to TX;  if 1, Emulator data to TX
+   input            DTCSIM_EN,  // if 0, TxPacketWriter data to TX;  if 1, DTC Emulator data to TX
    input    [15:0]  DTCSIM_DATA,
    input    [1:0]   DTCSIM_KCHAR,
    input    [15:0]  FIBER_DATA,

@@ -1,6 +1,6 @@
 # Exporting Component Description of GPIO to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component GPIO
 create_and_configure_core -core_vlnv {Actel:DirectCore:CoreGPIO:3.2.102} -component_name {GPIO} -params {\
 "APB_WIDTH:32"  \

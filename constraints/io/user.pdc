@@ -1,0 +1,900 @@
+# Microsemi I/O Physical Design Constraints file
+
+# User I/O Constraints file 
+
+# Version: 2022.1 2022.1.0.10
+
+# Family: PolarFire , Die: MPF300TS , Package: FCG484
+
+# Date generated: Fri Sep 30 14:03:05 2022 
+
+
+# 
+# User Locked I/O Bank Settings
+# 
+
+
+# 
+# Unlocked I/O Bank Settings
+# The I/O Bank Settings can be locked by directly editing this file
+# or by making changes in the I/O Attribute Editor
+# 
+
+
+# 
+# User Locked I/O settings
+# 
+
+set_io -port_name DDR4_ACTn  \
+    -pin_name AA6            \
+    -fixed true              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_ADDR14  \
+    -pin_name AB3              \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_ADDR15  \
+    -pin_name AB4              \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_ADDR16  \
+    -pin_name U7               \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[0]}  \
+    -pin_name U5                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[1]}  \
+    -pin_name U4                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[2]}  \
+    -pin_name V4                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[3]}  \
+    -pin_name W3                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[4]}  \
+    -pin_name V5                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[5]}  \
+    -pin_name W4                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[6]}  \
+    -pin_name Y3                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[7]}  \
+    -pin_name AA3                 \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[8]}  \
+    -pin_name Y4                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[9]}  \
+    -pin_name Y5                  \
+    -fixed true                   \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[10]}  \
+    -pin_name AA2                  \
+    -fixed true                    \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[11]}  \
+    -pin_name AB2                  \
+    -fixed true                    \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[12]}  \
+    -pin_name V6                   \
+    -fixed true                    \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_ADDR[13]}  \
+    -pin_name W6                   \
+    -fixed true                    \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_BA[0]}  \
+    -pin_name V7                \
+    -fixed true                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_BA[1]}  \
+    -pin_name Y6                \
+    -fixed true                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_BG0  \
+    -pin_name AA5           \
+    -fixed true             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_CKE0  \
+    -pin_name W8             \
+    -fixed true              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_CLK0_N  \
+    -pin_name W1               \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_CLK0_P  \
+    -pin_name V1               \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_CS0N  \
+    -pin_name W7             \
+    -fixed true              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_DQM[0]}  \
+    -pin_name Y9                 \
+    -fixed true                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_DQM[1]}  \
+    -pin_name R15                \
+    -fixed true                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_DQM[2]}  \
+    -pin_name AA10               \
+    -fixed true                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_DQM[3]}  \
+    -pin_name AA15               \
+    -fixed true                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {DDR4_DQS_N[0]}  \
+    -pin_name U10                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_N[1]}  \
+    -pin_name T12                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_N[2]}  \
+    -pin_name AB9                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_N[3]}  \
+    -pin_name AB12                 \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_P[0]}  \
+    -pin_name T10                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_P[1]}  \
+    -pin_name R13                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_P[2]}  \
+    -pin_name AB8                  \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQS_P[3]}  \
+    -pin_name AA12                 \
+    -fixed true                    \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[0]}  \
+    -pin_name T7                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[1]}  \
+    -pin_name T8                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[2]}  \
+    -pin_name U8                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[3]}  \
+    -pin_name U9                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[4]}  \
+    -pin_name R10               \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[5]}  \
+    -pin_name V9                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[6]}  \
+    -pin_name V10               \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[7]}  \
+    -pin_name W9                \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[8]}  \
+    -pin_name V14               \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[9]}  \
+    -pin_name U14               \
+    -fixed true                 \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[10]}  \
+    -pin_name R12                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[11]}  \
+    -pin_name T11                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[12]}  \
+    -pin_name U15                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[13]}  \
+    -pin_name T13                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[14]}  \
+    -pin_name U13                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[15]}  \
+    -pin_name T15                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[16]}  \
+    -pin_name U12                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[17]}  \
+    -pin_name V11                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[18]}  \
+    -pin_name W11                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[19]}  \
+    -pin_name Y10                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[20]}  \
+    -pin_name V12                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[21]}  \
+    -pin_name W12                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[22]}  \
+    -pin_name Y11                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[23]}  \
+    -pin_name AA11               \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[24]}  \
+    -pin_name W13                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[25]}  \
+    -pin_name Y13                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[26]}  \
+    -pin_name AA13               \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[27]}  \
+    -pin_name AB13               \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[28]}  \
+    -pin_name AB15               \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[29]}  \
+    -pin_name W14                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[30]}  \
+    -pin_name Y14                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name {DDR4_DQ[31]}  \
+    -pin_name Y15                \
+    -fixed true                  \
+    -DIRECTION INOUT
+
+
+set_io -port_name DDR4_ODT0  \
+    -pin_name AA7            \
+    -fixed true              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name DDR4_RESETn  \
+    -pin_name AB7              \
+    -fixed true                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_ACCEL_CLK0_N  \
+    -pin_name E16                   \
+    -fixed true                     \
+    -io_std LVDS25                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_ACCEL_CLK0_P  \
+    -pin_name E15                   \
+    -fixed true                     \
+    -io_std LVDS25                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_ACCEL_CLK1_N  \
+    -pin_name F17                   \
+    -fixed true                     \
+    -io_std LVDS25                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_ACCEL_CLK1_P  \
+    -pin_name G17                   \
+    -fixed true                     \
+    -io_std LVDS25                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_CAL_DEVRSTn  \
+    -pin_name M4                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_CAL_LVDS0_N  \
+    -pin_name B17                  \
+    -fixed true                    \
+    -io_std LVDS25                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_CAL_LVDS0_P  \
+    -pin_name A17                  \
+    -fixed true                    \
+    -io_std LVDS25                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_HV_DEVRSTn  \
+    -pin_name L3                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_HV_LVDS0_N  \
+    -pin_name A3                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_HV_LVDS0_P  \
+    -pin_name A2                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_LED0_n  \
+    -pin_name M5              \
+    -fixed true               \
+    -io_std LVCMOS33          \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI0_ADC0_CEn  \
+    -pin_name K5                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI0_ADC1_CEn  \
+    -pin_name F2                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI0_ADC2_CEn  \
+    -pin_name G2                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI0_MISO  \
+    -pin_name J4                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_SPI0_MOSI  \
+    -pin_name F1                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI0_SCLK  \
+    -pin_name H4                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI1_ADC0_CEn  \
+    -pin_name H5                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI1_ADC1_CEn  \
+    -pin_name H6                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI1_ADC2_CEn  \
+    -pin_name K8                     \
+    -fixed true                      \
+    -io_std LVCMOS33                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI1_MISO  \
+    -pin_name H7                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_SPI1_MOSI  \
+    -pin_name J8                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SPI1_SCLK  \
+    -pin_name K6                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+#this are connected only to the serial programmer pod
+#to use the key connector, change RX->J7 and TX->K4
+#set_io -port_name ROC_UART1_RXD  \
+    #-pin_name J6                 \
+    #-fixed true                  \
+    #-io_std LVCMOS33             \
+    #-DIRECTION INPUT
+#
+#
+#set_io -port_name ROC_UART1_TXD  \
+    #-pin_name L7                 \
+    #-fixed true                  \
+    #-io_std LVCMOS33             \
+    #-DIRECTION OUTPUT
+#
+    
+set_io -port_name KEY_IO1  \
+    -pin_name J7                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION INPUT
+
+
+set_io -port_name KEY_IO0  \
+    -pin_name K4                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_CLK0_N  \
+    -pin_name C17                  \
+    -fixed true                    \
+    -io_std LVDS25                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_CLK0_P  \
+    -pin_name C16                  \
+    -fixed true                    \
+    -io_std LVDS25                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_LVTTL1  \
+    -pin_name R3                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_LVTTL2  \
+    -pin_name T2                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION INOUT
+
+
+set_io -port_name ROCtoHV_CLK0_N  \
+    -pin_name D3                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_CLK0_P  \
+    -pin_name E3                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_LVTTL0  \
+    -pin_name T1                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_LVTTL1  \
+    -pin_name R1                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION INOUT
+
+
+
+# 
+# Dedicated Peripheral I/O Settings
+# 
+
+
+# 
+# Unlocked I/O settings
+# The I/Os in this section are unplaced or placed but are not locked
+# the other listed attributes have been applied
+# 
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[0]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[1]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[2]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[3]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[4]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[5]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[6]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name {ALIGNMENT_LOSS_COUNTER[7]}  \
+    -io_std LVCMOS33                           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CLOCK_ALIGNED  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name word_aligned  \
+    -io_std LVCMOS33            \
+    -DIRECTION OUTPUT
+
+
+
+#
+#Ports using Dedicated Pins
+
+#
+
+set_io -port_name CALtoROC_SERDES_TXD0_N  \
+    -pin_name AA19                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name CALtoROC_SERDES_TXD0_P  \
+    -pin_name AA20                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name CALtoROC_SERDES_TXD1_N  \
+    -pin_name W19                         \
+    -DIRECTION INPUT
+
+
+set_io -port_name CALtoROC_SERDES_TXD1_P  \
+    -pin_name W20                         \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVtoROC_SERDES_TXD0_N  \
+    -pin_name M21                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVtoROC_SERDES_TXD0_P  \
+    -pin_name M22                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVtoROC_SERDES_TXD1_N  \
+    -pin_name T21                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVtoROC_SERDES_TXD1_P  \
+    -pin_name T22                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_DTC_SERDES_RXD0_N  \
+    -pin_name A19                        \
+    -RX_CTLE 3GHz_+5.5dB                 \
+    -RX_INSERTION_LOSS 17.0dB            \
+    -RX_POLARITY Inverted                \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_DTC_SERDES_RXD0_P  \
+    -pin_name A20                        \
+    -RX_CTLE 3GHz_+5.5dB                 \
+    -RX_INSERTION_LOSS 17.0dB            \
+    -RX_POLARITY Inverted                \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_DTC_SERDES_TXD0_N       \
+    -pin_name B21                             \
+    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_DTC_SERDES_TXD0_P       \
+    -pin_name B22                             \
+    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_CLK0_N  \
+    -pin_name N20                         \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_CLK0_P  \
+    -pin_name N19                         \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_TXD0_N  \
+    -pin_name AB21                        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_TXD0_P  \
+    -pin_name AB22                        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_TXD1_N  \
+    -pin_name Y21                         \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_SERDES_TXD1_P  \
+    -pin_name Y22                         \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoDTC_SERDES_CLK_N  \
+    -pin_name J20                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROCtoDTC_SERDES_CLK_P  \
+    -pin_name J19                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROCtoHV_SERDES_CLK0_P  \
+    -pin_name U19                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROCtoHV_SERDES_TXD0_N  \
+    -pin_name P21                        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_SERDES_TXD0_P  \
+    -pin_name P22                        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_SERDES_TXD1_N  \
+    -pin_name V21                        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_SERDES_TXD1_P  \
+    -pin_name V22                        \
+    -DIRECTION OUTPUT
+
+

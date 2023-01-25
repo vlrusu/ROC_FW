@@ -32,58 +32,88 @@ entity Registers is
     DDR_RESETN 		: out std_logic;
     DTCALIGN_RESETN 	: out std_logic;
     TVS_RESETN 		: out std_logic;
-		
-    DDRNHITS : out std_logic_vector(31 downto 0);
-    DDRCS    : out std_logic;
-    DDRWEN   : out std_logic;
-    DDRREN   : out std_logic;
-    DDRFIFOWEN : out std_logic;
-    DDROFFSET: out std_logic_vector(31 downto 0);
-    DDRDIAG0 : in  std_logic_vector(31 downto 0);
-    DDRDIAG1 : in  std_logic_vector(31 downto 0);
-    DDRPATTRN: out  std_logic_vector(1 downto 0);
-	 DDRBURST : out std_logic_vector(7 downto 0);
-    DDRRWEN  : out std_logic;
-    DDRERRREN: out std_logic;
-    DDRWRTREN: out std_logic;
-    DDRRDTREN: out std_logic;
-	 DDRRAMREN: out std_logic;
-    DDRFORCERD  : out std_logic;
-		
-    DDRWRTIME: in  std_logic_vector(31 downto 0);
-    DDRRDTIME: in  std_logic_vector(31 downto 0);
-    DDRERRCNT: in  std_logic_vector(31 downto 0);
-    DDRPTTREN: out std_logic;
-    DDRERRLOC: in  std_logic_vector(31 downto 0);
-    DDRFIFODIA: in  std_logic_vector(15 downto 0);
-    DDRTRUEL : in  std_logic_vector(31 downto 0);
-    DDRTRUEH : in  std_logic_vector(31 downto 0);
-    DDREXPCL : in  std_logic_vector(31 downto 0);
-    DDREXPCH : in  std_logic_vector(31 downto 0);
-	 DDRRAMADDR : out std_logic_vector(31 downto 0);
-	 DDRRAMDATA : in  std_logic_vector(31 downto 0);
-    DDRLOCRAM: out  std_logic_vector(31 downto 0);
-	 DDRWRBCNT : in  std_logic_vector(31 downto 0);
-	 DDRRDBCNT : in  std_logic_vector(31 downto 0);
+      
+    DDRSERIALSET  : out  std_logic;
+    DDRPTTREN     : out std_logic;
+    DDRCFOEN      : out  std_logic;
+    DDRCFOSTART   : out  std_logic;
+    DDRPREFETCHEN : out  std_logic;
+    DDRERROR      : in  std_logic_vector(3 downto 0);
+    DDRERRREQ     : out std_logic_vector(1 downto 0);
+    DDRERRSEEN    : in  std_logic_vector(63 downto 0);
+    DDRERREXPC    : in  std_logic_vector(63 downto 0);
+    DDRSIZEWR     : in  std_logic_vector(31 downto 0);
+    DDRSIZERD     : in  std_logic_vector(31 downto 0);
+    DDRHBCNT      : in  std_logic_vector(31 downto 0);
+    DDRNULLHBCNT  : in  std_logic_vector(31 downto 0);
+    DDRHBONHOLD   : in  std_logic_vector(31 downto 0);
+    DDRPREFCNT    : in  std_logic_vector(31 downto 0);
+    DDRDREQCNT    : in  std_logic_vector(31 downto 0);
+    DDRDREQREAD   : in  std_logic_vector(31 downto 0);
+    DDRDREQSENT   : in  std_logic_vector(31 downto 0);
+    DDRDREQNULL   : in  std_logic_vector(31 downto 0);
+    DDRSPILLCNT   : in  std_logic_vector(19 downto 0);
+    DDRHBTAG      : in  std_logic_vector(31 downto 0);
+    DDRPRETAG     : in  std_logic_vector(31 downto 0);
+    DDRFETCHTAG   : in  std_logic_vector(31 downto 0);
+    DDRDREQTAG    : in  std_logic_vector(31 downto 0);
+    DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
+    DDRCFOOFFSET  : out std_logic_vector(31 downto 0);
+    DDRCFODELTAHB : out std_logic_vector(31 downto 0);
+    DDRCFONUMBERHB: out std_logic_vector(31 downto 0);
 
-    DDRSEL      : out std_logic;
-    DDRFULL     : in  std_logic;
-    DDRFIFO_RE  : out std_logic;
-    DDRSET      : out  std_logic;
-    DDRPAGENO   : out std_logic_vector(31 downto 0);
-    DDRPAGEWR   : in  std_logic_vector(31 downto 0);
-    DDRPAGERD   : in  std_logic_vector(31 downto 0);
-
-    DDRMEMFIFODATA0 : in  std_logic_vector(31 downto 0);
-    DDRMEMFIFODATA1 : in  std_logic_vector(31 downto 0);
-    DDRMEMFIFOFULL  : in  std_logic;
-    DDRMEMFIFOEMPTY : in  std_logic;
-    DDRTEMPFIFOFULL : in  std_logic;
-    DDRTEMPFIFOEMPTY: in  std_logic;
-    DDRMEMFIFO_RE   : out std_logic;
-
-    DDRCONVRDCNT    : in std_logic_vector(16 downto 0);
-    DDRCONVDATA     : in std_logic_vector(31 downto 0);
+    --DDRNHITS : out std_logic_vector(31 downto 0);
+    --DDRCS    : out std_logic;
+    --DDRWEN   : out std_logic;
+    --DDRREN   : out std_logic;
+    --DDRFIFOWEN : out std_logic;
+    --DDROFFSET: out std_logic_vector(31 downto 0);
+    --DDRDIAG0 : in  std_logic_vector(31 downto 0);
+    --DDRDIAG1 : in  std_logic_vector(31 downto 0);
+    --DDRPATTRN: out  std_logic_vector(1 downto 0);
+	 --DDRBURST : out std_logic_vector(7 downto 0);
+    --DDRRWEN  : out std_logic;
+    --DDRERRREN: out std_logic;
+    --DDRWRTREN: out std_logic;
+    --DDRRDTREN: out std_logic;
+	 --DDRRAMREN: out std_logic;
+    --DDRFORCERD  : out std_logic;
+		--
+    --DDRWRTIME: in  std_logic_vector(31 downto 0);
+    --DDRRDTIME: in  std_logic_vector(31 downto 0);
+    --DDRERRCNT: in  std_logic_vector(31 downto 0);
+    --DDRPTTREN: out std_logic;
+    --DDRERRLOC: in  std_logic_vector(31 downto 0);
+    --DDRFIFODIA: in  std_logic_vector(15 downto 0);
+    --DDRTRUEL : in  std_logic_vector(31 downto 0);
+    --DDRTRUEH : in  std_logic_vector(31 downto 0);
+    --DDREXPCL : in  std_logic_vector(31 downto 0);
+    --DDREXPCH : in  std_logic_vector(31 downto 0);
+	 --DDRRAMADDR : out std_logic_vector(31 downto 0);
+	 --DDRRAMDATA : in  std_logic_vector(31 downto 0);
+    --DDRLOCRAM: out  std_logic_vector(31 downto 0);
+	 --DDRWRBCNT : in  std_logic_vector(31 downto 0);
+	 --DDRRDBCNT : in  std_logic_vector(31 downto 0);
+--
+    --DDRSEL      : out std_logic;
+    --DDRFULL     : in  std_logic;
+    --DDRFIFO_RE  : out std_logic;
+    --DDRSET      : out  std_logic;
+    --DDRPAGENO   : out std_logic_vector(31 downto 0);
+    --DDRPAGEWR   : in  std_logic_vector(31 downto 0);
+    --DDRPAGERD   : in  std_logic_vector(31 downto 0);
+--
+    --DDRMEMFIFODATA0 : in  std_logic_vector(31 downto 0);
+    --DDRMEMFIFODATA1 : in  std_logic_vector(31 downto 0);
+    --DDRMEMFIFOFULL  : in  std_logic;
+    --DDRMEMFIFOEMPTY : in  std_logic;
+    --DDRTEMPFIFOFULL : in  std_logic;
+    --DDRTEMPFIFOEMPTY: in  std_logic;
+    --DDRMEMFIFO_RE   : out std_logic;
+--
+    --DDRCONVRDCNT    : in std_logic_vector(16 downto 0);
+    --DDRCONVDATA     : in std_logic_vector(31 downto 0);
+    DDRCTRLREADY  : in  std_logic;
 
     DTCSIMSTART   : out std_logic;
     DTCSIMBLKEN   : out std_logic;
@@ -133,6 +163,7 @@ entity Registers is
     serdes_data2 : in std_logic_vector(31 downto 0);
     serdes_data3 : in std_logic_vector(31 downto 0);
     use_lane : out std_logic_vector(3 downto 0);
+    use_uart : out std_logic;
 
     ROCTVS_VAL  : in std_logic_vector(15 downto 0);
     ROCTVS_ADDR : out std_logic_vector(1 downto 0);
@@ -167,8 +198,8 @@ entity Registers is
     dtc_enable_reset : out std_logic;
     force_full : out std_logic;
     align_roc_to_digi : out std_logic;
-    dtc_error_address : out std_logic_vector(3 downto 0);
-    dtc_error_counter : in std_logic_vector(7 downto 0);
+    dtc_error_address : out std_logic_vector(7 downto 0);
+    dtc_error_counter : in std_logic_vector(15 downto 0);
     
     cal_serdes_reset_n : out std_logic;
     hv_serdes_reset_n : out std_logic;
@@ -203,47 +234,82 @@ architecture synth of Registers is
    constant	CRDTCALIGNRESETN	:	std_logic_vector(7 downto 0) := x"15";
    constant	CRTVSRESETN		:	std_logic_vector(7 downto 0) := x"16";
 
+   constant CRUSEUART       : std_logic_vector(7 downto 0) := x"F1";  -- last DTC reply [31:16] = addr, [15:0] = data 
+
   ------------------------------------------------------------------------------
   --  Invert the spi clock for CAL, multiplexer enable
   ------------------------------------------------------------------------------
    constant CRINVERTCALSPICLCK : std_logic_vector(7 downto 0) := x"11";
 
 -------------------------------------------------------------------------------
--- DDR signals with Monca uodates in "flowcontrol"
+-- DDR signals with Monica updates in "flowcontrol"
 -------------------------------------------------------------------------------
-   constant CRDDRNHITS : 	std_logic_vector(7 downto 0) := x"20";  -- a 31-bit register to set up the number of hits to be written/read from memory
-   constant CRDDROFFSET: 	std_logic_vector(7 downto 0) := x"21";  -- 31-bit memory address offset 
-   constant CRDDRCS    : 	std_logic_vector(7 downto 0) := x"22";  -- 1-bit chip select (to decide if we are writing to memory or to FIFO - in reality an SRAM)
-   constant CRDDRWEN   : 	std_logic_vector(7 downto 0) := x"23";  -- a DDR WR-only enable: auto-clearing
-   constant CRDDRREN   : 	std_logic_vector(7 downto 0) := x"24";  -- a DDR RD-only with pattern compare enable: auto-clearing
-   constant CRDDRFIFOWEN: 	std_logic_vector(7 downto 0) := x"25";-- a DMA_EN to transfer data from FIFO to  memory that has to be set high and low by hand
-   constant CRDDRDIAG0 : 	std_logic_vector(7 downto 0) := x"26";  -- 32-bit diagnostic bus: used for MEMFIFO_RD_CNT
-   constant CRDDRRAMADDR: 	std_logic_vector(7 downto 0) := x"27";  -- addr to last DDR content RAM 
-   constant CRDDRDIAG1 : 	std_logic_vector(7 downto 0) := x"28";  -- 32-bit diagnostic bus: used for DDR_RD_CNT (cumulative)
-   constant CRDDRRPATTRN: 	std_logic_vector(7 downto 0):= x"29";  -- 2-bit to specify test patter: 0=> +1, 1=> -1, 2=> A's & 5's, 3=> PRBG
-   constant CRDDRRAMDATA: 	std_logic_vector(7 downto 0) := x"2A";  -- data from last DDR content RAM 
-   constant CRDDRRAMREN: 	std_logic_vector(7 downto 0)	:= x"2B";  -- read enable for RAM with latest DDR read values: auto-clearing 
-   constant CRDDRERRLOC: 	std_logic_vector(7 downto 0) := x"2C";  -- 32-bit DDR error location (x8 to determine DDR address with error)
-   constant CRDDRPTTREN: 	std_logic_vector(7 downto 0) := x"2D";  -- a WR_EN that has to be set high and low by hand
-   constant CRDDRFORCERD:	std_logic_vector(7 downto 0) := x"2E";  -- set DDR3_FULL=1 .AND. MEM_RD_CNT=0 to force DDR3 read: auto-clearing
-		
-   constant CRDDRSEL   : std_logic_vector(7 downto 0) := x"30";   -- 1-bit serial readout select (1 => DIGIFIFO readout via DDR3, 0 => DIGIFIFO readout directly)
-   constant CRDDRFULL  : std_logic_vector(7 downto 0) := x"31";   --  DDR3 full flag: if 1, DDRPAGENO have been written to memory. When DDRPAGENO have been readout, goes back to 0 
-   constant CRDDRFIFORE: std_logic_vector(7 downto 0) := x"32";   --  start reading 1KB page of DDR3 memory 
-   constant CRDDRSET   : std_logic_vector(7 downto 0):= x"33"; 	--  if 1, use DDR simulator data to TOP_SERDES; if 0, use DDR data to TOP_SERDES
-		
-   constant CRDDRPAGENO: std_logic_vector(7 downto 0) := x"34";   --  how many 1KB pages of DIGIFIFO we want to write to DDR3: max is 2Gb/1KB = 2**18-1 = 262143 
-   constant CRDDRPAGEWR: std_logic_vector(7 downto 0) := x"35";   --  how many 1KB pages have been written to DDR3
-   constant CRDDRPAGERD: std_logic_vector(7 downto 0) := x"36";   --  how many 1KB pages have been read from DDR3
-   constant CRDDRMEMFIFODATA0  : std_logic_vector(7 downto 0) := x"37";
-   constant CRDDRMEMFIFODATA1  : std_logic_vector(7 downto 0) := x"38";
-   constant CRDDRMEMFIFOFULL    : std_logic_vector(7 downto 0) := x"39";
-   constant CRDDRMEMFIFOEMPTY   : std_logic_vector(7 downto 0) := x"3A";
-   constant CRDDRMEMFIFORE      : std_logic_vector(7 downto 0) := x"3B";
-   constant CRDDRTEMPFIFOFULL   : std_logic_vector(7 downto 0) := x"3C"; 
-   constant CRDDRTEMPFIFOEMPTY  : std_logic_vector(7 downto 0) := x"3D"; 
-   constant CRDDRCONVDATA       : std_logic_vector(7 downto 0) := x"3E";  -- DATA out of DIGIFIFO or PATTERN_FIFO
-   constant CRDDRCONVRDCNT      : std_logic_vector(7 downto 0) := x"3F"; -- RDCNT out of DIGIFIFO or PATTERN_FIFO
+   constant CRDDRPTTREN: 	std_logic_vector(7 downto 0):= x"20";  -- drive PATTERN to be used
+   constant CRDDRERROR:	   std_logic_vector(7 downto 0):= x"21";  -- error seen: [0] event_error, [1] header1_error, [2] header2_error, [3] data_error seen
+   constant CRDDRERRREQ:	std_logic_vector(7 downto 0):= x"22";  -- error requested: [0] event_error, [1] header1_error, [2] header2_error, [3] data_error seen
+   constant CRDDRERRSEENL: std_logic_vector(7 downto 0):= x"23";  -- 32 LBS of word read when first requested error seen
+   constant CRDDRERRSEENH: std_logic_vector(7 downto 0):= x"24";  -- 32 MSB of word read when first requested error seen
+   constant CRDDRERREXPCL: std_logic_vector(7 downto 0):= x"25";  -- 32 LBS of expected word when first requested error seen 
+   constant CRDDRERREXPCH: std_logic_vector(7 downto 0):= x"26";  -- 32 MBS of expected word when first requested error seen 
+   constant CRDDRSPILLCNT  :  std_logic_vector(7 downto 0):= x"27";  -- no. of HB from start of SPILL
+   constant CRDDRNULLHBCNT :  std_logic_vector(7 downto 0):= x"28";  -- no. of null HBs from start of SPILL
+   constant CRDDRHBCNT:    std_logic_vector(7 downto 0):= x"29";  -- no. of HB seen
+   constant CRDDRHBONHOLD: std_logic_vector(7 downto 0):= x"2A";  -- no. of HB not processeduse 
+   constant CRDDRPREFCNT:  std_logic_vector(7 downto 0):= x"2B";  -- no. of PREFETCH seen 
+   constant CRDDRDREQCNT:  std_logic_vector(7 downto 0):= x"2C";  -- no. of DREQs received from DTC
+   constant CRDDRDREQREAD: std_logic_vector(7 downto 0):= x"2D";  -- no. of DREQs read from memory
+   constant CRDDRDREQSENT: std_logic_vector(7 downto 0):= x"2E";  -- no. of DREQs sent to DTC
+   constant CRDDRDREQNULL: std_logic_vector(7 downto 0):= x"2F";  -- no. of null size DREQs sent to DTC
+   
+   --constant CRDDRNHITS : 	std_logic_vector(7 downto 0) := x"20";  -- a 31-bit register to set up the number of hits to be written/read from memory
+   --constant CRDDROFFSET: 	std_logic_vector(7 downto 0) := x"21";  -- 31-bit memory address offset 
+   --constant CRDDRCS    : 	std_logic_vector(7 downto 0) := x"22";  -- 1-bit chip select (to decide if we are writing to memory or to FIFO - in reality an SRAM)
+   --constant CRDDRWEN   : 	std_logic_vector(7 downto 0) := x"23";  -- a DDR WR-only enable: auto-clearing
+   --constant CRDDRREN   : 	std_logic_vector(7 downto 0) := x"24";  -- a DDR RD-only with pattern compare enable: auto-clearing
+   --constant CRDDRFIFOWEN: 	std_logic_vector(7 downto 0) := x"25";-- a DMA_EN to transfer data from FIFO to  memory that has to be set high and low by hand
+   --constant CRDDRDIAG0 : 	std_logic_vector(7 downto 0) := x"26";  -- 32-bit diagnostic bus: used for MEMFIFO_RD_CNT
+   --constant CRDDRRAMADDR: 	std_logic_vector(7 downto 0) := x"27";  -- addr to last DDR content RAM 
+   --constant CRDDRDIAG1 : 	std_logic_vector(7 downto 0) := x"28";  -- 32-bit diagnostic bus: used for DDR_RD_CNT (cumulative)
+   --constant CRDDRRPATTRN: 	std_logic_vector(7 downto 0):= x"29";  -- 2-bit to specify test patter: 0=> +1, 1=> -1, 2=> A's & 5's, 3=> PRBG
+   --constant CRDDRRAMDATA: 	std_logic_vector(7 downto 0) := x"2A";  -- data from last DDR content RAM 
+   --constant CRDDRRAMREN: 	std_logic_vector(7 downto 0)	:= x"2B";  -- read enable for RAM with latest DDR read values: auto-clearing 
+   --constant CRDDRERRLOC: 	std_logic_vector(7 downto 0) := x"2C";  -- 32-bit DDR error location (x8 to determine DDR address with error)
+   --constant CRDDRPTTREN: 	std_logic_vector(7 downto 0) := x"2D";  -- a WR_EN that has to be set high and low by hand
+   --constant CRDDRFORCERD:	std_logic_vector(7 downto 0) := x"2E";  -- set DDR3_FULL=1 .AND. MEM_RD_CNT=0 to force DDR3 read: auto-clearing
+		--
+   constant CRDDRSERIALSET:   std_logic_vector(7 downto 0):= x"30"; 	-- if 1, setup DDR tests via SERIAL, if 0 assumed setup via DCS
+   constant CRDDRHBTAG  : 	   std_logic_vector(7 downto 0):= x"31";  -- bit [31:0] of last DTC Heartbeat Tag
+   constant CRDDRPRETAG : 	   std_logic_vector(7 downto 0):= x"32";  -- bit [31:0] of last DTC Prefetch Tag
+   constant CRDDRFETCHTAG: 	std_logic_vector(7 downto 0):= x"33";  -- bit [31:0] of last Fetched Tag
+   constant CRDDRDREQTAG: 	   std_logic_vector(7 downto 0):= x"34";  -- bit [31:0] of last DTC Data Request tag
+   constant CRDDROFFSETTAG:   std_logic_vector(7 downto 0):= x"35";  -- bit [31:0] of offset tag in present SPILL
+   constant CRDDRCFOEN  : 	   std_logic_vector(7 downto 0):= x"36";  -- enable CFO emulator
+   constant CRDDRCFOSTART: 	std_logic_vector(7 downto 0):= x"37";  -- CFO emulator start
+   constant CRDDRCFOOFFSET: 	std_logic_vector(7 downto 0):= x"38";  -- set HB tag offset for CFO emulator
+   constant CRDDRCFODELTAHB: 	std_logic_vector(7 downto 0):= x"39";  -- set HB DeltaT for CFO emulator
+   constant CRDDRCFONOHB   : 	std_logic_vector(7 downto 0):= x"3A";  -- set Number of HBs for CFO emulator
+   constant CRDDRPREFEN    : 	std_logic_vector(7 downto 0):= x"3B";   -- enable PREFETCH in CFO emulator
+   constant CRDDRSIZEWR:   std_logic_vector(7 downto 0):= x"3C";  -- event size(*3) written to DREQ FIFO:  [31] = DREQ_FIFO FULL,  [16:0] DREQ_FIFO_WRCNT
+   constant CRDDRSIZERD:   std_logic_vector(7 downto 0):= x"3D";  -- event size(*3) read from DREQ FIFO:[31] = DREQ_FIFO EMPTY, [16:0] DREQ_FIFO_RDCNT
+   constant CRDDRCTRLREADY: std_logic_vector(7 downto 0) := x"3E";  -- DDR ctrl ready
+   
+   --constant CRDDRSEL   : std_logic_vector(7 downto 0) := x"30";   -- 1-bit serial readout select (1 => DIGIFIFO readout via DDR3, 0 => DIGIFIFO readout directly)
+   --constant CRDDRFULL  : std_logic_vector(7 downto 0) := x"31";   --  DDR3 full flag: if 1, DDRPAGENO have been written to memory. When DDRPAGENO have been readout, goes back to 0 
+   --constant CRDDRFIFORE: std_logic_vector(7 downto 0) := x"32";   --  start reading 1KB page of DDR3 memory 
+   --constant CRDDRSET   : std_logic_vector(7 downto 0):= x"33"; 	--  if 1, use DDR simulator data to TOP_SERDES; if 0, use DDR data to TOP_SERDES
+		--
+   --constant CRDDRPAGENO: std_logic_vector(7 downto 0) := x"34";   --  how many 1KB pages of DIGIFIFO we want to write to DDR3: max is 2Gb/1KB = 2**18-1 = 262143 
+   --constant CRDDRPAGEWR: std_logic_vector(7 downto 0) := x"35";   --  how many 1KB pages have been written to DDR3
+   --constant CRDDRPAGERD: std_logic_vector(7 downto 0) := x"36";   --  how many 1KB pages have been read from DDR3
+   --constant CRDDRMEMFIFODATA0  : std_logic_vector(7 downto 0) := x"37";
+   --constant CRDDRMEMFIFODATA1  : std_logic_vector(7 downto 0) := x"38";
+   --constant CRDDRMEMFIFOFULL    : std_logic_vector(7 downto 0) := x"39";
+   --constant CRDDRMEMFIFOEMPTY   : std_logic_vector(7 downto 0) := x"3A";
+   --constant CRDDRMEMFIFORE      : std_logic_vector(7 downto 0) := x"3B";
+   --constant CRDDRTEMPFIFOFULL   : std_logic_vector(7 downto 0) := x"3C"; 
+   --constant CRDDRTEMPFIFOEMPTY  : std_logic_vector(7 downto 0) := x"3D"; 
+   --constant CRDDRCONVDATA       : std_logic_vector(7 downto 0) := x"3E";  -- DATA out of DIGIFIFO or PATTERN_FIFO
+   --constant CRDDRCONVRDCNT      : std_logic_vector(7 downto 0) := x"3F"; -- RDCNT out of DIGIFIFO or PATTERN_FIFO
 
 -------------------------------------------------------------------------------
 -- -SERDES 
@@ -268,7 +334,7 @@ architecture synth of Registers is
  
 
  -------------------------------------------------------------------------------
--- -DT SIMULATION signals: Monica added 08/22/2020 
+-- -DTC SIMULATION signals: Monica added 08/22/2020 
 ------------------------------------------------------------------------------ 
    --constant CRDTCSIMEN 	  : std_logic_vector(7 downto 0) := x"50";  -- send DTC packets/marker to DTCInterface
    constant CRDTCSIMSTART : std_logic_vector(7 downto 0) := x"51";  -- send DTC packets/marker to DTCInterface
@@ -340,25 +406,28 @@ architecture synth of Registers is
 	constant CR_CAL_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B8";
 	constant CR_HV_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B9";
 
+    constant CR_DTC_ERROR_ADDRESS		: std_logic_vector(7 downto 0) := x"E0";
+    constant CR_DTC_ERROR_COUNTER		: std_logic_vector(7 downto 0) := x"E1";
+
 -------------------------------------------------------------------------------
 -- DDR SPEED TESTS
 ------------------------------------------------------------------------------ 
-   constant CRDDRTRUEL:		std_logic_vector(7 downto 0) := x"C0";  -- LSB 32-bit for DDR read with error
-   constant CRDDRTRUEH: 	std_logic_vector(7 downto 0) := x"C1";  -- MSB 32-bit for DDR read with error
-   constant CRDDREXPCL: 	std_logic_vector(7 downto 0) := x"C2";  -- LSB 32-bit for DDR expected with error
-   constant CRDDREXPCH: 	std_logic_vector(7 downto 0) := x"C3";  -- MSB 32-bit for DDR expected with error
-   constant CRDDRBURST: 	std_logic_vector(7 downto 0) := x"C4";	 -- DDR BURST size (ex:0x3 = 256 bits, 0x7F = 1kB)	
-   constant CRDDRRWEN: 		std_logic_vector(7 downto 0) := x"C5";  -- a simultaneous DDR WR&RD EN: auto-clearing 
-   constant CRDDRERRREN:	std_logic_vector(7 downto 0) := x"C6";  -- read enable for FIFOs with DDR errors: auto-clearing 
-   constant CRDDRWRTREN:	std_logic_vector(7 downto 0) := x"C7";  -- read enable for DDR-Writes timer FIFO: auto-clearing 
-   constant CRDDRRDTREN:	std_logic_vector(7 downto 0) := x"C8";  -- read enable for DDR-Reads timer FIFO: auto-clearing 
-   constant CRDDRFIFODIA: 	std_logic_vector(7 downto 0) := x"C9";  -- FIFO STATUS for timing and error FIFOs: bit 0/1 => WRTIME E/F;  4/5 RDTIME E/F;  8/9 ERROR E/F
-   constant CRDDRWRTIME:	std_logic_vector(7 downto 0) := x"CA";  -- 32-bit timer for DDR writes
-   constant CRDDRRDTIME:	std_logic_vector(7 downto 0) := x"CB";  -- 32-bit timer for DDR reads
-   constant CRDDRERRCNT:	std_logic_vector(7 downto 0) := x"CC";  -- 32-bit DDR error count
-   constant CRDDRLOCRAM:	std_logic_vector(7 downto 0) := x"CD";  -- 32-bit DDR location to start write to TPSRAM(x8 to determine DDR address)
-   constant CRDDRWRBCNT: 	std_logic_vector(7 downto 0) := x"CE";  -- DDR Write-data burst count 
-   constant CRDDRRDBCNT: 	std_logic_vector(7 downto 0) := x"CF";  -- DDR Read-data burst count 
+   --constant CRDDRTRUEL:		std_logic_vector(7 downto 0) := x"C0";  -- LSB 32-bit for DDR read with error
+   --constant CRDDRTRUEH: 	std_logic_vector(7 downto 0) := x"C1";  -- MSB 32-bit for DDR read with error
+   --constant CRDDREXPCL: 	std_logic_vector(7 downto 0) := x"C2";  -- LSB 32-bit for DDR expected with error
+   --constant CRDDREXPCH: 	std_logic_vector(7 downto 0) := x"C3";  -- MSB 32-bit for DDR expected with error
+   --constant CRDDRBURST: 	std_logic_vector(7 downto 0) := x"C4";	 -- DDR BURST size (ex:0x3 = 256 bits, 0x7F = 1kB)	
+   --constant CRDDRRWEN: 		std_logic_vector(7 downto 0) := x"C5";  -- a simultaneous DDR WR&RD EN: auto-clearing 
+   --constant CRDDRERRREN:	std_logic_vector(7 downto 0) := x"C6";  -- read enable for FIFOs with DDR errors: auto-clearing 
+   --constant CRDDRWRTREN:	std_logic_vector(7 downto 0) := x"C7";  -- read enable for DDR-Writes timer FIFO: auto-clearing 
+   --constant CRDDRRDTREN:	std_logic_vector(7 downto 0) := x"C8";  -- read enable for DDR-Reads timer FIFO: auto-clearing 
+   --constant CRDDRFIFODIA: 	std_logic_vector(7 downto 0) := x"C9";  -- FIFO STATUS for timing and error FIFOs: bit 0/1 => WRTIME E/F;  4/5 RDTIME E/F;  8/9 ERROR E/F
+   --constant CRDDRWRTIME:	std_logic_vector(7 downto 0) := x"CA";  -- 32-bit timer for DDR writes
+   --constant CRDDRRDTIME:	std_logic_vector(7 downto 0) := x"CB";  -- 32-bit timer for DDR reads
+   --constant CRDDRERRCNT:	std_logic_vector(7 downto 0) := x"CC";  -- 32-bit DDR error count
+   --constant CRDDRLOCRAM:	std_logic_vector(7 downto 0) := x"CD";  -- 32-bit DDR location to start write to TPSRAM(x8 to determine DDR address)
+   --constant CRDDRWRBCNT: 	std_logic_vector(7 downto 0) := x"CE";  -- DDR Write-data burst count 
+   --constant CRDDRRDBCNT: 	std_logic_vector(7 downto 0) := x"CF";  -- DDR Read-data burst count 
 
   -------------------------------------------------------------------------------
   -- Signal declarations
@@ -515,68 +584,113 @@ begin
       case PADDR(9 downto 2) is
         when CRINVERTCALSPICLCK =>
           DataOut(0) <= INVERTCALSPICLCK;
-
+            
         when CRTIMERCOUNTER =>
             DataOut(31 downto 0) <= TIMERCOUNTER;
+            
+        when CRDDRERROR =>
+          DataOut(3 downto 0) <= DDRERROR;
+        when CRDDRERRSEENL =>
+          DataOut(31 downto 0) <= DDRERRSEEN(31 downto 0);
+        when CRDDRERRSEENH =>
+          DataOut(31 downto 0) <= DDRERRSEEN(63 downto 32);
+        when CRDDRERREXPCL =>
+          DataOut(31 downto 0) <= DDRERREXPC(31 downto 0);
+        when CRDDRERREXPCH =>
+          DataOut(31 downto 0) <= DDRERREXPC(63 downto 32);
+        when CRDDRSIZEWR =>
+          DataOut(31 downto 0) <= DDRSIZEWR;
+        when CRDDRSIZERD =>
+          DataOut(31 downto 0) <= DDRSIZERD;
+        when CRDDRHBCNT =>
+          DataOut(31 downto 0) <= DDRHBCNT;
+        when CRDDRHBONHOLD =>
+          DataOut(31 downto 0) <= DDRHBONHOLD;
+        when CRDDRPREFCNT =>
+          DataOut(31 downto 0) <= DDRPREFCNT;
+        when CRDDRDREQCNT =>
+          DataOut(31 downto 0) <= DDRDREQCNT;
+        when CRDDRDREQREAD =>
+          DataOut(31 downto 0) <= DDRDREQREAD;
+        when CRDDRDREQSENT =>
+          DataOut(31 downto 0) <= DDRDREQSENT;
+        when CRDDRDREQNULL =>
+          DataOut(31 downto 0) <= DDRDREQNULL;
+        when CRDDRSPILLCNT =>
+          DataOut(19 downto 0) <= DDRSPILLCNT;
+        when CRDDRNULLHBCNT =>
+          DataOut(31 downto 0) <= DDRNULLHBCNT;
+        when CRDDRHBTAG =>
+          DataOut(31 downto 0) <= DDRHBTAG;
+        when CRDDRPRETAG =>
+          DataOut(31 downto 0) <= DDRPRETAG;
+        when CRDDRFETCHTAG =>
+          DataOut(31 downto 0) <= DDRFETCHTAG;
+        when CRDDRDREQTAG =>
+          DataOut(31 downto 0) <= DDRDREQTAG;
+        when CRDDROFFSETTAG =>
+          DataOut(31 downto 0) <= DDROFFSETTAG;
 
-        when CRDDRDIAG0 =>
-          DataOut(31 downto 0) <= DDRDIAG0;
-        when CRDDRDIAG1 =>
-          DataOut(31 downto 0) <= DDRDIAG1;
-			 
-        when CRDDRWRTIME =>
-          DataOut(31 downto 0) <= DDRWRTIME;
-        when CRDDRRDTIME =>
-          DataOut(31 downto 0) <= DDRRDTIME;
-        when CRDDRERRCNT =>
-          DataOut(31 downto 0) <= DDRERRCNT;
-        when CRDDRERRLOC =>
-          DataOut(31 downto 0) <= DDRERRLOC;
-        when CRDDRFIFODIA =>
-          DataOut(15 downto 0) <= DDRFIFODIA;
-        when CRDDRTRUEL =>
-          DataOut(31 downto 0) <= DDRTRUEL;
-        when CRDDRTRUEH =>
-          DataOut(31 downto 0) <= DDRTRUEH;
-        when CRDDREXPCL =>
-          DataOut(31 downto 0) <= DDREXPCL;
-        when CRDDREXPCH =>
-          DataOut(31 downto 0) <= DDREXPCH;
-        when CRDDRRAMDATA =>
-          DataOut(31 downto 0) <= DDRRAMDATA;
-        when CRDDRWRBCNT =>
-          DataOut(31 downto 0) <= DDRWRBCNT;
-        when CRDDRRDBCNT =>
-          DataOut(31 downto 0) <= DDRRDBCNT;
-
-
-        when CRDDRFULL =>
-          DataOut(0) <= DDRFULL;
-        when CRDDRPAGEWR =>
-          DataOut(31 downto 0) <= DDRPAGEWR;
-        when CRDDRPAGERD =>
-          DataOut(31 downto 0) <= DDRPAGERD;
-
-        when CRDDRMEMFIFOFULL =>
-          DataOut(0) <= DDRMEMFIFOFULL;
-        when CRDDRMEMFIFOEMPTY =>
-          DataOut(0) <= DDRMEMFIFOEMPTY;
-        when CRDDRMEMFIFODATA0 =>
-          DataOut(31 downto 0) <= DDRMEMFIFODATA0;
-        when CRDDRMEMFIFODATA1 =>
-          DataOut(31 downto 0) <= DDRMEMFIFODATA1;
-        when CRDDRTEMPFIFOFULL =>
-          DataOut(0) <= DDRTEMPFIFOFULL;
-        when CRDDRTEMPFIFOEMPTY =>
-          DataOut(0) <= DDRTEMPFIFOEMPTY;
-
-        when CRDDRCONVDATA =>
-          DataOut(31 downto 0) <= DDRCONVDATA;
-        when CRDDRCONVRDCNT =>
-          DataOut(16 downto 0) <= DDRCONVRDCNT;
-
+          --when CRDDRDIAG0 =>
+          --DataOut(31 downto 0) <= DDRDIAG0;
+        --when CRDDRDIAG1 =>
+          --DataOut(31 downto 0) <= DDRDIAG1;
+			 --
+        --when CRDDRWRTIME =>
+          --DataOut(31 downto 0) <= DDRWRTIME;
+        --when CRDDRRDTIME =>
+          --DataOut(31 downto 0) <= DDRRDTIME;
+        --when CRDDRERRCNT =>
+          --DataOut(31 downto 0) <= DDRERRCNT;
+        --when CRDDRERRLOC =>
+          --DataOut(31 downto 0) <= DDRERRLOC;
+        --when CRDDRFIFODIA =>
+          --DataOut(15 downto 0) <= DDRFIFODIA;
+        --when CRDDRTRUEL =>
+          --DataOut(31 downto 0) <= DDRTRUEL;
+        --when CRDDRTRUEH =>
+          --DataOut(31 downto 0) <= DDRTRUEH;
+        --when CRDDREXPCL =>
+          --DataOut(31 downto 0) <= DDREXPCL;
+        --when CRDDREXPCH =>
+          --DataOut(31 downto 0) <= DDREXPCH;
+        --when CRDDRRAMDATA =>
+          --DataOut(31 downto 0) <= DDRRAMDATA;
+        --when CRDDRWRBCNT =>
+          --DataOut(31 downto 0) <= DDRWRBCNT;
+        --when CRDDRRDBCNT =>
+          --DataOut(31 downto 0) <= DDRRDBCNT;
+--
+--
+        --when CRDDRFULL =>
+          --DataOut(0) <= DDRFULL;
+        --when CRDDRPAGEWR =>
+          --DataOut(31 downto 0) <= DDRPAGEWR;
+        --when CRDDRPAGERD =>
+          --DataOut(31 downto 0) <= DDRPAGERD;
+--
+        --when CRDDRMEMFIFOFULL =>
+          --DataOut(0) <= DDRMEMFIFOFULL;
+        --when CRDDRMEMFIFOEMPTY =>
+          --DataOut(0) <= DDRMEMFIFOEMPTY;
+        --when CRDDRMEMFIFODATA0 =>
+          --DataOut(31 downto 0) <= DDRMEMFIFODATA0;
+        --when CRDDRMEMFIFODATA1 =>
+          --DataOut(31 downto 0) <= DDRMEMFIFODATA1;
+        --when CRDDRTEMPFIFOFULL =>
+          --DataOut(0) <= DDRTEMPFIFOFULL;
+        --when CRDDRTEMPFIFOEMPTY =>
+          --DataOut(0) <= DDRTEMPFIFOEMPTY;
+--
+        --when CRDDRCONVDATA =>
+          --DataOut(31 downto 0) <= DDRCONVDATA;
+        --when CRDDRCONVRDCNT =>
+          --DataOut(16 downto 0) <= DDRCONVRDCNT;
+--
         when CRDTCDATAREAD =>
           DataOut(31 downto 0) <= DTCDATAREAD;
+        when CRDDRCTRLREADY =>
+          DataOut(0) <= DDRCTRLREADY;
           
         when CRSERDESFULL =>
           DataOut(0) <= SERDES_FULL;
@@ -648,8 +762,8 @@ begin
         when CR_HV_SERDES_ERRORS =>
             DataOut(7 downto 0) <= hv_lane0_error_count;
             DataOut(15 downto 8) <= hv_lane1_error_count;
-        when X"E1" =>
-            DataOut(7 downto 0) <= dtc_error_counter;
+        when CR_DTC_ERROR_COUNTER =>
+            DataOut(15 downto 0) <= dtc_error_counter;
             
 
         when others =>
@@ -686,23 +800,34 @@ begin
 		TVS_RESETN			<=	'1';
 		
       INVERTCALSPICLCK  <= '0';
-      DDRCS             <= '0';
-      DDRWEN            <= '0';
-      DDRREN            <= '0';
-      DDRFIFOWEN        <= '0';
-      DDRSEL            <= '0';
-      DDRSET            <= '0';
+
+      DDRSERIALSET      <= '0';
       DDRPTTREN         <= '0';
-      DDRFIFO_RE        <= '0';
-      DDRMEMFIFO_RE     <= '0';
-      DDRPAGENO         <= x"0000_0000"; 
-      DDROFFSET         <= x"0000_0000"; 
-      DDRNHITS          <= x"0000_0001"; 
-      DDRPATTRN         <= b"00";
-      DDRRAMADDR        <= x"FFFF_FFFF";
-      DDRLOCRAM         <= x"0000_0000"; 
-		
-		DDRFORCERD		<= '0';
+      DDRCFOEN          <= '0';
+      DDRCFOSTART       <= '0';
+      DDRPREFETCHEN     <= '0';
+      DDRERRREQ         <= b"00";
+      DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
+      DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
+      DDRCFONUMBERHB    <= x"0000_0001";   
+
+      --DDRCS             <= '0';
+      --DDRWEN            <= '0';
+      --DDRREN            <= '0';
+      --DDRFIFOWEN        <= '0';
+      --DDRSEL            <= '0';
+      --DDRSET            <= '0';
+      --DDRPTTREN         <= '0';
+      --DDRFIFO_RE        <= '0';
+      --DDRMEMFIFO_RE     <= '0';
+      --DDRPAGENO         <= x"0000_0000"; 
+      --DDROFFSET         <= x"0000_0000"; 
+      --DDRNHITS          <= x"0000_0001"; 
+      --DDRPATTRN         <= b"00";
+      --DDRRAMADDR        <= x"FFFF_FFFF";
+      --DDRLOCRAM         <= x"0000_0000"; 
+		--
+		--DDRFORCERD		<= '0';
 		
       DTCSIMSTART    <= '0';
       DTCSIMBLKEN    <= '0';
@@ -718,6 +843,7 @@ begin
       serdes_re1 <= '0';
       serdes_re2 <= '0';
       serdes_re3 <= '0';
+      use_lane <= b"0000";
       
       cal_lane0_pcs_reset_n <= '1';
       cal_lane1_pcs_reset_n <= '1';
@@ -738,6 +864,7 @@ begin
       hv_init <= '0';
       ewm_50mhz <= '0';
       ewm_enable_50mhz <= '0';
+      use_uart <= '0';
       
       write_to_fifo <= '0';
       reset_fifo_n <= '1';
@@ -763,23 +890,11 @@ begin
      
       cal_init  <= '0';
       hv_init   <= '0';
-	  
-      DDRWEN        <= '0';
-      DDRREN        <= '0';
-      DDRFIFOWEN    <= '0';
-      DDRFIFO_RE    <= '0';
-      DDRMEMFIFO_RE <= '0';
-
-		DDRRWEN       <= '0';
-      DDRERRREN     <= '0';
-      DDRWRTREN     <= '0';
-      DDRRDTREN     <= '0';
-		DDRRAMREN     <= '0';
-
-		DDRFORCERD		<= '0';
-
+--
+-- this are meant to pulses 
       DTCSIMSTART    <= '0';
       DTCSIMBLKEN    <= '0';
+      DDRCFOSTART    <= '0';
       
       if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
@@ -799,55 +914,24 @@ begin
           when CRTIMERENABLE =>
             TIMERENABLE <= PWDATA(0);
 				
-          when CRDDRNHITS =>
-            DDRNHITS <= PWDATA(31 downto 0);
-          when CRDDROFFSET =>
-            DDROFFSET <= PWDATA(31 downto 0);
-          when CRDDRPAGENO =>
-            DDRPAGENO <= PWDATA(31 downto 0);
-          when CRDDRRPATTRN =>
-            DDRPATTRN <= PWDATA(1 downto 0);
+          when CRDDRSERIALSET =>
+            DDRSERIALSET <= PWDATA(0);
           when CRDDRPTTREN =>
             DDRPTTREN <= PWDATA(0);
-          when CRDDRRAMADDR =>
-            DDRRAMADDR <= PWDATA(31 downto 0);
-			 when CRDDRBURST =>
-            DDRBURST <= PWDATA(7 downto 0);
-          when CRDDRLOCRAM =>
-            DDRLOCRAM <= PWDATA(31 downto 0);
-				
-          when CRDDRCS =>
-            DDRCS <= PWDATA(0);
-          when CRDDRWEN =>
-            DDRWEN <= '1';
-          when CRDDRREN =>
-            DDRREN <= '1';
-          when CRDDRFIFOWEN =>
-            DDRFIFOWEN <= '1';
-          when CRDDRSEL =>
-            DDRSEL <= PWDATA(0);
-          when CRDDRSET =>
-            DDRSET <= PWDATA(0);
-
-          when CRDDRFORCERD =>
-            DDRFORCERD <= '1';
-				
-          when CRDDRRWEN =>
-            DDRRWEN <= '1';
-          when CRDDRERRREN =>
-            DDRERRREN<= '1';
-			 when CRDDRWRTREN =>
-            DDRWRTREN<= '1';
-			 when CRDDRRDTREN =>
-            DDRRDTREN<= '1';
-          when CRDDRRAMREN =>
-            DDRRAMREN <= '1';
-				
-          when CRDDRFIFORE =>
-            DDRFIFO_RE <= '1';
-          when CRDDRMEMFIFORE =>
-            DDRMEMFIFO_RE <= '1';
---            DDRMEMFIFO_RE <= PWDATA(0);
+          when CRDDRERRREQ =>
+            DDRERRREQ <= PWDATA(1 downto 0);
+          when CRDDRCFOEN =>
+            DDRCFOEN <= PWDATA(0);
+          when CRDDRPREFEN =>
+            DDRPREFETCHEN <= PWDATA(0);
+          when CRDDRCFOSTART =>
+            DDRCFOSTART <= '1';
+          when CRDDRCFOOFFSET =>
+            DDRCFOOFFSET <= PWDATA(31 downto 0);
+          when CRDDRCFODELTAHB =>
+            DDRCFODELTAHB  <= PWDATA(31 downto 0);
+          when CRDDRCFONOHB  =>
+            DDRCFONUMBERHB <= PWDATA(31 downto 0);
 
           when CRDTCSIMSTART =>
             DTCSIMSTART <= '1';
@@ -942,10 +1026,13 @@ begin
             hv_serdes_reset_n <= PWDATA(1);
             dtc_serdes_reset_n <= PWDATA(2);
             
-        when X"E0" =>
-            dtc_error_address <= PWDATA(3 downto 0);
+        when CR_DTC_ERROR_ADDRESS =>
+            dtc_error_address <= PWDATA(7 downto 0);
         when X"F0" =>
             event_window_expected <= PWDATA(15 downto 0);
+--        when X"F1" =>
+        when CRUSEUART  =>
+            use_uart <= PWDATA(0);
             
           when others =>
         end case;

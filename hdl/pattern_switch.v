@@ -18,28 +18,51 @@
 
 //`timescale <time_units> / <precision>
 
-module pattern_switch( 
-   input         pattern_en,           // select between DIGIFIFO input (if 0) vs PATTERN input (if 1) to DDR 
+`include "tracker_params.vh"
 
-   input    DIGIFIFO_empty,
-   input    DIGIFIFO_full,
-   input    PATTERN_empty,
-   input    PATTERN_full,
-   input    [31:0]  DIGIFIFO_q,
-   input    [16:0]  DIGIFIFO_rdcnt,
-   input    [31:0]  PATTERN_q,
-   input    [16:0]  PATTERN_rdcnt,
-   output   CONVERTER_empty,
-   output   CONVERTER_full,
-   output [31:0] CONVERTER_q,
-   output [16:0] CONVERTER_rdcnt
+module pattern_switch(
+ 
+   input    pattern_en,           // select between DIGIFIFO inputs (if 0) vs PATTERN inputs (if 1) to EW_FIFO_controller 
+
+   input    DIGI_curr_ewfifo_wr,
+   input    DIGI_ew_done,
+   input    DIGI_ew_ovfl,
+   input    DIGI_ew_fifo_we,
+   input    [`DIGI_BITS-1:0]        DIGI_ew_fifo_data,
+   input    [`EVENT_SIZE_BITS-1:0]  DIGI_ew_size, // in units of 64-bit BEATS
+   input    [`SPILL_TAG_BITS-1:0]   DIGI_ew_tag,
+   input    PATTRN_curr_ewfifo_wr,
+   input    PATTRN_ew_done,
+   input    PATTRN_ew_ovfl,
+   input    PATTRN_ew_fifo_we,
+   input    [`DIGI_BITS-1:0]        PATTRN_ew_fifo_data,
+   input    [`EVENT_SIZE_BITS-1:0]  PATTRN_ew_size, // in units of 64-bit BEATS
+   input    [`SPILL_TAG_BITS-1:0]   PATTRN_ew_tag,
+   output   curr_ewfifo_wr,
+   output   ew_done,
+   output   ew_ovfl,
+   output   ew_fifo_we,
+   output   [`DIGI_BITS-1:0] ew_fifo_data,
+   output   [`EVENT_SIZE_BITS-1:0] ew_size, // in units of 64-bit BEATS
+   output   [`SPILL_TAG_BITS-1:0] ew_tag,
+   
+   input    axi_start_on_serdesclk,
+   output   DIGI_axi_start_on_serdesclk,
+   output   PATTRN_axi_start_on_serdesclk
 );
 
 //<statements>
-   assign CONVERTER_empty   = (pattern_en==1'b1) ?  PATTERN_empty   : DIGIFIFO_empty;
-   assign CONVERTER_full    = (pattern_en==1'b1) ?  PATTERN_full    : DIGIFIFO_full;
-   assign CONVERTER_q       = (pattern_en==1'b1) ?  PATTERN_q       : DIGIFIFO_q;
-   assign CONVERTER_rdcnt   = (pattern_en==1'b1) ?  PATTERN_rdcnt   : DIGIFIFO_rdcnt;
+   assign curr_ewfifo_wr   = (pattern_en==1'b1) ?  PATTRN_curr_ewfifo_wr   : DIGI_curr_ewfifo_wr;
+   assign ew_done          = (pattern_en==1'b1) ?  PATTRN_ew_done          : DIGI_ew_done;
+   assign ew_ovfl          = (pattern_en==1'b1) ?  PATTRN_ew_ovfl          : DIGI_ew_ovfl;
+   assign ew_fifo_we       = (pattern_en==1'b1) ?  PATTRN_ew_fifo_we       : DIGI_ew_fifo_we;
+   assign ew_fifo_data     = (pattern_en==1'b1) ?  PATTRN_ew_fifo_data     : DIGI_ew_fifo_data;
+   assign ew_size          = (pattern_en==1'b1) ?  PATTRN_ew_size          : DIGI_ew_size;
+//   assign ew_tag           = (pattern_en==1'b1) ?  PATTRN_ew_tag           : DIGI_ew_tag;
+   assign ew_tag           = (pattern_en==1'b1) ?  PATTRN_ew_tag           : (DIGI_ew_tag+1);
+   
+   assign DIGI_axi_start_on_serdesclk     =  axi_start_on_serdesclk && ~pattern_en;
+   assign PATTRN_axi_start_on_serdesclk   =  axi_start_on_serdesclk &&  pattern_en;
 
 endmodule
 

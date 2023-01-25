@@ -5,33 +5,16 @@ source hdl_source.tcl
 build_design_hierarchy
 
 #Sourcing the Tcl files in which HDL+ core definitions are created for HDL modules
-source components/fifo_mem_cntrl.tcl 
-source components/pattern_gen_checker.tcl 
+source components/EW_FIFO_controller.tcl 
 source components/Registers.tcl 
 build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
 source components/COREJTAGDEBUG_C0.tcl 
-source components/CORERESET_PF_C0.tcl 
-source components/CORERESET_PF_C2.tcl 
-source components/AXI4_Interconnect.tcl 
-source components/DDR3_Cntrl.tcl 
-source components/MEMFIFO.tcl 
-source components/TEMPFIFO.tcl 
-source components/data_err.tcl 
-source components/data_expc.tcl 
-source components/data_true.tcl 
-source components/read_fifo.tcl 
-source components/TPSRAM.tcl 
-source components/write_fifo.tcl 
-source components/PATTERN_FIFO.tcl 
-source components/pattern_FIFO_filler.tcl 
-source components/DDRInterface.tcl 
-source components/BLK_TPSRAM.tcl 
+source components/CORERESET.tcl 
 source components/PACKET_FIFO.tcl 
-source components/DTCInterface.tcl 
-source components/DigiClkReset.tcl 
-source components/DigiFIFOReset.tcl 
+source components/EWTAG_FIFO.tcl 
+source components/DTCSimulator.tcl 
 source components/CORERESET_PF_C1.tcl 
 source components/PF_TX_PLL_0.tcl 
 source components/PF_XCVR_0.tcl 
@@ -40,9 +23,20 @@ source components/ROCFIFO.tcl
 source components/DigiLink.tcl 
 source components/DigiReaderFIFO.tcl 
 source components/DigiInterface.tcl 
-source components/DigiReset.tcl 
 source components/INIT_component.tcl 
 source components/MIV_RV32IMC_C0.tcl 
+source components/AXI4_Interconnect.tcl 
+source components/DDR4_Cntrl.tcl 
+source components/DREQ_FIFO.tcl 
+source components/CNT_FIFO.tcl 
+source components/EVT_FIFO.tcl 
+source components/EW_FIFO.tcl 
+source components/SIZE_FIFO.tcl 
+source components/SPILLTAG_FIFO.tcl 
+source components/SIM_ROC_FIFO.tcl 
+source components/pattern_FIFO_filler.tcl
+source components/NewDDRInterface.tcl 
+source components/PF_CCC_111.tcl 
 source components/PF_CCC_C0.tcl 
 source components/PF_CCC_C1.tcl 
 source components/PF_CLK_DIV_C0.tcl 

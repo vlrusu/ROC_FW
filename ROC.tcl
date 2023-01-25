@@ -33,7 +33,7 @@ if {[file exists $project_dir] == 1} then {
     project_exists
 } else {
     create_new_project_label
-    new_project -location $project_dir -name $Libero_project_name -project_description {} -block_mode 0 -standalone_peripheral_initialization 0 -instantiate_in_smartdesign 1 -ondemand_build_dh 1 -hdl {VHDL} -family {PolarFire} -die {MPF300TS} -package {FCG1152} -speed {-1} -die_voltage {1.0} -part_range {IND} -adv_options {IO_DEFT_STD:LVCMOS 1.8V} -adv_options {RESTRICTPROBEPINS:1} -adv_options {RESTRICTSPIPINS:0} -adv_options {SYSTEM_CONTROLLER_SUSPEND_MODE:0} -adv_options {TEMPR:IND} -adv_options {VCCI_1.2_VOLTR:IND} -adv_options {VCCI_1.5_VOLTR:IND} -adv_options {VCCI_1.8_VOLTR:IND} -adv_options {VCCI_2.5_VOLTR:IND} -adv_options {VCCI_3.3_VOLTR:IND} -adv_options {VOLTR:IND}
+    new_project -location $project_dir -name $Libero_project_name -project_description {} -block_mode 0 -standalone_peripheral_initialization 0 -instantiate_in_smartdesign 1 -ondemand_build_dh 1 -hdl {VHDL} -family {PolarFire} -die {MPF300TS} -package {FCG484I} -speed {STD} -die_voltage {1.0} -part_range {IND} -adv_options {IO_DEFT_STD:LVCMOS 1.8V} -adv_options {RESTRICTPROBEPINS:1} -adv_options {RESTRICTSPIPINS:0} -adv_options {SYSTEM_CONTROLLER_SUSPEND_MODE:0} -adv_options {TEMPR:IND} -adv_options {VCCI_1.2_VOLTR:IND} -adv_options {VCCI_1.5_VOLTR:IND} -adv_options {VCCI_1.8_VOLTR:IND} -adv_options {VCCI_2.5_VOLTR:IND} -adv_options {VCCI_3.3_VOLTR:IND} -adv_options {VOLTR:IND}
 
     source ./ROC_recursive.tcl
 
@@ -46,12 +46,14 @@ if {[file exists $project_dir] == 1} then {
 
 
     import_files -io_pdc ./constraints/io/io_constraints.pdc
+    import_files -io_pdc ./constraints/io/user.pdc
 
     import_files -sdc ./constraints/ROC_derived_constraints.sdc
     import_files -sdc ./constraints/timing_user_constraints.sdc
     import_files -sdc ./constraints/timing_pr.sdc
     
     import_files -fp_pdc ./constraints/fp/fp_constraints.pdc
+    import_files -fp_pdc ./constraints/fp/user.pdc
 
 
     set_root ROC
@@ -61,10 +63,12 @@ if {[file exists $project_dir] == 1} then {
 
     organize_tool_files -tool {PLACEROUTE} \
 	-file $project_dir/constraint/io/io_constraints.pdc \
+	-file $project_dir/constraint/io/user.pdc \
 	-file $project_dir/constraint/ROC_derived_constraints.sdc \
 	-file $project_dir/constraint/timing_user_constraints.sdc \
 	-file $project_dir/constraint/timing_pr.sdc \
 	-file $project_dir/constraint/fp/fp_constraints.pdc \
+	-file $project_dir/constraint/fp/user.pdc \
 	-module {ROC::work} -input_type {constraint}
 
 

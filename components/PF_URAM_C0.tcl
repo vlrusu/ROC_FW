@@ -1,6 +1,6 @@
 # Exporting Component Description of PF_URAM_C0 to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component PF_URAM_C0
 create_and_configure_core -core_vlnv {Actel:SgCore:PF_URAM:1.1.107} -component_name {PF_URAM_C0} -params {\
 "BLK_PN:BLK_EN"  \

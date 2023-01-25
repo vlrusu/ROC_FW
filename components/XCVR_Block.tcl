@@ -6,6 +6,7 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Scalar Ports
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ALIGN_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCSIM_EN} -port_direction {IN}
@@ -15,11 +16,10 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_EN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN} -port_is_pad {1}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {RESET_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TX_RESETN} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {ewm} -port_direction {IN}
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CLOCK_ALIGNED} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {EPCS_RxERR} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_READY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_VAL} -port_direction {OUT}
@@ -28,6 +28,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_STABLE} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PCS_ALIGNED} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_align} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {word_aligned} -port_direction {OUT}
 
 
@@ -38,13 +39,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_DATA} -port_direction {I
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_KCHAR} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {TX_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {TX_K_CHAR} -port_direction {IN} -port_range {[1:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {address} -port_direction {IN} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_crc_error} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {dtc_seq_error} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_expected} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {marker_error} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {rx_crc_error} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {rx_packet_error} -port_direction {IN} -port_range {[15:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {ALIGNMENT_LOSS_COUNTER} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {B_CERR} -port_direction {OUT} -port_range {[1:0]}
@@ -54,7 +48,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {INVALID_K} -port_direction {O
 sd_create_bus_port -sd_name ${sd_name} -port_name {RD_ERR} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {RX_DATA} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {RX_K_CHAR} -port_direction {OUT} -port_range {[1:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {counter_out} -port_direction {OUT} -port_range {[7:0]}
 
 
 # Add AND2_0 instance
@@ -75,13 +68,6 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:EPCS_TxRS
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {Core_PCS_0:EPCS_TxVAL}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:FORCE_DISP} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:DISP_SEL} -value {GND}
-
-
-
-# Add ErrorCounter_0 instance
-sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ErrorCounter} -hdl_file {hdl\ErrorCounter.vhd} -instance_name {ErrorCounter_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ErrorCounter_0:din} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ErrorCounter_0:enable_alignment}
 
 
 
@@ -130,57 +116,48 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {XCVR_PLL_0:PLL_LOCK}
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RESET_N" "AND2_0:A" "ClockAligner_0:RX_RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_PMA_ARST_N" "XCVR_IF_0:LANE0_PCS_ARST_N" "AND2_0:B" "ClockAligner_0:ALIGNMENT_RESET_N" "Core_PCS_0:WA_RSTn" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordAligner_0:reset_n" "AND2_0:Y" "Core_PCS_0:RESET_N" "ErrorCounter_0:reset_n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGN_RESETN" "AND2_0:A" "ClockAligner_0:RX_RESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "ClockAligner_0:ALIGNMENT_RESET_N" "Core_PCS_0:WA_RSTn" "XCVR_IF_0:LANE0_PCS_ARST_N" "XCVR_IF_0:LANE0_PMA_ARST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "Core_PCS_0:RESET_N" "WordAligner_0:reset_n" "resetn_align" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CLOCK_ALIGNED" "ClockAligner_0:CLOCK_ALIGNED" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:CTRL_ARST_N" "CTRL_ARST_N" "ClockAligner_0:CTRL_RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:CTRL_CLK" "CTRL_CLK" "ClockAligner_0:CTRL_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ENABLE_ALIGNMENT" "ClockAligner_0:ENABLE_ALIGNMENT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:aligned" "PCS_ALIGNED" "Core_PCS_0:ALIGNED" "ClockAligner_0:PCS_ALIGNED" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordAligner_0:clk" "XCVR_IF_0:LANE0_RX_CLK_R" "ClockAligner_0:RX_CLK" "Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "ErrorCounter_0:clk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_RX_VAL" "ClockAligner_0:RX_VAL" "Core_PCS_0:EPCS_RxRSTn" "Core_PCS_0:EPCS_RxVAL" "LANE0_RX_VAL" "ErrorCounter_0:rx_val" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_RX_READY" "Core_PCS_0:EPCS_READY" "LANE0_RX_READY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxERR" "ErrorCounter_0:rx_err" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "ClockAligner_0:CTRL_RESET_N" "XCVR_IF_0:CTRL_ARST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "ClockAligner_0:CTRL_CLK" "XCVR_IF_0:CTRL_CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:ENABLE_ALIGNMENT" "ENABLE_ALIGNMENT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:PCS_ALIGNED" "Core_PCS_0:ALIGNED" "PCS_ALIGNED" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_CLK" "Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "WordAligner_0:clk" "XCVR_IF_0:LANE0_RX_CLK_R" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_VAL" "Core_PCS_0:EPCS_RxRSTn" "Core_PCS_0:EPCS_RxVAL" "LANE0_RX_VAL" "XCVR_IF_0:LANE0_RX_VAL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_READY" "LANE0_RX_READY" "XCVR_IF_0:LANE0_RX_READY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxERR" "EPCS_RxERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxIDLE" "XCVR_IF_0:LANE0_RX_IDLE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:TX_CLK" "ReplyPktDecoder_0:TX_CLK" "XCVR_IF_0:LANE0_TX_CLK_R" "LANE0_TX_CLK_R" "Core_PCS_0:EPCS_TxCLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:DTCSIM_EN" "DTCSIM_EN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewm" "ErrorCounter_0:ewm" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_TxCLK" "LANE0_TX_CLK_R" "MUX_TX_0:TX_CLK" "ReplyPktDecoder_0:TX_CLK" "XCVR_IF_0:LANE0_TX_CLK_R" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIM_EN" "MUX_TX_0:DTCSIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "XCVR_IF_0:LANE0_RXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_P" "XCVR_IF_0:LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "XCVR_IF_0:LANE0_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "XCVR_IF_0:LANE0_TXD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_TX_CLK_STABLE" "LANE0_TX_CLK_STABLE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TX_CLK_STABLE" "XCVR_IF_0:LANE0_TX_CLK_STABLE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:PRBS_EN" "PRBS_EN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK_PAD_N" "REF_CLK_PAD_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK_PAD_P" "REF_CLK_PAD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_CLK_0:REF_CLK_PAD_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_CLK_0:REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ReplyPktDecoder_0:TX_RESETN" "TX_RESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"word_aligned" "WordAligner_0:word_aligned" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_PLL_0:REF_CLK" "XCVR_CLK_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"WordAligner_0:word_aligned" "word_aligned" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" "XCVR_PLL_0:REF_CLK" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGNMENT_LOSS_COUNTER" "ClockAligner_0:ALIGNMENT_LOSS_COUNTER" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:B_CERR" "B_CERR" "ErrorCounter_0:b_cerr" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:CODE_ERR_N" "CODE_ERR_N" "ErrorCounter_0:code_err_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxDATA" "ClockAligner_0:RX_DATA" "XCVR_IF_0:LANE0_RX_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:LANE0_TX_DATA" "Core_PCS_0:EPCS_TxDATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:INVALID_K" "INVALID_K" "ErrorCounter_0:invalid_k" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:RD_ERR" "RD_ERR" "ErrorCounter_0:rd_err" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordFlipper_0:data_in" "Core_PCS_0:RX_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordFlipper_0:k_char_in" "Core_PCS_0:RX_K_CHAR" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"B_CERR" "Core_PCS_0:B_CERR" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CODE_ERR_N" "Core_PCS_0:CODE_ERR_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_DATA" "Core_PCS_0:EPCS_RxDATA" "XCVR_IF_0:LANE0_RX_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_TxDATA" "XCVR_IF_0:LANE0_TX_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:INVALID_K" "INVALID_K" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:RD_ERR" "RD_ERR" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:RX_DATA" "WordFlipper_0:data_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:RX_K_CHAR" "WordFlipper_0:k_char_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:TX_DATA" "WordFlipper_1:data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:TX_K_CHAR" "WordFlipper_1:k_char_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ReplyPktDecoder_0:TX_DATA_OUT" "DTCDATA_OUT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:DTCSIM_DATA" "DTCSIM_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:DTCSIM_KCHAR" "DTCSIM_KCHAR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:address" "address" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"counter_out" "ErrorCounter_0:counter_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dreq_crc_error" "dreq_crc_error" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dtc_seq_error" "dtc_seq_error" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"event_window_expected" "ErrorCounter_0:event_window_expected" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:marker_error" "marker_error" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"rx_crc_error" "ErrorCounter_0:rx_crc_error" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"rx_packet_error" "ErrorCounter_0:rx_packet_error" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCDATA_OUT" "ReplyPktDecoder_0:TX_DATA_OUT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIM_DATA" "MUX_TX_0:DTCSIM_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIM_KCHAR" "MUX_TX_0:DTCSIM_KCHAR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:FIBER_DATA" "ReplyPktDecoder_0:data_in" "TX_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:FIBER_KCHAR" "ReplyPktDecoder_0:kchar_in" "TX_K_CHAR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:PRBS_DATA" "PRBS_DATA" }
@@ -189,11 +166,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:TX_DATA" "WordFlipper_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_TX_0:TX_KCHAR" "WordFlipper_1:k_char_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_DATA" "WordAligner_0:data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_K_CHAR" "WordAligner_0:k_char_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordFlipper_0:data_out" "WordAligner_0:data_in" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"WordFlipper_0:k_char_out" "WordAligner_0:k_char_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"WordAligner_0:data_in" "WordFlipper_0:data_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"WordAligner_0:k_char_in" "WordFlipper_0:k_char_out" }
 
 # Add bus interface net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_PLL_0:CLKS_TO_XCVR" "XCVR_IF_0:CLKS_FROM_TXPLL_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:CLKS_FROM_TXPLL_0" "XCVR_PLL_0:CLKS_TO_XCVR" }
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

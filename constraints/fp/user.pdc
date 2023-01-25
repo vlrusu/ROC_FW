@@ -1,0 +1,38 @@
+# Microsemi Physical design constraints file
+
+# Version: 2022.1 2022.1.0.10
+
+# Design Name: ROC 
+
+# Input Netlist Format: EDIF 
+
+# Family: PolarFire , Die: MPF300TS , Package: FCG484 , Speed grade: STD 
+
+# Date generated: Tue Sep 27 22:30:49 2022 
+
+
+#
+# Local clock constraints
+#
+
+
+#
+# Region constraints
+#
+
+
+#
+# Core cell constraints
+#
+
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_1_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 1812 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_2_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 2100 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_3_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 2244 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_0_CTRL/I_LANECTRL -fixed true -x 659 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/IOD_BCLK_TRAINING/I_IOD_0 -fixed true -x 84 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DLL_0/dll_inst_0 -fixed true -x 3 -y 377
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/CCC_0/pll_inst_0 -fixed true -x 1 -y 377
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_3_CTRL/I_LANECTRL -fixed true -x 2255 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_2_CTRL/I_LANECTRL -fixed true -x 2111 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_1_CTRL/I_LANECTRL -fixed true -x 1823 -y 378
+set_location -inst_name NewDDRInterface_0/DDR4_Cntrl_0/DDRPHY_BLK_0/LANE_0_IOD_READ_TRAINING/I_IOD_0 -fixed true -x 648 -y 378

@@ -2,11 +2,11 @@
 
 # User I/O Constraints file 
 
-# Version: PolarFire v2.0 12.200.0.20
+# Version: 2022.1 2022.1.0.10
 
-# Family: PolarFire , Die: MPF300TS_ES , Package: FCG1152
+# Family: PolarFire , Die: MPF300TS , Package: FCG484
 
-# Date generated: Tue Dec 12 16:52:44 2017 
+# Date generated: Fri Sep 30 14:03:05 2022 
 
 
 # 
@@ -24,18 +24,141 @@
 # 
 # User Locked I/O settings
 # 
-set_io -port_name RX  \
-    -pin_name B2      \
-    -fixed true       \
-    -io_std LVCMOS33  \
-    -DIRECTION INPUT
 
-set_io -port_name TX   \
-    -pin_name B1       \
-    -fixed true        \
-    -io_std LVCMOS33   \
+set_io -port_name CAL_CALEVEN_N  \
+    -pin_name J2                 \
+    -fixed true                  \
+    -io_std LVDS33               \
     -DIRECTION OUTPUT
 
+
+set_io -port_name CAL_CALEVEN_P  \
+    -pin_name J3                 \
+    -fixed true                  \
+    -io_std LVDS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_CALODD_N  \
+    -pin_name L2                \
+    -fixed true                 \
+    -io_std LVDS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_CALODD_P  \
+    -pin_name K3                \
+    -fixed true                 \
+    -io_std LVDS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_PREAMP_CE0n  \
+    -pin_name R5                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_PREAMP_CE1n  \
+    -pin_name N4                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_PREAMP_MISO  \
+    -pin_name P3                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION INPUT
+
+
+set_io -port_name CAL_PREAMP_MOSI  \
+    -pin_name P9                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_PREAMP_SCLK  \
+    -pin_name R4                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_PREAMP_CE0n  \
+    -pin_name N7                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_PREAMP_CE1n  \
+    -pin_name P7                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_PREAMP_MISO  \
+    -pin_name N8                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION INPUT
+
+
+set_io -port_name HV_PREAMP_MOSI  \
+    -pin_name M2                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_PREAMP_SCLK  \
+    -pin_name M7                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_CLK_N  \
+    -pin_name K9             \
+    -fixed true              \
+    -io_std LVDS33           \
+    -DIRECTION INPUT
+
+
+set_io -port_name ROC_CLK_P  \
+    -pin_name J9             \
+    -fixed true              \
+    -io_std LVDS33           \
+    -DIRECTION INPUT
+
+
+set_io -port_name SHIELD0  \
+    -pin_name R9           \
+    -fixed true            \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name SHIELD1  \
+    -pin_name V15          \
+    -fixed true            \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name SHIELD2  \
+    -pin_name AB10         \
+    -fixed true            \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name SHIELD3  \
+    -pin_name AB14         \
+    -fixed true            \
+    -DIRECTION OUTPUT
 
 
 
@@ -54,1012 +177,35 @@ set_io -port_name TX   \
 #
 #Ports using Dedicated Pins
 
+#
 
-set_io -port_name ADC_CLK_N  \
-    -pin_name K1             \
-    -fixed true              \
-    -io_std LVDS25           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name ADC_CLK_P  \
-    -pin_name J1             \
-    -fixed true              \
-    -io_std LVDS25           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CALEVEN_N  \
-    -pin_name P8                 \
-    -fixed true                  \
-    -io_std LVDS25               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CALEVEN_P  \
-    -pin_name P9                 \
-    -fixed true                  \
-    -io_std LVDS25               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CALODD_N  \
-    -pin_name M7                \
-    -fixed true                 \
-    -io_std LVDS25              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CALODD_P  \
-    -pin_name N8                \
-    -fixed true                 \
-    -io_std LVDS25              \
-    -DIRECTION OUTPUT
-    
-set_io -port_name CAL_PREAMP_CE1n  \
-    -pin_name H16                  \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_PREAMP_MISO  \
-    -pin_name J16                  \
-    -fixed true                    \
-    -io_std LVCMOS33               \
+set_io -port_name ROCtoHV_SERDES_CLK0_N  \
+    -pin_name U20                        \
     -DIRECTION INPUT
 
 
-set_io -port_name CAL_PREAMP_MOSI  \
-    -pin_name M17                  \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_PREAMP_SCLK  \
-    -pin_name K16                  \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_PREAMP_CE0n  \
-    -pin_name L17                  \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT    
-
-    
-set_io -port_name HV_PREAMP_CE0n  \
-    -pin_name D1                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HV_PREAMP_CE1n  \
-    -pin_name E1                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HV_PREAMP_MISO  \
-    -pin_name C2                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION INPUT
-
-
-set_io -port_name HV_PREAMP_MOSI  \
-    -pin_name D3                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HV_PREAMP_SCLK  \
-    -pin_name C1                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION OUTPUT
-
-set_io -port_name SENSOR_MCP_CEn  \
-    -pin_name E2                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI0_ADC0_CEn  \
-    -pin_name A5                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI0_ADC1_CEn  \
-    -pin_name C3                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI0_ADC2_CEn  \
-    -pin_name C6                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-    
-set_io -port_name HV_CLK_OUT2_N  \
-    -pin_name E5                \
-    -fixed true                  \
-    -io_std LVDS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HV_CLK_OUT2_P  \
-    -pin_name D5                \
-    -fixed true                  \
-    -io_std LVDS33               \
-    -DIRECTION OUTPUT
-    
-set_io -port_name CAL_CLK_OUT2_N  \
-    -pin_name J15                \
-    -fixed true                  \
-    -io_std LVDS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CLK_OUT2_P  \
-    -pin_name K15                \
-    -fixed true                  \
-    -io_std LVDS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE0_RXD_N  \
-    -pin_name M30             \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_RXD_P  \
-    -pin_name M29             \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_TXD_N  \
-    -pin_name N32             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE0_TXD_P  \
-    -pin_name N31             \
-    -DIRECTION OUTPUT
-    
-    
-set_io -port_name LANE1_RXD_N  \
-    -pin_name P30              \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE1_RXD_P  \
-    -pin_name P29              \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE1_TXD_N  \
-    -pin_name P34              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE1_TXD_P  \
-    -pin_name P33              \
-    -DIRECTION OUTPUT
-
-
-
-
-    
-set_io -port_name REF_CLK_PAD_N  \
-    -pin_name R28                   \
-    -DIRECTION INPUT
-
-
-set_io -port_name REF_CLK_PAD_P  \
-    -pin_name R27                   \
-    -DIRECTION INPUT
-
-    
-set_io -port_name REF_CLK_PAD_N_0  \
-    -pin_name AF30                 \
-    -DIRECTION INPUT
-
-
-set_io -port_name REF_CLK_PAD_P_0  \
-    -pin_name AF29                 \
-    -DIRECTION INPUT
-    
-set_io -port_name LANE0_RXD_N_0  \
-    -pin_name AC32                 \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_RXD_P_0  \
-    -pin_name AC31                 \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_TXD_N_0    \
-    -pin_name AD34                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE0_TXD_P_0    \
-    -pin_name AD33                 \
-    -DIRECTION OUTPUT
-
-    
-set_io -port_name LANE1_RXD_N_0  \
-    -pin_name AD30               \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE1_RXD_P_0  \
-    -pin_name AD29               \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE1_TXD_N_0  \
-    -pin_name AE32               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE1_TXD_P_0  \
-    -pin_name AE31               \
-    -DIRECTION OUTPUT
-    
-    
-
-set_io -port_name REF_CLK_PAD_N_1  \
-    -pin_name J28                \
-    -DIRECTION INPUT
-
-
-set_io -port_name REF_CLK_PAD_P_1  \
-    -pin_name J27                \
-    -DIRECTION INPUT
-    
-set_io -port_name LANE0_RXD_N_1  \
-    -pin_name G32              \
-    -RX_CTLE 3GHz_+5.5dB         \
-    -RX_INSERTION_LOSS 17.0dB    \
-    -RX_POLARITY Inverted        \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_RXD_P_1             \
-    -pin_name G31              \
-    -RX_CTLE 3GHz_+5.5dB         \
-    -RX_INSERTION_LOSS 17.0dB    \
-    -RX_POLARITY Inverted        \
-    -DIRECTION INPUT
-
-
-set_io -port_name LANE0_TXD_N_1  \
-    -pin_name F34              \
-    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name LANE0_TXD_P_1                \
-    -pin_name F33              \
-    -TX_EMPHASIS_AMPLITUDE 800mV_with_-6.0dB  \
-    -DIRECTION OUTPUT
-    #-TX_EMPHASIS_AMPLITUDE 1000mV_with_-6dB  \
-    #-DIRECTION OUTPUT
-    
-    
-set_io -port_name ROC_CLK_N  \
-    -pin_name F5             \
-    -fixed true              \
-    -io_std LVDS33           \
-    -DIRECTION INPUT
-
-
-set_io -port_name ROC_CLK_P  \
-    -pin_name G5             \
-    -fixed true              \
-    -io_std LVDS33           \
-    -DIRECTION INPUT
-
-    
-set_io -port_name CAL_DEVRST_N  \
-    -pin_name A3                    \
-    -fixed true                     \
-    -io_std LVCMOS33                \
-    -DIRECTION OUTPUT
-    
-set_io -port_name HV_DEVRST_N  \
-    -pin_name A2                   \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
-    
-
-set_io -port_name CAL_CLK_OUT_N  \
-    -pin_name J3                 \
-    -fixed true                  \
-    -io_std LVDS25               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_CLK_OUT_P  \
-    -pin_name J4                 \
-    -fixed true                  \
-    -io_std LVDS25               \
-    -DIRECTION OUTPUT
-    
-set_io -port_name HV_CLK_OUT_N  \
-    -pin_name K3                \
-    -fixed true                 \
-    -io_std LVDS25              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HV_CLK_OUT_P  \
-    -pin_name K2                \
-    -fixed true                 \
-    -io_std LVDS25              \
-    -DIRECTION OUTPUT
-    
-    
- 
-set_io -port_name calscl  \
-    -pin_name J11         \
-    -fixed true           \
-    -io_std LVCMOS33      \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name hvscl  \
-    -pin_name D4         \
-    -fixed true          \
-    -io_std LVTTL        \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name hvsda  \
-    -pin_name E3         \
-    -fixed true          \
-    -io_std LVTTL        \
-    -DIRECTION INOUT
-    
-    
-set_io -port_name calsda  \
-    -pin_name H13         \
-    -fixed true           \
-    -io_std LVCMOS33      \
-    -DIRECTION INOUT 
- 
-
-set_io -port_name SPI0_MISO  \
-    -pin_name B4             \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION INPUT
-
-
-set_io -port_name SPI0_MOSI  \
-    -pin_name C4             \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI0_SCLK  \
-    -pin_name B5             \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION OUTPUT
-
-    
-set_io -port_name SPI1_ADC0_CEn  \
-    -pin_name A9                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI1_ADC1_CEn  \
-    -pin_name B9                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI1_ADC2_CEn  \
-    -pin_name C9                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-    
-set_io -port_name SPI1_MISO  \
-    -pin_name B10            \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION INPUT
-
-
-set_io -port_name SPI1_MOSI  \
-    -pin_name B11            \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI1_SCLK  \
-    -pin_name A10            \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION OUTPUT
- 
- 
-set_io -port_name SPI2_ADC0_CEn  \
-    -pin_name H3                 \
-    -fixed true                  \
-    -io_std LVCMOS25             \
-    -DIRECTION OUTPUT
- 
-set_io -port_name SPI2_MISO  \
-    -pin_name R6             \
-    -fixed true              \
-    -io_std LVCMOS25         \
-    -DIRECTION INPUT
-
-
-set_io -port_name SPI2_MOSI  \
-    -pin_name R5             \
-    -fixed true              \
-    -io_std LVCMOS25         \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SPI2_SCLK  \
-    -pin_name G15            \
-    -fixed true              \
-    -io_std LVCMOS33         \
-    -DIRECTION OUTPUT
- 
- 
-set_io -port_name TRSTB  \
-    -pin_name N14        \
-    -DIRECTION INPUT
-
-    
 set_io -port_name TCK  \
-    -pin_name J10           \
-    -DIRECTION INPUT
-
-
-set_io -port_name TMS  \
-    -pin_name J9           \
+    -pin_name F8       \
     -DIRECTION INPUT
 
 
 set_io -port_name TDI  \
-    -pin_name K11      \
+    -pin_name G8       \
     -DIRECTION INPUT
 
 
 set_io -port_name TDO  \
-    -pin_name K9       \
-    -DIRECTION OUTPUT
-    
-    
-set_io -port_name {GPIO_OUT[0]}  \
-    -pin_name A4                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
+    -pin_name F6       \
     -DIRECTION OUTPUT
 
 
-set_io -port_name {GPIO_OUT[1]}  \
-    -pin_name J13                \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
+set_io -port_name TMS  \
+    -pin_name F7       \
+    -DIRECTION INPUT
 
 
-set_io -port_name {GPIO_OUT[2]}  \
-    -pin_name H12                \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
+set_io -port_name TRSTB  \
+    -pin_name G7         \
+    -DIRECTION INPUT
 
 
-set_io -port_name {GPIO_OUT[3]}  \
-    -pin_name J14                \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-    
-    
-set_io -port_name ewm_cal  \
-    -pin_name M2           \
-    -fixed true            \
-    -io_std LVCMOS25       \
-    -OUT_DRIVE 12          \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name ewm_hv  \
-    -pin_name M1          \
-    -fixed true           \
-    -io_std LVCMOS25      \
-    -OUT_DRIVE 12          \
-    -DIRECTION OUTPUT
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-# DDR STUFF
-
-
-set_io -port_name {A[0]}  \
-    -pin_name AE5              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[1]}  \
-    -pin_name AF5              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[2]}  \
-    -pin_name AF2              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[3]}  \
-    -pin_name AF3              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[4]}  \
-    -pin_name AH3              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[5]}  \
-    -pin_name AJ3              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[6]}  \
-    -pin_name AH1              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[7]}  \
-    -pin_name AH2              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[8]}  \
-    -pin_name AK3              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[9]}  \
-    -pin_name AL3              \
-    -fixed true                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[10]}  \
-    -pin_name AJ1               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[11]}  \
-    -pin_name AK1               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[12]}  \
-    -pin_name AH4               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[13]}  \
-    -pin_name AJ4               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {A[14]}  \
-    -pin_name AK2               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {BA[0]}  \
-    -pin_name AD8               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {BA[1]}  \
-    -pin_name AD6               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {BA[2]}  \
-    -pin_name AD9               \
-    -fixed true                 \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAS_N  \
-    -pin_name AG7            \
-    -fixed true              \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CKE  \
-    -pin_name AG9           \
-    -fixed true             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CK0_N  \
-    -pin_name AE1             \
-    -fixed true               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CK0  \
-    -pin_name AE2             \
-    -fixed true               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CS_N  \
-    -pin_name AF9           \
-    -fixed true             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {DM[0]}  \
-    -pin_name AE11               \
-    -fixed true                  \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {DM[1]}  \
-    -pin_name AK8                \
-    -fixed true                  \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {DM[2]}  \
-    -pin_name AN3                \
-    -fixed true                  \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {DM[3]}  \
-    -pin_name AK13               \
-    -fixed true                  \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {DQS_N[0]}  \
-    -pin_name AF13                 \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS_N[1]}  \
-    -pin_name AJ6                  \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS_N[2]}  \
-    -pin_name AM4                  \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS_N[3]}  \
-    -pin_name AH13                 \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS[0]}  \
-    -pin_name AE13                 \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS[1]}  \
-    -pin_name AJ5                  \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS[2]}  \
-    -pin_name AL4                  \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQS[3]}  \
-    -pin_name AH14                 \
-    -fixed true                    \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[0]}  \
-    -pin_name AE12             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[1]}  \
-    -pin_name AF12             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[2]}  \
-    -pin_name AG10             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[3]}  \
-    -pin_name AF10             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[4]}  \
-    -pin_name AD10             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[5]}  \
-    -pin_name AE10             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[6]}  \
-    -pin_name AD13             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[7]}  \
-    -pin_name AD14             \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[8]}  \
-    -pin_name AH6              \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[9]}  \
-    -pin_name AH7              \
-    -fixed true                \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[10]}  \
-    -pin_name AJ9               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[11]}  \
-    -pin_name AJ8               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[12]}  \
-    -pin_name AH9               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[13]}  \
-    -pin_name AK5               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[14]}  \
-    -pin_name AK6               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[15]}  \
-    -pin_name AK7               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[16]}  \
-    -pin_name AM1               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[17]}  \
-    -pin_name AM2               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[18]}  \
-    -pin_name AN1               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[19]}  \
-    -pin_name AN2               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[20]}  \
-    -pin_name AP2               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[21]}  \
-    -pin_name AP3               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[22]}  \
-    -pin_name AL5               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[23]}  \
-    -pin_name AM5               \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[24]}  \
-    -pin_name AG11              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[25]}  \
-    -pin_name AH11              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[26]}  \
-    -pin_name AG12              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[27]}  \
-    -pin_name AH12              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[28]}  \
-    -pin_name AJ10              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[29]}  \
-    -pin_name AJ11              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[30]}  \
-    -pin_name AJ14              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name {DQ[31]}  \
-    -pin_name AJ13              \
-    -fixed true                 \
-    -DIRECTION INOUT
-
-
-set_io -port_name ODT  \
-    -pin_name AE7           \
-    -fixed true             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name RAS_N  \
-    -pin_name AE6            \
-    -fixed true              \
-    -DIRECTION OUTPUT
-
-set_io -port_name SHIELD0  \
-    -pin_name AD11         \
-    -fixed true            \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SHIELD1  \
-    -pin_name AH8          \
-    -fixed true            \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SHIELD2  \
-    -pin_name AN4          \
-    -fixed true            \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name SHIELD3  \
-    -pin_name AK12         \
-    -fixed true            \
-    -DIRECTION OUTPUT
-    
-set_io -port_name RESET_N  \
-    -pin_name AF7            \
-    -fixed true              \
-    -DIRECTION OUTPUT
-    
-
-set_io -port_name WE_N  \
-    -pin_name AG6           \
-    -fixed true             \
-    -DIRECTION OUTPUT

@@ -117,6 +117,8 @@ begin
 		  
 		  read_reg <= '0';
 		  write_reg <= '0';
+        reg_address <= (others => '1');
+        reg_data_in <= (others => '1');
         
         inbuffer(0) <= (others => '0');
         inbuffer(1) <= (others => '0');

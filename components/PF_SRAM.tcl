@@ -1,6 +1,6 @@
 # Exporting Component Description of PF_SRAM to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component PF_SRAM
 create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_SRAM_AHBL_AXI:1.2.108} -component_name {PF_SRAM} -params {\
 "AXI4_AWIDTH:32" \

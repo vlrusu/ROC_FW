@@ -3,7 +3,9 @@
 --
 -- File: RxPacketReader.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      <v1>: <2021>: Decode DTC packets and separate DCS Requests from Data Requests
+--      <v2>: <02/2022>: Add Prefetch to Data Requests
+--		<v3>: <08/2022>: Add DCS Block Write to DTC Packet definition
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -21,61 +23,82 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+library work;
+use work.algorithm_constants.all; 
+
 entity RxPacketReader is
-port (
+port (	   
 	reset_n : in std_logic;
-	clk : in std_logic;
+	clk     : in std_logic;
     
 	aligned : in std_logic;
     
-	rx_data_in : in std_logic_vector(15 downto 0);
+	rx_data_in  : in std_logic_vector(15 downto 0);
 	rx_kchar_in : in std_logic_vector(1 downto 0);
 		
-	rx_we : out std_logic;
+	rx_we       : out std_logic;
 	rx_data_out : out std_logic_vector(15 downto 0);
 		
-	req_we : out std_logic;
+	req_we      : out std_logic;
 	 
-	HEARTBEAT_EVENT_WINDOW_TAG: out std_logic_vector(47 downto 0);
-	PREFETCH_EVENT_WINDOW_TAG	: out std_logic_vector(47 downto 0);
+	HEARTBEAT_SEEN	    :	out std_logic;
+	NULL_HEARTBEAT_SEEN	:	out std_logic;
+	PREFETCH_SEEN	    :	out std_logic;
+	ONSPILL			    :	out std_logic;
+    NEWSPILL            :  out std_logic;
+	HEARTBEAT_EVENT_WINDOW_TAG	: out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
+	PREFETCH_EVENT_WINDOW_TAG	: out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
+	SPILL_EVENT_WINDOW_TAG		: out std_logic_vector(SPILL_TAG_BITS-1 downto 0);
+    EVT_MODE                    : out std_logic_vector(31 downto 0);
 	 
 	eventmarker	: out std_logic;
 	clockmarker : out std_logic;
 	loopmarker 	: out std_logic;
 	othermarker : out std_logic;
 	retrmarker 	: out std_logic;
-	retr_seq		: out std_logic_vector(2 downto 0);
+	retr_seq	: out std_logic_vector(2 downto 0);
 	event_marker_count : out std_logic_vector(15 downto 0);
+	clock_marker_count : out std_logic_vector(15 downto 0);
+	loop_marker_count : out std_logic_vector(15 downto 0);
+	other_marker_count : out std_logic_vector(15 downto 0);
+	retr_marker_count : out std_logic_vector(15 downto 0);
 	 
-	rx_error_count 	: out std_logic_vector(15 downto 0);
-	seq_error_count 	: out std_logic_vector(15 downto 0);
-	marker_error_count: out std_logic_vector(15 downto 0)
+	rx_error_count 	    : out std_logic_vector(15 downto 0);
+	seq_error_count     : out std_logic_vector(15 downto 0);
+	marker_error_count  : out std_logic_vector(15 downto 0)
 
 );
 end RxPacketReader;
 
 architecture architecture_RxPacketReader of RxPacketReader is
 		
-	signal is_DTCpacket : std_logic;
+	signal is_DTCpacket	: std_logic;
 	signal is_dcsreq 		: std_logic;
 	signal is_datareq 	: std_logic;
-	signal is_heartbeat : std_logic;
+	signal is_heartbeat	: std_logic;
 	signal is_prefetch 	: std_logic;
+	signal is_loadpretag : std_logic;
 		
-	signal is_evtmarker : std_logic;
-	signal is_clkmarker : std_logic;
-	signal is_loopmarker: std_logic;
+	signal is_evtmarker	: std_logic;
+	signal is_clkmarker	: std_logic;
+	signal is_loopmarker	: std_logic;
 	signal is_othermarker: std_logic;
-	signal is_retrmarker: std_logic;
-	signal is_retrseq : std_logic;
+	signal is_retrmarker	: std_logic;
+	signal is_retrseq		: std_logic;
 	signal retr_seq_save	: std_logic_vector(2 downto 0);
 	signal is_marker_error : std_logic;
-	 
+		
+	signal onspill_old	:	std_logic;
+	signal is_firstHB   :   std_logic;
+    signal is_valid_EWM :   std_logic;
+	signal is_non_null_HB : std_logic;
+    
 	signal counter 		: unsigned(2 downto 0);
+	signal nullHB_counter : unsigned(7 downto 0);
 	signal word_count 	: integer range 0 to 31;
 	 
 	signal seq_num 			: unsigned(2 downto 0);
-	signal seq_num_expected: unsigned(2 downto 0);
+	signal seq_num_expected	: unsigned(2 downto 0);
 	 
 	signal rx_data_latch : std_logic_vector(15 downto 0);
 	signal rx_kchar_latch: std_logic_vector(1 downto 0);
@@ -88,49 +111,75 @@ architecture architecture_RxPacketReader of RxPacketReader is
 	 
 begin
 	 
-	process(reset_n, clk)  
+	process(reset_n, aligned, clk)  
 	begin
+--	if reset_n = '0' or aligned = '0' then
 	if reset_n = '0' then
-		word_count <= 0;
-		rx_error_count <= (others => '0');
-		rx_we <= '0';
-		rx_data_out <= (others => '0');
-		req_we <= '0';
+		word_count      <= 0;
+		rx_error_count  <= (others => '0');
+		rx_we   <= '0';
+		rx_data_out     <= (others => '0');
+		req_we  <= '0';
 			
 		is_DTCpacket 	<= '0';
 		is_dcsreq		<= '0';
 		is_datareq		<= '0';
+		is_heartbeat	<= '0';
+		is_prefetch		<= '0';
+		is_loadpretag	<= '0';
 		is_evtmarker	<= '0';
 		is_clkmarker	<= '0';
 		is_loopmarker	<= '0';
 		is_othermarker	<= '0';
 		is_retrmarker	<= '0';
 		is_retrseq		<= '0';
-	
-		retr_seq		<= (others=> '0');
-		retr_seq_save<= (others=> '0');
-		seq_num <= (others => '0');
-		seq_num_expected <= (others => '0');
-		seq_error_count <= (others => '0');
 		
-		is_marker_error	<= '0';
-		marker_error_count	 <= (others => '0');
+		onspill_old		<= '0';
+        is_firstHB      <= '1';
+        is_valid_EWM    <= '0';
+        is_non_null_HB  <= '0';
+        
+		retr_seq			<= (others=> '0');
+		retr_seq_save	    <= (others=> '0');
+		seq_num 			<= (others => '0');
+		seq_num_expected 	<= (others => '0');
+		seq_error_count 	<= (others => '0');
+		
+		HEARTBEAT_SEEN	    <= '0';
+		NULL_HEARTBEAT_SEEN	<= '0';
+		PREFETCH_SEEN	    <= '0';
+		ONSPILL			    <= '0';
+		NEWSPILL			<= '0';
+		SPILL_EVENT_WINDOW_TAG	<= (others => '0');	
+        EVT_MODE                <= (others => '0');
+		HEARTBEAT_EVENT_WINDOW_TAG	<= (others => '0');	
+		PREFETCH_EVENT_WINDOW_TAG	<= (others => '0');	
+		
+		is_marker_error	    <= '0';
+		marker_error_count  <= (others => '0');
 		  
 		counter <= (others => '1');
+		nullHB_counter <= (others => '0');
 		event_marker_count <= (others => '0');
+		clock_marker_count <= (others => '0');
+		loop_marker_count <= (others => '0');
+		other_marker_count <= (others => '0');
+		retr_marker_count <= (others => '0');
 		  
-		rx_kchar_latch <= (others => '0');
-		rx_data_latch 	<= (others => '0');
-		rx_kchar_prev1 <= (others => '0');
+		rx_kchar_prev1 	<= (others => '0');
 		rx_data_prev1 	<= (others => '0');
-		rx_kchar_prev2 <= (others => '0');
+		rx_kchar_prev2 	<= (others => '0');
 		rx_data_prev2 	<= (others => '0');
-		rx_kchar_prev3 <= (others => '0');
+		rx_kchar_prev3 	<= (others => '0');
 		rx_data_prev3 	<= (others => '0');
 			
 	elsif rising_edge(clk) then
-		rx_we <= '0';
-		req_we <= '0';		  
+	
+		HEARTBEAT_SEEN      <= '0';
+		NULL_HEARTBEAT_SEEN	<= '0';
+		PREFETCH_SEEN	    <= '0';
+		rx_we   <= '0';
+		req_we  <= '0';		  
 		  
 		rx_kchar_latch	<= rx_kchar_in;
 		rx_kchar_prev1	<= rx_kchar_latch;
@@ -142,18 +191,21 @@ begin
 		rx_data_prev2	<= rx_data_prev1;
 		rx_data_prev3	<= rx_data_prev2;
 		  
-		is_heartbeat	<= '0';
-		is_prefetch	<= '0';
 		eventmarker 	<= '0';
 		clockmarker 	<= '0';
-		loopmarker 	<= '0';
-		othermarker	<= '0';
-		retrmarker 	<= '0';
-		
-		if aligned = '1' then
-		
+		loopmarker 	    <= '0';
+		othermarker	    <= '0';
+		retrmarker 	    <= '0';
+		  
+        if aligned = '1' then
+      
+      -- mark start and end of a DTC packet, including possible embedded markers
 		if (rx_kchar_in = "10" and rx_data_in(15 downto 8) = X"1C" and 
-			(rx_data_in(4 downto 0) = B"00000" or rx_data_in(4 downto 0) = B"00001" or rx_data_in(4 downto 0) = B"00010" or rx_data_in(4 downto 0) = B"00011")) then
+			(   rx_data_in(4 downto 0) = B"00000" or    --  DCS Request 
+                rx_data_in(4 downto 0) = B"00001" or    --  Hearbeat
+                rx_data_in(4 downto 0) = B"00010" or    --  Data Request
+                rx_data_in(4 downto 0) = B"00011" or    -- Prefecth
+                rx_data_in(4 downto 0) = B"00111")) then    -- DCS Request Additional Block Write
 			is_DTCpacket <= '1';
 		else if (rx_kchar_in = "11" and rx_data_in = X"BC3C") then
 			is_DTCpacket <= '0';
@@ -173,18 +225,18 @@ begin
 			if (is_clkmarker = '1') then 	
 				clockmarker <= '1'; 	
 				is_clkmarker <= '0'; 	
-				event_marker_count <= std_logic_vector(unsigned(event_marker_count) + 1);
+				clock_marker_count <= std_logic_vector(unsigned(clock_marker_count) + 1);
 			end if;
 			if (is_loopmarker = '1') then	
 				loopmarker <= '1'; 	
 				is_loopmarker <= '0'; 	
-				eventmarker <= '1'; 	
-				event_marker_count <= std_logic_vector(unsigned(event_marker_count) + 1);
+				--eventmarker <= '1'; 	
+				loop_marker_count <= std_logic_vector(unsigned(loop_marker_count) + 1);
 			end if;
 			if (is_othermarker = '1') then	
 				othermarker <= '1'; 	
 				is_othermarker <= '0'; 	
-				event_marker_count <= std_logic_vector(unsigned(event_marker_count) + 1);
+				other_marker_count <= std_logic_vector(unsigned(other_marker_count) + 1);
 			end if;
 		end if;
 		if counter = 2 then	-- for retransmission (triple marker)
@@ -193,19 +245,23 @@ begin
 				is_retrmarker	<= '0'; 	
 				retr_seq 	<= retr_seq_save;
 				retr_seq_save	<= (others=> '0');
-				event_marker_count <= std_logic_vector(unsigned(event_marker_count) + 1);
+				retr_marker_count <= std_logic_vector(unsigned(retr_marker_count) + 1);
 			end if;
 		end if;
-
-		
+      
+		-- COUNTER starts at "111" so it will fail this at the very beginning 
 		if counter < 5 then
 			counter <= counter + 1;
-		else	-- start (double) markers decoding
+		else	
+      -- use PREV1 and PREV2 to decode (double) markers 
 			if rx_kchar_prev2 = "10" then
 				if rx_kchar_prev1 = "10" then
 					if (rx_data_prev2 = X"1C10" and rx_data_prev1 = X"1CEF") then
 						counter <= (others => '0');
-						is_evtmarker <= '1';
+						if (is_valid_EWM) then   -- count EWMs only if AFTER non-null HB 
+                            is_evtmarker    <= '1';
+                            is_valid_EWM    <= '0';
+                        end if;
 					elsif (rx_data_prev2 = X"1C11" and rx_data_prev1 = X"1CEE") then
 						counter <= (others => '0');
 						is_clkmarker <= '1';
@@ -247,31 +303,37 @@ begin
 			end if;
 		end if;
 				
-		-- decode start of packet AFTER marker has had change to be decoded
+      
+		-- start decoding DTC packet using PREV3 with look-ahead knowledge about incoming markers
 		if (is_evtmarker = '0' and is_clkmarker = '0' and is_loopmarker = '0' and is_othermarker = '0' and is_retrseq = '0' and is_retrmarker = '0') then
 			if word_count = 0 then
 				is_dcsreq	<= '0';
 				is_datareq	<= '0';
-				if rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and rx_data_prev3(4 downto 0) = B"00000" then  -- DCS packet
-					word_count <= word_count + 1;
-					is_dcsreq <= '1';
-					rx_we <= '1';
+                is_prefetch	<= '0';
+				if rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and 
+                    (  rx_data_prev3(4 downto 0) = B"00000"  or rx_data_prev3(4 downto 0) = B"00111" ) then  -- DCS packet
+					word_count  <= word_count + 1;
+					is_dcsreq   <= '1';
+					rx_we       <= '1';
 					rx_data_out <= rx_data_prev3;
-					seq_num <= unsigned(rx_data_prev3(7 downto 5));
+					seq_num     <= unsigned(rx_data_prev3(7 downto 5));
 				elsif rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and rx_data_prev3(4 downto 0) = B"00010" then -- Data Request
-					word_count <= word_count + 1;
-					is_datareq <= '1';
-					req_we <= '1';
+					word_count  <= word_count + 1;
+					is_datareq  <= '1';
+					req_we      <= '1';
 					rx_data_out <= rx_data_prev3;
-					seq_num <= unsigned(rx_data_prev3(7 downto 5));
+					seq_num     <= unsigned(rx_data_prev3(7 downto 5));
 				elsif rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and rx_data_prev3(4 downto 0) = B"00001" then	-- Heartbeat
-					word_count <= word_count + 1;
-					is_heartbeat	<= '1';
-					seq_num <= unsigned(rx_data_prev3(7 downto 5));
+					word_count  <= word_count + 1;
+					is_heartbeat<= '1';
+					seq_num     <= unsigned(rx_data_prev3(7 downto 5));
 				elsif rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and rx_data_prev3(4 downto 0) = B"00011" then	-- Prefetch
-					word_count <= word_count + 1;
+					word_count  <= word_count + 1;
 					is_prefetch	<= '1';
-					seq_num <= unsigned(rx_data_prev3(7 downto 5));
+					is_loadpretag  <= '1';
+					req_we      <= '1';
+					rx_data_out <= rx_data_prev3;
+					seq_num     <= unsigned(rx_data_prev3(7 downto 5));
 				end if;
 			else
 				if (word_count =1) then
@@ -282,39 +344,75 @@ begin
 				-- set WE for either DCS packet input FIFO or Data Request input FIFO
 				if (is_dcsreq = '1') then 
 					rx_we <= '1';
-				elsif (is_datareq = '1') then
+				elsif (is_datareq = '1' or is_prefetch = '1') then
 					req_we <= '1';
 				end if;
 					 
 				word_count <= word_count + 1;
 				rx_data_out <= rx_data_prev3;
 					 
-				-- save EWTag for heartbeat packet or Prefecth packet
-				if (is_heartbeat = '1' and word_count <6) then
-					is_heartbeat <= '0';
-					if (word_count = 3) then HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
-					if (word_count = 4) then HEARTBEAT_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
-					if (word_count = 5) then HEARTBEAT_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
-				end if;
+				-- save EWTag and Event Mode for heartbeat packet or Prefecth packet
+				if (is_heartbeat = '1') then
+					if (word_count = 3) then 	HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
+					if (word_count = 4) then 	HEARTBEAT_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
+					if (word_count = 5) then 	HEARTBEAT_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
+                    if (word_count = 6) then 	EVT_MODE(15 downto 0)  <= rx_data_prev3;  end if;
+                    if (word_count = 7) then 	EVT_MODE(31 downto 16) <= rx_data_prev3;  end if;
+					-- delay HEARTBEAT_SEEN until ONSPILL and EVTMODE have been determined
+					if (word_count = 8)	then	
+						if (unsigned(EVT_MODE) > 0) then
+                            SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
+                        end if;
+						onspill_old <= ONSPILL; ONSPILL <= rx_data_prev3(0); 
+					end if;
+					-- restart SPILL_EVENT_WINDOW_TAG on ONSPILL rising edge or first non-null HB
+					if (word_count = 9)	then 	
+                        is_heartbeat <= '0';
+                        if (unsigned(EVT_MODE) > 0) then 
+                            HEARTBEAT_SEEN  <= '1'; 
+                            is_valid_EWM    <= '1';  -- start gate for EWM after any non-null HB
+                            is_non_null_HB  <= '1';
+                            if (is_firstHB = '1') then    
+                                NEWSPILL <= '1'; is_firstHB <= '0'; 
+                                nullHB_counter <= (others => '0'); 
+                            else  
+                                NEWSPILL <= '0';  
+                            end if;
+                        else
+                            if (is_non_null_HB = '1') then  -- start gate for last EWM after first null HB after  
+                                is_valid_EWM    <= '1';
+                                is_non_null_HB  <= '0';
+                            else
+                                is_valid_EWM    <= '0';
+                            end if;
+                            NULL_HEARTBEAT_SEEN <= '1';
+                            nullHB_counter <= nullHB_counter + 1;
+                        end if;
+                        -- reset local EWTag counter condition
+						if ( (onspill_old = '0' and ONSPILL = '1') or (unsigned(EVT_MODE) > 0 and is_firstHB = '1') ) then 
+							SPILL_EVENT_WINDOW_TAG	<= X"00001";
+						end if;
+					end if;
+				end if; -- end if (is_heartbeat = '1')
 						
-				if (is_prefetch = '1' and word_count <6) then
-					is_prefetch <= '0';
-					if (word_count = 3) then PREFETCH_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
-					if (word_count = 4) then PREFETCH_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
-					if (word_count = 5) then PREFETCH_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
+				if (is_loadpretag = '1') then
+					if (word_count = 3)     then 	PREFETCH_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
+					if (word_count = 4) 	then 	PREFETCH_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
+					if (word_count = 5) 	then 	PREFETCH_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; PREFETCH_SEEN <= '1'; end if;
+					if (word_count = 6)	    then	is_loadpretag <= '0';	end if;
 				end if;
 					 
 				-- catch if KCHAR shows up in the middle of the DTC packet (unless valid marker)
-				if rx_kchar_prev3 = "10" then		rx_error_count <= std_logic_vector(unsigned(rx_error_count) + 1);	end if;
+				if rx_kchar_prev3 = "10"    then	rx_error_count <= std_logic_vector(unsigned(rx_error_count) + 1);	end if;
 				
 				if word_count = 9 then
 					word_count <= 0;
 				end if;
 				
-			end if; 	-- if word_count = 0
-		end if;		-- if not marker 
-		end if; 		-- if aligned = '1'
-	end if;			-- if rising_edge(clk) 
+			end if; 	-- if word_count = 0 
+		end if;         -- if not marker
+ 		end if; 		-- if aligned = '1'
+	end if;			    -- if rising_edge(clk) 
 	
 	end if;
 	end process;

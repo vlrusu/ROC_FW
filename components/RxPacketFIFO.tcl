@@ -1,6 +1,6 @@
 # Exporting Component Description of RxPacketFIFO to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component RxPacketFIFO
 create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {RxPacketFIFO} -params {\
 "AE_STATIC_EN:false"  \
@@ -24,7 +24,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "READ_DVALID:false"  \
 "RWIDTH:20"  \
 "SYNC:0"  \
-"SYNC_RESET:1"  \
+"SYNC_RESET:0"  \
 "UNDERFLOW_EN:false"  \
 "WDEPTH:1024"  \
 "WE_POLARITY:0"  \

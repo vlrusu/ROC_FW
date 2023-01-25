@@ -1,6 +1,6 @@
 # Exporting Component Description of AXI4_Interconnect to TCL
 # Family: PolarFire
-# Part Number: MPF300TS-1FCG1152I
+# Part Number: MPF300TS-FCG484I
 # Create and Configure the core component AXI4_Interconnect
 create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.103} -component_name {AXI4_Interconnect} -params {\
 "ADDR_WIDTH:32"  \
@@ -1128,7 +1128,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.
 "MASTER15_WRITE_SLAVE29:true"  \
 "MASTER15_WRITE_SLAVE30:true"  \
 "MASTER15_WRITE_SLAVE31:true"  \
-"NUM_MASTERS:2"  \
+"NUM_MASTERS:1"  \
 "NUM_MASTERS_WIDTH:1"  \
 "NUM_SLAVES:1"  \
 "NUM_THREADS:1"  \

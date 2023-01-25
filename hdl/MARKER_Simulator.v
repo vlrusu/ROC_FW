@@ -21,9 +21,7 @@
 module MARKER_Simulator(
    input                XCVR_CLK,
    input                XCVR_RESETN,
-   input                HCLK,
-   input                HRESETN,
-   input                start,
+   input                START,         // start of marker (on HCLK)
    input        [3:0]   MARKER_TYPE,   // 0: good (double) Clock Marker, 1: good (double) Event Marker, 2: good (single) Loopback, 3: good sequence Retransmission, 
                                        // 4: good (single) Diagnostic marker,  5: good (single) Timeout marker, 
                                        // 6: single DCSRequest (not a marker) 7: single legal undefined marker
@@ -33,10 +31,10 @@ module MARKER_Simulator(
                                        // 14: bad missing sequence Retransmission, 15: bad illegal command words 
 	input        [3:0]   SEQ_NUM,       // packet sequence to be retransmitted 
 
-	output		[31:0]   DTC_MARKER_CNT,
-
 	output reg   [15:0]  DATA_TO_TX,
-   output reg   [1:0]   KCHAR_TO_TX
+   output reg   [1:0]   KCHAR_TO_TX,
+	output reg   [15:0]  DATA_TO_TX_REG,
+   output reg   [1:0]   KCHAR_TO_TX_REG
 );
 
 //*******************************************************************
@@ -67,7 +65,9 @@ parameter	[15:0]		Clock40MHzMarkerKn= 16'h1CEE;	//K28.0 D14.7
 parameter	[15:0]		DelayMeasureK		= 16'h1C12;	//K28.0 D18.0
 parameter	[15:0]		DelayMeasureKn		= 16'h1CED;	//unused     K28.0 D13.7  
 parameter	[15:0]		DiagnosticK			= 16'h1C13;	//K28.0 D18.0
+parameter	[15:0]		DiagnosticKn		= 16'h1CEC;	//
 parameter	[15:0]		DCSTimeoutK			= 16'h1C14;	//K28.0 D20.0
+parameter	[15:0]		DCSTimeoutKn		= 16'h1CEB;	//
 parameter	[15:0]		RetransK			   = 16'h1C15;	//K28.0 D21.0
 parameter	[15:0]		RetransKn			= 16'h1CEA;	//K28.0 D10.7
 parameter	[15:0]		DCSRequestK			= 16'h1C00;	//legal but not a marker   K28.0 D00.0
@@ -79,18 +79,37 @@ parameter  [1:0] KCmd  = 2'b10;
 parameter  [1:0] KWord = 2'b00;
 //---------------------------------------------
 
-reg         start_latch;
+reg         start_latch, start_latch_reg;
 reg [3:0]   s_count;       // number of SM states
 reg [7:0]   comma_count;
-reg [31:0]  not_idle_count;
-
-assign	DTC_MARKER_CNT = not_idle_count;
+reg [15:0]  data_reg;
+reg  [1:0]  kchar_reg;
 
 //<statements>
-always@(posedge HCLK, negedge HRESETN)
+
+// delay output to allow time for holding DTC_SIM data if MARKER is issued
+always @ (posedge XCVR_CLK or negedge XCVR_RESETN) 
 begin
-  if (HRESETN == 1'b0) start_latch <= 1'b0;
-  else                  start_latch <= start;
+   if (XCVR_RESETN == 1'b0)
+   begin
+		start_latch <= 1'b0;
+		start_latch_reg <= 1'b0;
+      
+      data_reg		   <= Comma;
+      kchar_reg	   <= KChar;
+      DATA_TO_TX_REG <= Comma;
+      KCHAR_TO_TX_REG<= KChar;
+   end
+   else
+   begin
+      start_latch 	   <= START;
+      start_latch_reg   <= start_latch;
+      
+      data_reg		   <= DATA_TO_TX;
+      kchar_reg		<= KCHAR_TO_TX;
+      DATA_TO_TX_REG <= data_reg;
+      KCHAR_TO_TX_REG<= kchar_reg;
+   end
 end
 
 //marker builder
@@ -100,13 +119,13 @@ begin
    begin
       DATA_TO_TX		<= Comma;
       KCHAR_TO_TX		<= KChar;
-		s_count			<= STATE_0;
+      
       comma_count   	<= 8'b0;
-      not_idle_count	<= 32'b0;
+		s_count			<= STATE_0;
    end
-   
+		
    else
-
+		
    begin
    case (s_count)
 
@@ -115,23 +134,22 @@ begin
       DATA_TO_TX    <= Comma;
       KCHAR_TO_TX   <= KChar;
       comma_count   <= 8'b0;
-      if(start_latch) s_count <= STATE_1;
+      if(start_latch && !start_latch_reg) s_count <= STATE_2;
    end
    
-    //always start with 6 comma words
+	// end with 6 comma words to let time for START_LATCH to clear
    STATE_1:
    begin
       DATA_TO_TX    <= Comma;
       KCHAR_TO_TX   <= KChar;
       comma_count   <= comma_count+1;
-      if (comma_count > 5)	s_count <= STATE_2;
+      if (comma_count > 5)	s_count <= STATE_0;
   end
 
    // deal with packet type 10 and above (0/1/2 are reserved for DTC packets)
    STATE_2:
    begin
       comma_count   	<= 8'b0;
-		not_idle_count <= not_idle_count + 1;
       case (MARKER_TYPE)
          4'd0: begin
             DATA_TO_TX  <= Clock40MHzMarkerK;
@@ -146,7 +164,7 @@ begin
          4'd2: begin
             DATA_TO_TX  <= DelayMeasureK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_7;
          end 
          4'd3: begin
             DATA_TO_TX  <= RetransK;
@@ -156,37 +174,37 @@ begin
          4'd4: begin
             DATA_TO_TX  <= DiagnosticK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_12;
          end 
          4'd5: begin
             DATA_TO_TX  <= DCSTimeoutK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          4'd6: begin
             DATA_TO_TX  <= DCSRequestK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          4'd7: begin
             DATA_TO_TX  <= UnusedK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          4'd8: begin
             DATA_TO_TX  <= Clock40MHzMarkerK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          4'd9: begin
             DATA_TO_TX  <= EventStartKn;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          4'd10: begin
             DATA_TO_TX  <= DelayMeasureK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_7;
+            s_count     <= STATE_1;
          end 
          4'd11: begin
             DATA_TO_TX  <= RetransK;
@@ -211,7 +229,7 @@ begin
          4'd15: begin
             DATA_TO_TX  <= IllegalK;
             KCHAR_TO_TX <= KCmd;
-            s_count     <= STATE_0;
+            s_count     <= STATE_1;
          end 
          default: begin
             DATA_TO_TX  <= Comma;
@@ -226,7 +244,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= Clock40MHzMarkerKn;
       KCHAR_TO_TX   <= KCmd;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
       
    STATE_4:
@@ -234,7 +252,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= EventStartKn;
       KCHAR_TO_TX   <= KCmd;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
 
    STATE_5:
@@ -250,7 +268,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= {SEQ_NUM, SEQ_NUM, SEQ_NUM, SEQ_NUM};
       KCHAR_TO_TX   <= KWord;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
 
    STATE_7:  // this still works because first part is OK....
@@ -258,7 +276,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= DelayMeasureKn;
       KCHAR_TO_TX   <= KCmd;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
 
    STATE_8:
@@ -274,7 +292,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= {SEQ_NUM, 4'b0, SEQ_NUM, SEQ_NUM};
       KCHAR_TO_TX   <= KWord;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
 
    STATE_10:
@@ -282,7 +300,7 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= EventStartK;
       KCHAR_TO_TX   <= KCmd;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
    end
    
    STATE_11:
@@ -290,7 +308,15 @@ begin
       comma_count   <= 8'b0;
       DATA_TO_TX    <= RetransKn;
       KCHAR_TO_TX   <= KCmd;
-      s_count       <= STATE_0;
+      s_count       <= STATE_1;
+   end
+
+   STATE_12:
+   begin
+      comma_count   <= 8'b0;
+      DATA_TO_TX    <= DiagnosticKn;
+      KCHAR_TO_TX   <= KCmd;
+      s_count       <= STATE_1;
    end
 
    default:

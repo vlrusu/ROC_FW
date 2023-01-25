@@ -6,6 +6,8 @@
 //      	v0: July 2020		: First version
 //      	v1: Sept 27, 2020	: Fixed BLK_CNT logic
 //			v2: Nov 3, 2020  	: Change RX with TX CLK (internal name is now XCXR_CLK) 
+//			v3: May 29, 2021  : PACKET_TYPE=1 generates a HB followed by a DREQ 
+//			v4: Sep 28, 2022  : cleaned unused logic for external RAM
 //
 // Description: 
 //    DTC Packet simulator as per DocDb 4914.
@@ -26,41 +28,44 @@
 module DTC_simulator( 
    input                XCVR_CLK,
    input                XCVR_RESETN,
-   input                HCLK,
-   input                HRESETN,
+   input                SERDES_CLK,
+   input                SERDES_RESETN,
    input                ALIGN,
    input                start,
+   input                cfo_emul_en,
+   input                MARKER_ON,    // if HIGH, markers are going down the fiber and take priority over DTC packets
    input        [3:0]   PACKET_TYPE,   // 0: DCSReq, 1: Heartbeat, 2: DATAReq, 7:DCSBlockReq 
    input        [5:0]   OP_CODE,       // 0) Single RD   1) Single WR   2) Block (FIFO) RD     3) Block (FIFO) WR     
-                                       // 4) Block (RAM) RD      5) Block (RAM) WR      6) Module RD   7) Module WR   
-                                       // 6) Module RD   7) Module WR   4) Block (RAM) RD (0x12)     5) Block (RAM) WR (0x13) 
+                                       // 4) Double RD    5) Double WR      6) Module RD   7) Module WR   
+                                       // 18) Block (RAM) RD (0x12)     19) Block (RAM) WR (0x13)     
                                        //  NB: This is not the OP_CODE specified in Docdb 4914, but it will be translated to that inside logic below
                                        //      It includes the reserved bit[5].
    input        [15:0]  BLOCK_CNT,
    input        [7:0]   MODULE_ID,      //  7: Forward Detector, 9: Command Handler 10: Packet Sender 12: XCVR
    input        [15:0]  ADDR,           //  operation address
    input        [15:0]  WDATA,          //  operation data (ignore if RD)
-   input        [47:0]  EVENT_WINDOW_TAG,   
+   input        [47:0]  EVENT_WINDOW_TAG, 	// to be used in Heartbeat packets (already takes OFFSETHB into account!!)   
+   input        [47:0]  EVENT_WINDOW_OFFSET, // to be used for correcting PREF tag on very first event  
    input        [31:0]  EVENT_MODE,
    input                ON_SPILL,       // 0 if off-spill
    input        [7:0]   RF_MARKER,      // prediction for Delivery Ring Marker offset wrt to Event Window start (in unit of 1.25 ns). Zero for off=spill.
-	output 		 [31:0]  DCS_PACKET_CNT,
+	input						DATAREQ_LAST_WORD, // previous DREQ is done
    output reg   [15:0]  DATA_TO_TX,
    output reg   [1:0]   KCHAR_TO_TX,
    // FIFO I/Os
    input        [17:0]  FROM_FIFO_OUT,
-   input                FROM_FIFO_EMPTY,
-   input                FROM_FIFO_FULL,
-   input                FROM_FIFO_AE,
-   input        [7:0]   FROM_FIFO_WRCNT,
+   input                FROM_FIFO_EMPTY,    // unused
+   input                FROM_FIFO_FULL,     // unused
+									 
+   input        [7:0]   FROM_FIFO_WRCNT,    // unused
    input        [7:0]   FROM_FIFO_RDCNT,
    output reg           TO_FIFO_WE,
    output reg   [17:0]  TO_FIFO_IN,
-   output reg           TO_FIFO_RE,
-    // external RAM I/Os
-   input       [15:0]   RAM_DATA,
-   output reg           RAM_RE,
-   output reg  [6:0]    RAM_ADDR
+   output reg           TO_FIFO_RE
+						
+								 
+							   
+								
 );
 
 //*******************************************************************
@@ -134,11 +139,13 @@ parameter [5:0] STATE_63 = 6'b11_1111;
 
 parameter [1:0] IDLE = 2'b00;
 parameter [1:0] READ = 2'b01;
+parameter [1:0] WAIT = 2'b11;
 
 parameter 	[15:0]      Comma				   = 16'hBC3C;	//k28.5 k28.1
 parameter	[15:0]		DCSRequestK			= 16'h1C00;	//K28.0 D00.0
 parameter	[15:0]		HeartbeatK			= 16'h1C01;	//K28.0 D01.0
 parameter	[15:0]		DataRequestK		= 16'h1C02;	//K28.0 D02.0
+parameter	[15:0]		PrefRequestK		= 16'h1C03;	//K28.0 D03.0
 parameter	[15:0]		DCSReplyK			= 16'h1C04;	//K28.0 D04.0
 parameter	[15:0]		DataHeaderK			= 16'h1C05;	//K28.0 D05.0
 parameter	[15:0]		DataK				   = 16'h1C06;	//K28.0 D06.0
@@ -155,13 +162,18 @@ reg [17:0]  fifo_in;
 
 reg [1:0]   f_count;
 reg [7:0]   fifo_rd_cnt;
-reg [31:0]  fifo_re_cnt;
-reg         fifo_ae;
+reg         fifo_re;
+					 
 
 reg [5:0]   s_count;       // number of SM states
 reg [7:0]   word_count, comma_count, blk_word_cnt;
 reg [2:0]   ring_count;
 reg         first_packet;
+reg			new_blkwr;
+			   
+reg			multiple_dcs;
+				 
+
 reg [9:0]   packet_count; // this is the additional packet count
 reg [15:0]  encoded_addr;
 reg [15:0]  encoded_data;
@@ -172,25 +184,87 @@ reg			CRC_READY;
 wire [15:0] CRC;
 
 reg         start_latch;
+reg [47:0]	ewt_latch;
+				
+reg			last_word, last_reg;
+reg [47:0]  evt_tag;		 // to be used in DataReq packets     
+reg [47:0]  pre_tag;		 // to be used in Prefetch packets     
+reg         first_start;
 
 wire [7:0]  blk_no;       // this is the number of packets for Blk Write: 0 for BLOCK_CNT=[0,3],  1 for BLOCK_CNT=[4,11]....
 assign blk_no = (BLOCK_CNT <= 3) ? 0 : ((BLOCK_CNT-4)/8+1); 
 
 //<statements>
-always@(posedge HCLK,negedge HRESETN)
+always@(posedge SERDES_CLK,negedge SERDES_RESETN)
 begin
-  if (HRESETN == 1'b0) start_latch <= 1'b0;
-  else                  start_latch <= start;
+	if (SERDES_RESETN == 1'b0) 
+	begin
+		start_latch <= 1'b0;
+		ewt_latch	<= 48'b0;
+		last_word   <= 1'b0;
+		last_reg		<= 1'b0;
+					
+      first_start <= 1'b1;
+      pre_tag     <= 48'b0;
+		evt_tag		<= 48'b0; 
+	end
+	else                 
+	begin
+      start_latch <= start;
+		ewt_latch	<=	EVENT_WINDOW_TAG;
+		
+		last_word 	<= DATAREQ_LAST_WORD;
+		last_reg 	<= last_word;
+		if (last_word && !last_reg) 
+		begin
+					 
+			evt_tag	 <= evt_tag + 1;  // assume monotonically increasing DREQ Event Tag
+		end
+      
+      // force tag of very first PREFETCH, if there.
+      // Otherwise assume monotonically increasing PREFETCH Event Tag 
+      if (evt_tag == (EVENT_WINDOW_OFFSET + 1)) pre_tag	 <= evt_tag;  
+      else                                      pre_tag	 <= evt_tag + 1;  
+      
+      //overwrite EVT_TAG and PRE_TAG with EVENT_WINDOW_TAG when:
+      // - no CFO_EMUL in use
+      // - on first CFO_EMUL start after a reset
+      if (start)
+      begin
+         if (!cfo_emul_en)
+         begin
+            pre_tag <= EVENT_WINDOW_TAG;
+            evt_tag <= EVENT_WINDOW_TAG;
+         end
+         else
+         begin
+            if (first_start)
+            begin
+               first_start <= 1'b0;
+											 
+											 
+               evt_tag <= EVENT_WINDOW_OFFSET + 1;
+            end
+         end
+      end
+
+																			
+												
+	end
 end
 
 //packet builder
-always @ (posedge HCLK or negedge HRESETN) 
+always @ (posedge SERDES_CLK or negedge SERDES_RESETN) 
 begin
-   if (HRESETN == 1'b0)
+   if (SERDES_RESETN == 1'b0)
    begin
       fifo_in        <= {KChar, Comma};   //comma by default
       fifo_we        <= 1'b0;
       first_packet   <= 1'b1;
+		new_blkwr		<= 1'b0;
+					 
+		multiple_dcs	<= 1'b0;
+					 
       packet_count   <= 10'b0;
       encoded_addr   <= 16'b0;
       encoded_data   <= 16'b0;
@@ -203,8 +277,8 @@ begin
       CRC_RST		   <= 1'b1;
       CRC_READY	   <= 1'b0;
       s_count        <= 6'b0;
-      RAM_RE         <= 1'b0;
-      RAM_ADDR       <= 7'b0;
+							 
+							 
    end
    
    else
@@ -217,6 +291,9 @@ begin
       fifo_in  	   <= {KChar, Comma};   //comma until start command
       fifo_we        <= 0;
       first_packet   <= 1'b1;
+		new_blkwr		<= 1'b0;
+					 
+		multiple_dcs	<= 1'b0;
       packet_count   <= 10'b0;
       encoded_addr   <= 16'b0;
       encoded_data   <= 16'b0;
@@ -227,23 +304,29 @@ begin
       CRC_EN		   <= 1'b0;
       CRC_RST		   <= 1'b1;
       CRC_READY	   <= 1'b0;
-      RAM_RE         <= 1'b0;
-      RAM_ADDR       <= 7'b0;
-      if(start_latch) s_count <= STATE_1;
+							 
+							 
+      // skip the extra commas..
+      //if(start_latch) s_count <= STATE_1;
+      if(start_latch)
+      begin
+         fifo_we <= 1'b0;
+         s_count <= STATE_2;
+      end
    end
    
-   //always start with 6 comma words
+   //always start with 5 comma words
    STATE_1:
    begin
       fifo_in     <= {KChar, Comma};   //comma for 6 words
-      fifo_we     <= 1'b1;
+      fifo_we     <= 1'b0;
       CRC_EN      <= 1'b0;
       CRC_RST		<= 1'b1;
       CRC_READY   <= 1'b0;
       comma_count <= comma_count+1;
-      RAM_ADDR    <= 7'b0;
-      RAM_RE      <= 1'b0;
-      if (comma_count > 5)	s_count <= STATE_2;
+						  
+						  
+      if (comma_count > 4)	s_count <= STATE_2;
    end
 
    // start with packet header depending on packet type
@@ -253,6 +336,7 @@ begin
          4'd0: fifo_in <= {KCmd, DCSRequestK};
          4'd1: fifo_in <= {KCmd, HeartbeatK};
          4'd2: fifo_in <= {KCmd, DataRequestK};
+         4'd3: fifo_in <= {KCmd, PrefRequestK};
          4'd4: fifo_in <= {KCmd, DCSReplyK};
          4'd5: fifo_in <= {KCmd, DataHeaderK};
          4'd6: fifo_in <= {KCmd, DataK};
@@ -266,12 +350,14 @@ begin
       fifo_we        <= 1'b1;
       CRC_RST		   <= 1'b0;
       comma_count    <= 8'b0;
-      // branch-off DCS Requests (0) vs Heartbeat(1)/Data Requests(2)
+      // branch-off DCS Requests(0) vs Heartbeat(1) vs Data Requests(2) vs Prefetch (3)
       // NB: DCSBlkRequest starts as a DCS Request....
-      if      (PACKET_TYPE==0)                      s_count <= STATE_3;
-      else if (PACKET_TYPE==1 || PACKET_TYPE==2)    s_count <= STATE_29;
+      if      (PACKET_TYPE==0)	s_count <= STATE_3;
+      else if (PACKET_TYPE==1) 	s_count <= STATE_29;
+      else if (PACKET_TYPE==2) 	s_count <= STATE_43;
+      else if (PACKET_TYPE==3) 	s_count <= STATE_49;
    end
-   
+
    // add DMA count (always 16'h0010) and start CRC calculation
    STATE_3:
    begin
@@ -279,10 +365,11 @@ begin
       fifo_we     <= 1'b1;
       CRC_EN      <= 1'b1;
       word_count  <= word_count + 1;
-      // branch-off for block (2-5) and module (6-7) operations
-      if (OP_CODE==2 || OP_CODE==3 || OP_CODE==4 || OP_CODE==5)  s_count <= STATE_18;
-      else if (OP_CODE==6 || OP_CODE==7)    s_count <= STATE_10;
-      else                                  s_count <= STATE_4; // default is single RD/WR requests
+      // branch-off for block (2 &3 ), module (6 & 7) and double RD/WR (4 & 5) operations
+      if 	  (OP_CODE[2:0]==3'd2 || OP_CODE[2:0]==3'd3)  	s_count <= STATE_18;
+      else if (OP_CODE[2:0]==3'd6 || OP_CODE[2:0]==3'd7)    s_count <= STATE_10;
+      else if (OP_CODE[2:0]==3'd4 || OP_CODE[2:0]==3'd5)    s_count <= STATE_50;
+      else		s_count <= STATE_4; 				// default is single RD/WR requests
    end
 
    ////////////////////////////////////////////////////////////
@@ -301,29 +388,28 @@ begin
    // add Additional Packet Count [15:6], Reserved[5] and OP_CODE[4:0]
    STATE_5:
    begin
-      fifo_in     <= {KWord, packet_count, encoded_opcode};
+      fifo_in     <= {KWord, 10'b0, encoded_opcode};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
-      encoded_addr<= ADDR;
       s_count     <= STATE_6;
    end
 
    // add first operation address
    STATE_6:
    begin
-      fifo_in     <= {KWord, encoded_addr};
+      fifo_in     <= {KWord, ADDR};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
-      encoded_data<= WDATA;
       s_count     <= STATE_7;
    end
 
-   // add first operation data
+   // add first operation data if WRITE
    STATE_7:
    begin
-      fifo_in     <= {KWord, encoded_data};
+      if(OP_CODE[2:0]==3'd1)	fifo_in	<= {KWord, WDATA};
+		else							fifo_in	<= {KWord, 16'b0};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -347,8 +433,7 @@ begin
       fifo_we     <= 1'b1;
       CRC_READY   <= 1'b1;
       CRC_EN		<= 1'b0;
-      comma_count <= 8'b0;
-      s_count     <= STATE_0;
+      s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
    end
 
    ////////////////////////////////////////////////////////////   
@@ -366,21 +451,21 @@ begin
       // determine how many additional packet to be expected 
       if (first_packet)
       begin
-         encoded_opcode <= 5;  // all start with a double write
-         if (OP_CODE == 6) packet_count <= 2; // module read requires two packet next
-         else              packet_count <= 1; // module write requires one packet next
+         encoded_opcode <= {OP_CODE[5:3],3'd5};  // all start with a double write
+         if (OP_CODE[2:0] == 3'd6) 	packet_count <= 2; // module read requires two packet next
+         else              			packet_count <= 1; // module write requires one packet next
       end
       else 
       // we have already determined we need an extra packet: 
       //  - module read needs a single-read followed by a single write
       //  - module write needs only a second single-write
       begin
-         if (OP_CODE == 6)                              
+         if (OP_CODE[2:0] == 3'd6)                              
          begin
-            if      (packet_count == 1) encoded_opcode <= 0; 
-            else if (packet_count == 0) encoded_opcode <= 1;
+            if      (packet_count == 1) encoded_opcode <= {OP_CODE[5:3],3'd0};   
+            else if (packet_count == 0) encoded_opcode <= {OP_CODE[5:3],3'd1};   
          end
-         else                           encoded_opcode <= 1;   
+         else                           encoded_opcode <= {OP_CODE[5:3],3'd1};   
       end
    end
 
@@ -405,8 +490,8 @@ begin
       //  - module read needs a single read to DRACMonitor address 0x1, followed by a single-write to DRACMonitor adress 0x3 to disable WR_EN
       //  - module write needs single-write to DRACMonitor address 0x3 to disable WR_EN
       begin
-         if (OP_CODE == 6 && packet_count == 1) encoded_addr <= 16'h0001;
-         else                                   encoded_addr <= 16'h0003;
+         if (OP_CODE[2:0] == 3'd6 && packet_count == 1) 	encoded_addr <= 16'h0001;
+         else                                   			encoded_addr <= 16'h0003;
       end
    end
 
@@ -422,17 +507,17 @@ begin
       
       if (first_packet)
       begin
-         if      (OP_CODE == 6)  encoded_data <= { 8'h00, MODULE_ID};
-         else if (OP_CODE == 7)  encoded_data <= { ADDR[6:0], MODULE_ID};
+         if      (OP_CODE[2:0] == 3'd6)  encoded_data <= { 8'h00, MODULE_ID};
+         else if (OP_CODE[2:0] == 3'd7)  encoded_data <= { ADDR[6:0], MODULE_ID};
       end
       else 
       // we have already determined we need an extra packet 
       //  - module read needs to pass nothing to second packet and clear WR_EN on last write
       //  - module write needs to clear WR_EN on last write
       begin
-         if      (OP_CODE == 6 && packet_count == 1) encoded_data <= 16'h0000;
-         else if (OP_CODE == 6 && packet_count == 0) encoded_data <= {1'b0, ADDR[14:0]};
-         else if (OP_CODE == 7)                      encoded_data <= {1'b0, WDATA[14:0]};
+         if      (OP_CODE[2:0] == 3'd6 && packet_count == 1) encoded_data <= 16'h0000;
+         else if (OP_CODE[2:0] == 3'd6 && packet_count == 0) encoded_data <= {1'b0, ADDR[14:0]};
+         else if (OP_CODE[2:0] == 3'd7)                      encoded_data <= {1'b0, WDATA[14:0]};
       end
    end
 
@@ -462,10 +547,10 @@ begin
       
       if (first_packet)  // need to enable WR_EN for both
       begin
-         if     (OP_CODE == 6)  encoded_data <= { 1'b1,  ADDR[14:0]};    // pass address we want to read
-         else                   encoded_data <= { 1'b1,  WDATA[14:0]};   // pass data we want to write
+         if     (OP_CODE[2:0] == 3'd6)	encoded_data <= { 1'b1,  ADDR[14:0]};    // pass address we want to read
+         else                   			encoded_data <= { 1'b1,  WDATA[14:0]};   // pass data we want to write
       end
-      else                      encoded_data <= 16'h0000;               // any extra packets are single operations
+      else 										encoded_data <= 16'h0000;               // any extra packets are single operations
    end
 
    // add second operation data if needed
@@ -496,12 +581,96 @@ begin
       CRC_READY	<= 1'b1;
       CRC_EN		<= 1'b0;
       first_packet<= 1'b0;
-      comma_count  <= 8'b0;
-      if  (packet_count > 0)   packet_count  <= packet_count - 1;
-      if  (packet_count == 0)  s_count <= STATE_0;
-      else                     s_count <= STATE_1;
+		multiple_dcs<= 1'b1;
+      s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
    end
 
+	////////////////////////////////////////////////////////////   
+   /////  double WR/RD packet   									 ////
+	////   use ADDR and MODULE_ID as first and 2nd address ////
+	////   use WDATA and BLOCK_CNT as first and 2nd data   ////
+	////////////////////////////////////////////////////////////   
+   STATE_50:
+   begin
+      fifo_in     <= {KWord, 8'h80, PACKET_TYPE, 4'h0};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_51;
+	end
+      
+   STATE_51:
+   begin
+      fifo_in     <= {KWord, 10'h0, OP_CODE};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_52;
+	end
+      
+	// 1st address
+   STATE_52:
+   begin
+      fifo_in     <= {KWord, ADDR};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_53;
+	end
+      
+	// 1st WRITE data
+   STATE_53:
+   begin
+		if (OP_CODE[2:0] == 3'd5)	fifo_in     <= {KWord, WDATA};
+		else								fifo_in     <= {KWord, 16'b0};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_54;
+   end
+
+	// 2ns address
+   STATE_54:
+   begin
+      fifo_in     <= {KWord, 8'h00, MODULE_ID};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_55;
+   end
+
+   // 2nd WRITE data
+   STATE_55:
+   begin
+		if (OP_CODE[2:0] == 3'd5)	fifo_in     <= {KWord, BLOCK_CNT};
+		else								fifo_in     <= {KWord, 16'b0};
+       fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_56;
+   end
+
+   // add last 16-bit words in the packet
+   STATE_56:
+   begin
+      fifo_in     <= {KWord, 16'h0000};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_57;
+   end
+
+   // add CRC and decide if another packet is needed 
+   STATE_57:
+   begin
+      fifo_in     <= {KWord, CRC};   
+      fifo_we     <= 1'b1;
+      CRC_READY	<= 1'b1;
+      CRC_EN		<= 1'b0;
+      first_packet<= 1'b0;
+      s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
+   end
+   
    ////////////////////////////////////////////////////////////
    ////    build block WR/RD packet   ////
    // add Valid word[15] and packet type[7:4] (Reserved[14:11], ROC Link[10:8] and Hop Count[3:0] always zero!)
@@ -515,17 +684,14 @@ begin
       s_count     <= STATE_19;
       
       // determine how many additional packet to be expected (for block and module operations)
-      if (OP_CODE==3 || OP_CODE==5 ) packet_count <= blk_no;   // block write might require extra packets
-      else                           packet_count <= 10'b0;
-      if (OP_CODE == 4)         encoded_opcode <= 6'h12;        // RAM block need bit(4)=1
-      else if (OP_CODE == 5)    encoded_opcode <= 6'h13;        // RAM block need bit(4)=1
-      else                      encoded_opcode <= OP_CODE;
+      if (OP_CODE[2:0] == 3'd3)	packet_count <= blk_no;   // block write might require extra packets
+      else								packet_count <= 10'b0;
    end
 
    // add Additional Packet Count [15:6], Reserved[5] and OP_CODE[4:0]
    STATE_19:
    begin
-      fifo_in     <= {KWord, packet_count, encoded_opcode};
+      fifo_in     <= {KWord, packet_count, OP_CODE};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -549,12 +715,12 @@ begin
    STATE_21:
    begin
       fifo_in     <= {KWord, BLOCK_CNT};
-      if (OP_CODE == 3 || OP_CODE==5)
-      begin
-         RAM_RE      <= 1'b1;
-         if (BLOCK_CNT > 1)   RAM_ADDR <= RAM_ADDR+1; // no need to increase RAM address if end of block will be reached with next word
-      end
-      blk_word_cnt<= blk_word_cnt + 1;             // counter of external RAM addresses read
+							   
+		   
+							 
+																																	   
+		 
+      blk_word_cnt<= blk_word_cnt + 1;  // counter of block write PAYLOAD
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -566,19 +732,20 @@ begin
    STATE_22:
    begin
       fifo_in  <= {KWord, 16'b0};   // default for block read or BLK_CNT words reached
-      RAM_RE   <= 1'b0;             // default for block read or BLK_CNT words reached
-      if ( (OP_CODE == 3 || OP_CODE==5) )
+																					  
+      if (OP_CODE[2:0] == 3'd3)
       begin
-         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, RAM_DATA};
-         if (blk_word_cnt < BLOCK_CNT)
-         begin
-            RAM_RE      <= 1'b1;
-         end
-         // no need to increase RAM address if end of block will be reached with next word
-         //if (BLOCK_CNT > 2)   RAM_ADDR <= RAM_ADDR+1;     // this is equivalent to...
-         if (blk_word_cnt < (BLOCK_CNT-1) )   RAM_ADDR <= RAM_ADDR+1;
+																	   
+         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, 8'b0, blk_word_cnt};
+									  
+			  
+								
+			
+																						  
+																					   
+																	 
       end
-      blk_word_cnt<= blk_word_cnt + 1; // counter of external RAM addresses read
+      blk_word_cnt<= blk_word_cnt + 1; // counter of block write PAYLOAD
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -586,20 +753,22 @@ begin
    end
    
    // add block write second data (NA for block read)
+   ////  blk_word_cnt = 2
    STATE_23:
    begin
       fifo_in  <= {KWord, 16'b0};   // default for block read or BLK_CNT words reached
-      RAM_RE   <= 1'b0;             // default for block read or BLK_CNT words reached
-      if ( (OP_CODE == 3 || OP_CODE==5) )
+																					  
+      if (OP_CODE[2:0] == 3'd3)
       begin
-         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, RAM_DATA};
-         if (blk_word_cnt < BLOCK_CNT)
-         begin
-            RAM_RE      <= 1'b1;
-         end
-         if (blk_word_cnt < (BLOCK_CNT-1) )   RAM_ADDR <= RAM_ADDR+1;
+																	   
+         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, 8'b0, blk_word_cnt};
+									  
+			  
+								
+			
+																	 
       end
-      blk_word_cnt<= blk_word_cnt + 1; // counter of external RAM addresses read
+      blk_word_cnt<= blk_word_cnt + 1; // counter of block write PAYLOAD
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -611,12 +780,14 @@ begin
    STATE_24:
    begin
       fifo_in  <= {KWord, 16'b0};   // default for block read or BLK_CNT words reached
-      RAM_RE   <= 1'b0;             // default for block read or BLK_CNT words reached
-      if ( (OP_CODE == 3 || OP_CODE==5) )
+																					  
+      if (OP_CODE[2:0] == 3'd3)
       begin
-         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, RAM_DATA};
-         // do not read external RAM at the last word in the packet!
+         if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, 8'b0, blk_word_cnt};
+																						   
+																	
       end
+      blk_word_cnt<= blk_word_cnt + 1; // counter of block write PAYLOAD
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -626,59 +797,44 @@ begin
    // add CRC and decide if another packet is needed 
    STATE_25:
    begin
-      fifo_in     <= {KWord, CRC};   
-      fifo_we     <= 1'b1;
-      CRC_EN		<= 1'b0;
-      CRC_READY   <= 1'b1;
-      first_packet<= 1'b0;
-      if (packet_count > 0) packet_count  <= packet_count - 1;
-      comma_count <= 8'b0;
-      // when last packet reached, go to an intermediate state to clear initialize RAM_ADDR before going to IDLE
-      if (packet_count == 0) s_count <= STATE_45;
-      else                   s_count <= STATE_26;
-   end
-
-   // special state to set RAM_ADDR to zero and issue a RAM_RE
-   STATE_45:
-   begin
-      fifo_in     <= {KChar, Comma};   //comma for 6 words
-      fifo_we     <= 1'b0;
-      RAM_ADDR    <= 7'b0;
-      RAM_RE      <= 1'b1;
-      CRC_READY   <= 1'b0;
-      CRC_RST     <= 1'b1;
-      s_count <= STATE_0;
+        fifo_in     <=  {KWord, CRC};   
+        fifo_we     <=  1'b1;
+        CRC_EN	    <=  1'b0;
+        CRC_READY   <=  1'b1;
+        first_packet<=  1'b0;
+        new_blkwr	<=  1'b1;    // assume new packet is needed (STATE_63 will make the decision)
+        s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
    end
    
-   //add 6 comma words
+   //add 5 comma words
    STATE_26:
    begin
       fifo_in     <= {KChar, Comma};   //comma for 6 words
-      fifo_we     <= 1'b1;
+      //fifo_we     <= 1'b1;
+      fifo_we     <= 1'b0;
       CRC_READY   <= 1'b0;
       CRC_RST     <= 1'b1;
       comma_count <= comma_count+1;
-      if (comma_count > 5)	s_count <= STATE_27;
+      if (comma_count > 4)	s_count <= STATE_27;
    end
 
    // start with additional Block DCSRequest packet header
    // we are in RAM block operation: restart address counter
    STATE_27:
    begin
-      //fifo_in        <= {KCmd, DCSRequestK};
       fifo_in        <= {KCmd, DCSBlockRequestK};
       fifo_in[7:5]   <= ring_count; // add ring packet count
       ring_count     <= ring_count + 1;
       fifo_we        <= 1'b1;
       CRC_RST		   <= 1'b0;
       comma_count    <= 8'b0;
-      if (blk_word_cnt < BLOCK_CNT)  // this is probably redundant, because we will never get there is BLK_WORD_CNT had been reached
-      begin
-         RAM_RE      <= 1'b1;
-      end
-      // no need to increase RAM address if end of block will be reached with next word
-      if (blk_word_cnt < (BLOCK_CNT-1) )   RAM_ADDR <= RAM_ADDR+1;
-      blk_word_cnt<= blk_word_cnt + 1; // counter of external RAM addresses read      
+																																	
+		   
+							 
+		 
+																					   
+																  
+     // blk_word_cnt<= blk_word_cnt + 1; // counter of block write PAYLOAD      
       s_count        <= STATE_28;
    end
    
@@ -687,24 +843,27 @@ begin
    STATE_28:
    begin
       fifo_in  <= {KWord, 16'b0};   // default for block read or BLK_CNT words reached
-      RAM_RE   <= 1'b0;             // default for block read or BLK_CNT words reached
-      if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, RAM_DATA};
-      if (word_count%8 < 7)         // avoid last word in the packet
-      begin
-         if (blk_word_cnt < BLOCK_CNT) 
-         begin
-            RAM_RE      <= 1'b1;
-         end
-         if (blk_word_cnt < (BLOCK_CNT-1) )   RAM_ADDR <= RAM_ADDR+1;
-         blk_word_cnt<= blk_word_cnt + 1; // counter of external RAM addresses read
-      end
+																					  
+      if (blk_word_cnt <= BLOCK_CNT) fifo_in <= {KWord, 8'b0, blk_word_cnt};
+      blk_word_cnt  <= blk_word_cnt + 1; // counter of block write PAYLOAD
+      //if (word_count%8 < 7)         // avoid counting last word in the packet
+      //begin
+         //blk_word_cnt<= blk_word_cnt + 1; // counter of block write PAYLOAD
+			  
+								
+			
+																	 
+																				   
+      //end
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
       if( (word_count%8) == 7)  s_count <= STATE_25;  // at last word in packet, send back to check on more packets needed
    end
    ////////////////////////////////////////////////////////////
-   ////    build block hearbeat and Data Request packets   ////
+   ////    build HEARTBEAT packet                          ////
+															   
+   ////////////////////////////////////////////////////////////
    // add DMA count (always 16'h0010) and start CRC calculation
    STATE_29:
    begin
@@ -728,7 +887,7 @@ begin
    // add Event Window Tag over next three 16-bit words
    STATE_31:
    begin
-      fifo_in     <= {KWord, EVENT_WINDOW_TAG[15:0]};
+      fifo_in     <= {KWord, ewt_latch[15:0]};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -737,7 +896,7 @@ begin
 
    STATE_32:
    begin
-      fifo_in     <= {KWord, EVENT_WINDOW_TAG[31:16]};
+      fifo_in     <= {KWord, ewt_latch[31:16]};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
@@ -746,13 +905,11 @@ begin
 
    STATE_33:
    begin
-      fifo_in     <= {KWord, EVENT_WINDOW_TAG[47:32]};
+      fifo_in     <= {KWord, ewt_latch[47:32]};
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
-      // branch-off for Heartbeat vs Data Request
-      if (PACKET_TYPE==1)       s_count <= STATE_34;
-      else if (PACKET_TYPE==2)  s_count <= STATE_38;
+		s_count 		<= STATE_34;
    end
 
    //// finish Heartbeat packet ////
@@ -792,10 +949,86 @@ begin
       fifo_we     <= 1'b1;
       CRC_READY   <= 1'b1;
       CRC_EN		<= 1'b0;
-      comma_count <= 8'b0;
-      s_count     <= STATE_0;
+												 
+      s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
    end
 
+	// add 5 comma words before the DATAREQ
+   STATE_41:
+   begin
+      fifo_in     <= {KChar, Comma};   //comma for 6 words
+      fifo_we     <= 1'b1;
+      CRC_EN      <= 1'b0;
+      CRC_RST		<= 1'b1;
+      CRC_READY   <= 1'b0;
+      comma_count <= comma_count+1;
+						  
+						  
+      if (comma_count > 4)	s_count <= STATE_42;
+   end
+
+	// start the Data Request for the same EWT
+   STATE_42:
+   begin
+		fifo_in <= {KCmd, DataRequestK};
+      fifo_in[7:5]   <= ring_count; // add ring packet count
+      ring_count     <= ring_count + 1;
+      fifo_we        <= 1'b1;
+      CRC_RST		   <= 1'b0;
+      comma_count    <= 8'b0;
+		s_count 			<= STATE_43;
+   end
+
+   ////////////////////////////////////////////////////////////
+   ////    build DATA REQ packet                           ////
+   ////////////////////////////////////////////////////////////
+   // add DMA count (always 16'h0010) and start CRC calculation
+   STATE_43:
+   begin
+      fifo_in     <= {KWord, DMAByteCount};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_44;
+   end
+
+   // add Valid word[15] and packet type[7:4] (Reserved[14:11], ROC Link[10:8] and Hop Count[3:0] always zero!)
+   STATE_44:
+   begin
+      fifo_in     <= {KWord, 8'h80, 4'h2, 4'h0};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_45;
+   end   
+
+   // add Event Window Tag over next three 16-bit words
+   STATE_45:
+   begin
+      fifo_in     <= {KWord, evt_tag[15:0]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_46;
+   end
+
+   STATE_46:
+   begin
+      fifo_in     <= {KWord, evt_tag[31:16]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_47;
+   end
+
+   STATE_47:
+   begin
+      fifo_in     <= {KWord, evt_tag[47:32]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+		s_count 		<= STATE_38;
+   end
    //// finish Data Request packet with 3 reserved words ////
    STATE_38:
    begin
@@ -821,9 +1054,126 @@ begin
       fifo_we     <= 1'b1;
       CRC_EN		<= 1'b1;
       word_count 	<= word_count + 1;
-      s_count     <= STATE_37;   // go to CRC 
+      s_count     <= STATE_48;  
    end
 
+	// add CRC
+   STATE_48:
+   begin
+      fifo_in     <= {KWord, CRC};   
+      fifo_we     <= 1'b1;
+      CRC_READY   <= 1'b1;
+      CRC_EN		<= 1'b0;
+      s_count     <= STATE_63;	//	add comma and decide if another packet is appended 
+   end
+
+   ////////////////////////////////////////////////////////////
+   ////    build PREFETCH packet                           ////
+   ////////////////////////////////////////////////////////////
+   // add DMA count (always 16'h0010) and start PRETAG packets
+   STATE_49:
+   begin
+      fifo_in     <= {KWord, DMAByteCount};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_58;
+   end
+
+   // add Valid word[15] and packet type[7:4] (Reserved[14:11], ROC Link[10:8] and Hop Count[3:0] always zero!)
+   STATE_58:
+   begin
+      fifo_in     <= {KWord, 8'h80, 4'h3, 4'h0};   
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_59;
+   end   
+
+   // add Event Window Tag over next three 16-bit words
+   STATE_59:
+   begin
+      fifo_in     <= {KWord, pre_tag[15:0]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_60;
+   end
+
+   STATE_60:
+   begin
+      fifo_in     <= {KWord, pre_tag[31:16]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+      s_count     <= STATE_61;
+   end
+
+   STATE_61:
+   begin
+      fifo_in     <= {KWord, pre_tag[47:32]};
+      fifo_we     <= 1'b1;
+      CRC_EN		<= 1'b1;
+      word_count 	<= word_count + 1;
+		s_count 		<= STATE_38;
+   end
+
+   // special state to set RAM_ADDR to zero and issue a RAM_RE
+   STATE_62:
+   begin
+      fifo_in     <= {KChar, Comma};   //comma for 6 words
+      fifo_we     <= 1'b0;
+						  
+						  
+      CRC_READY   <= 1'b0;
+      CRC_RST     <= 1'b1;
+      s_count 		<= STATE_0;
+   end
+
+	// add one COMMA after CRC and decide if another packet is needed 
+   STATE_63:
+   begin
+      fifo_in     <= {KChar, Comma};   
+      //fifo_we     <= 1'b1;
+      fifo_we     <= 1'b0;
+      CRC_EN      <= 1'b0;
+      CRC_RST		<= 1'b1;
+      CRC_READY   <= 1'b0;
+		
+		if (multiple_dcs == 1'b1 || new_blkwr == 1'b1) 
+		begin
+			if  (packet_count > 0)   packet_count  <= packet_count - 1;
+			else	
+			begin
+				multiple_dcs<= 1'b0;
+				new_blkwr	<= 1'b0;
+			end	
+		end
+		
+        if (new_blkwr == 1'b1) // if DCS block, when last packet reached, go to an intermediate state to clear initialize RAM_ADDR before going to IDLE
+		begin
+					 
+					 
+						
+	 
+							
+	   
+														 
+														 
+	 
+																																					  
+	   
+			if (packet_count == 0) s_count <= STATE_62; // add commas and go back to IDLE
+			else                   s_count <= STATE_26; // add commas and start new block
+		end
+		else	// default case: simple and double DCS or MODULE operation
+		begin
+			// standard case, can be overwritten below
+			if  (packet_count == 0)  s_count <= STATE_0;
+			else                     s_count <= STATE_1;		
+		end
+			
+	end
    
    default:
    begin
@@ -834,14 +1184,17 @@ begin
       comma_count    <= 8'b0;
       packet_count   <= 10'b0;
       first_packet   <= 1'b1;
+		new_blkwr		<= 1'b0;
+					 
+		multiple_dcs	<= 1'b0;
       encoded_addr   <= 1'b0;
       encoded_data   <= 16'b0;
       encoded_opcode <= 6'b0;
       CRC_EN		   <= 1'b0;
       CRC_RST		   <= 1'b1;
       CRC_READY	   <= 1'b0;
-      RAM_ADDR       <= 7'b0;
-      RAM_RE         <= 1'b0;
+							 
+							 
       s_count        <= STATE_0;
    end
    
@@ -850,9 +1203,9 @@ begin
 end
 
 // overwrite fifo input with CRC
-always@(posedge HCLK, negedge HRESETN)
+always@(posedge SERDES_CLK, negedge SERDES_RESETN)
 begin
-   if (HRESETN == 1'b0)
+   if (SERDES_RESETN == 1'b0)
    begin
       TO_FIFO_WE <= 1'b0;
       TO_FIFO_IN <= {KChar, Comma};
@@ -867,52 +1220,65 @@ end
 
 //
 // on XCVR_CLK domain
-// read fifo when at least one packet is in by checking FIFO almost empty
-assign DCS_PACKET_CNT = fifo_re_cnt;
+// read fifo when at least one packet is in by requiring FIFO RDCNT = 10 
+																			  
+
+											 
+				  
+					
 
 always@(posedge XCVR_CLK, negedge ALIGN)
 begin
    if (ALIGN == 1'b0) 
    begin
-      TO_FIFO_RE    <= 1'b0;
-      fifo_rd_cnt   <= 0;
-      fifo_re_cnt   <= 32'b0;
-      fifo_ae       <= 1'b1;
-      f_count       <= IDLE;
+      TO_FIFO_RE	<= 1'b0;
+      fifo_rd_cnt	<= 0;
+					   
+      f_count 		<= IDLE;
+	  
+						  
+					  
    end
    
    else  
    
    begin 
-      fifo_ae   <= FROM_FIFO_AE;
-      
+												  
+						  
+		   
+							 
+								 
+		 
+	  
       case(f_count)
-   
+    
       IDLE: 
-      begin
+      begin;
          TO_FIFO_RE <= 1'b0;
          fifo_rd_cnt<= 0;
-         if (fifo_ae == 1'b0) 
-			begin
-				f_count <= READ;
-				fifo_re_cnt    <= fifo_re_cnt + 1;
-			end
+         
+         if (FROM_FIFO_RDCNT == 10) f_count <= READ;
       end
    
       READ:
       begin
-         TO_FIFO_RE     <= 1'b1;
-         fifo_rd_cnt    <= fifo_rd_cnt + 1;
-         if (fifo_rd_cnt == 16) f_count <= IDLE;
+         if (MARKER_ON == 1'b1)
+            TO_FIFO_RE	<= 1'b0;
+         else
+         begin
+            TO_FIFO_RE	<= 1'b1;
+            fifo_rd_cnt	<= fifo_rd_cnt + 1;
+            if (fifo_rd_cnt == 9) f_count <= IDLE;
+         end
       end
-   
+			
       default:
       begin
-         TO_FIFO_RE     <= 1'b0;
-         fifo_rd_cnt    <= 0;
-         f_count        <= IDLE;
+         TO_FIFO_RE <= 1'b0;
+         fifo_rd_cnt	<= 0;
+         f_count		<= IDLE;
       end
-   
+      
       endcase
    end
 end
@@ -924,20 +1290,22 @@ always@(posedge XCVR_CLK, negedge XCVR_RESETN, negedge ALIGN)
  begin
    if (XCVR_RESETN == 1'b0 || ALIGN == 1'b0)
    begin
+      fifo_re	   <= 1'b0;
       DATA_TO_TX  <= Comma;
       KCHAR_TO_TX <= KChar; 
    end
    else
    begin
-      if(TO_FIFO_RE == 1'b1)
+      fifo_re <= TO_FIFO_RE;
+      if(fifo_re == 1'b1)
       begin
-         DATA_TO_TX  <= FROM_FIFO_OUT[15:0]; 
-         KCHAR_TO_TX <= FROM_FIFO_OUT[17:16]; 
+        DATA_TO_TX  <= FROM_FIFO_OUT[15:0]; 
+        KCHAR_TO_TX <= FROM_FIFO_OUT[17:16]; 
       end
       else
       begin
-         DATA_TO_TX  <= Comma;
-         KCHAR_TO_TX <= KChar; 
+        DATA_TO_TX  <= Comma;
+        KCHAR_TO_TX <= KChar; 
       end
    end
 end
@@ -948,7 +1316,7 @@ crc_ver crc_ver_inst(
   .crc_en  	(CRC_EN),
   .crc_out  (CRC),
   .rst		(CRC_RST),
-  .clk 		(HCLK) );
+  .clk 		(SERDES_CLK) );
 
 endmodule
 
