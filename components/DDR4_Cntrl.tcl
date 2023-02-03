@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component DDR4_Cntrl
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.105} -component_name {DDR4_Cntrl} -params {\
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.109} -component_name {DDR4_Cntrl} -params {\
 "ADDRESS_MIRROR:false" \
 "ADDRESS_ORDERING:CHIP_ROW_BG_BANK_COL" \
 "AUTO_SELF_REFRESH:3" \
