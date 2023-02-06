@@ -17,6 +17,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD0_P} -po
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD1_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD1_P} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO1} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO2} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CLK_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CLK_P} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_DTC_SERDES_RXD0_N} -port_direction {IN} -port_is_pad {1}
@@ -59,6 +60,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO0} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO3} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO4} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO5} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK0_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK1_N} -port_direction {OUT} -port_is_pad {1}
@@ -457,12 +461,8 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:DTCSIMSPILLDA
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:GPIO_OUT} -pin_slices {[0:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {SLOWCONTROLS_0:GPIO_OUT} -pin_slices {[3:1]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:GPIO_OUT[3:1]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SPI2_MISO} -value {GND}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:DTCSIMBLKEN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SENSOR_MCP_CEn}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SPI2_ADC0_CEn}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SPI2_MOSI}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:SPI2_SCLK}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:cal_serdes_reset_n}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:hv_serdes_reset_n}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SLOWCONTROLS_0:serdes_re0}
@@ -660,6 +660,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_1:A" "pulse_stretcher_1:gat
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_2:A" "pulse_stretcher_0:gate_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO0" "SLOWCONTROLS_0:TX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO1" "SLOWCONTROLS_0:RX" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO2" "SLOWCONTROLS_0:SPI2_MISO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO3" "SLOWCONTROLS_0:SPI2_SCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO4" "SLOWCONTROLS_0:SPI2_MOSI" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO5" "SLOWCONTROLS_0:SPI2_ADC0_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "TOP_SERDES_0:EWM_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "SLOWCONTROLS_0:enable_fiber_marker" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:CTRLR_READY" "SLOWCONTROLS_0:DDRCTRLREADY" }

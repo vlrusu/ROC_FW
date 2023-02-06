@@ -897,4 +897,29 @@ set_io -port_name ROCtoHV_SERDES_TXD1_P  \
     -pin_name V22                        \
     -DIRECTION OUTPUT
 
+set_io -port_name KEY_IO2  \
+    -pin_name L5           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION INPUT
 
+
+set_io -port_name KEY_IO3  \
+    -pin_name L6           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO4  \
+    -pin_name M8           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO5  \
+    -pin_name M9           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
