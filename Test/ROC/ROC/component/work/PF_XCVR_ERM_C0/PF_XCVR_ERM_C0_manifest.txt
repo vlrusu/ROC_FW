@@ -1,0 +1,36 @@
+Microchip Technology Inc. - Microchip Libero Software Release v2022.3 (Version 2022.3.0.8)
+
+Date      :  Mon Feb  6 12:24:00 2023
+Project   :  C:\Users\vadim\Desktop\Firmware\ROC_FW\Test\ROC\ROC
+Component :  PF_XCVR_ERM_C0
+Family    :  PolarFire
+
+
+HDL source files for all Synthesis and Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/SgCore/PF_XCVR_APBLINK_V/1.1.104/hdl/PF_XCVR_APBLINK_V.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELANEMSTR/2.1.100/rtl/vlog/core/CORELANEMSTR.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELANEMSTR/2.1.100/rtl/vlog/core/request_code.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELANEMSTR/2.1.100/rtl/vlog/core/CORELANEMSTRmode0.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELANEMSTR/2.1.100/rtl/vlog/core/CORELANEMSTRmode1.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELANEMSTR/2.1.100/rtl/vlog/core/CORELANEMSTRmode2.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORELCKMGT/2.0.100/rtl/vlog/core/CORELCKMGT.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFD.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDbincnt.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDfrqerrarb.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDgrycnt.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDplsgen.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDshcnt.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDsicr.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDsmplcnt.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDsync.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORERFD/2.1.100/rtl/vlog/core/CORERFDsyncen.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/PF_XCVR_ERM_C0/PF_XCVR_ERM_C0.v
+
+HDL source files for Synopsys SynplifyPro Synthesis tool:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/PF_XCVR_ERM_C0/I_XCVR/PF_XCVR_ERM_C0_I_XCVR_PF_XCVR.v
+
+Stimulus files for all Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/PF_XCVR_ERM_C0/I_XCVR/PF_XCVR_ERM_C0_I_XCVR_PF_XCVR_sim.v
+
+Constraint files:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/PF_XCVR_ERM_C0\I_XCVR\PF_XCVR_ERM_C0_I_XCVR_PF_XCVR.sdc

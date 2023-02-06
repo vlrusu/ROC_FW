@@ -1,0 +1,35 @@
+Microchip Technology Inc. - Microchip Libero Software Release v2022.3 (Version 2022.3.0.8)
+
+Date      :  Mon Feb  6 12:22:22 2023
+Project   :  C:\Users\vadim\Desktop\Firmware\ROC_FW\Test\ROC\ROC
+Component :  SPI0
+Family    :  PolarFire
+
+
+HDL source files for all Synthesis and Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/corespi.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/corespi_pkg.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi_chanctrl.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi_clockmux.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi_control.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi_fifo.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/core/spi_rf.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/SPI0/SPI0.vhd
+
+Stimulus files for all Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/mti/bfmtovec.exe
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/mti/bfmtovec.lin
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/mti/bfmtovec_compile.do
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/mti/user_tb.bfm
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/mti/wave.do
+
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/misc.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/textio.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/bfm_package.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/bfm_ahbtoapb.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/bfm_apb.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/amba_bfm/bfm_main.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/coreparameters.vhd
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CORESPI/5.2.104/rtl/vhdl/test/user/testbench.vhd
+

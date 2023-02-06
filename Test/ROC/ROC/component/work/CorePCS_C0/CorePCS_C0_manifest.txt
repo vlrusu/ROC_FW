@@ -1,0 +1,42 @@
+Microchip Technology Inc. - Microchip Libero Software Release v2022.3 (Version 2022.3.0.8)
+
+Date      :  Mon Feb  6 12:23:49 2023
+Project   :  C:\Users\vadim\Desktop\Firmware\ROC_FW\Test\ROC\ROC
+Component :  CorePCS_C0
+Family    :  PolarFire
+
+
+HDL source files for all Synthesis and Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/CorePCS.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_DATA.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_ERR.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_RD.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DECODER.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENC_D.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENC_FLIP.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENC_K.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENCODER.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/MUX4X1.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/MUX32X1.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/MUX32X6.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/BUF_DATA.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DECODER_CI.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DECODER_CO.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_RD_L.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_RD_U.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/DEC_WA.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENCODER_64B80B.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENCODER_L.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENCODER_N.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/ENCODER_U.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/WORD_ALIGNER_10.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/WORD_ALIGNER_80.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/core/RESET_SYNC.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/CorePCS_C0/CorePCS_C0.v
+
+Stimulus files for all Simulation tools:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/rtl/vlog/test/user/testbench.v
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/Actel/DirectCore/CorePCS/3.6.103/coreparameters.v
+
+Constraint files:
+    C:/Users/vadim/Desktop/Firmware/ROC_FW/Test/ROC/ROC/component/work/CorePCS_C0\CorePCS_C0_0\CorePCS_C0.sdc
