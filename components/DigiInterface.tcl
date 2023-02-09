@@ -42,9 +42,13 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_re} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {use_uart} -port_direction {IN}
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_lane0_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_lane0_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_lane1_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_lane1_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_lane0_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_lane0_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_lane1_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_lane1_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N_0} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P_0} -port_direction {OUT} -port_is_pad {1}
@@ -66,8 +70,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_full} -port_dir
 
 
 # Create top level Bus Ports
-sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_use_lane} -port_direction {IN} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {SERIAL_use_lane} -port_direction {IN} -port_range {[3:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {use_lane} -port_direction {IN} -port_range {[3:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_alignment} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_error_count} -port_direction {OUT} -port_range {[7:0]}
@@ -80,9 +83,9 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_alignment} -port_dir
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_error_count} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_alignment} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {rocfifocntrl_state} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_data} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_rdcnt} -port_direction {OUT} -port_range {[16:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {state_count} -port_direction {OUT} -port_range {[7:0]}
 
 
 # Add AND2_0 instance
@@ -92,15 +95,11 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 # Add DigiLink_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DigiLink} -instance_name {DigiLink_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DigiLink_0:lane0_full}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DigiLink_0:lane1_full}
 
 
 
 # Add DigiLink_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DigiLink} -instance_name {DigiLink_1}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DigiLink_1:lane0_full}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DigiLink_1:lane1_full}
 
 
 
@@ -114,17 +113,14 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ROCFIFOControlle
 
 
 
-# Add use_lane_switch_0 instance
-sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {use_lane_switch} -hdl_file {hdl\use_lane_switch.v} -instance_name {use_lane_switch_0}
-
-
-
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DigiLink_0:fifo_reset" "DigiLink_1:fifo_reset" "DigiReaderFIFO_0:RRESET_N" "DigiReaderFIFO_0:WRESET_N" "fifo_resetn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "serdesclk_resetn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "ROCFIFOController_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_lane0_empty" "DigiLink_0:lane0_empty" "ROCFIFOController_0:lane0_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_lane0_full" "DigiLink_0:lane0_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_lane1_empty" "DigiLink_0:lane1_empty" "ROCFIFOController_0:lane1_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_lane1_full" "DigiLink_0:lane1_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "DigiLink_0:CTRL_ARST_N" "DigiLink_1:CTRL_ARST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "DigiLink_0:CTRL_CLK" "DigiLink_1:CTRL_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:FPGA_POR_N" "DigiLink_1:FPGA_POR_N" "FPGA_POR_N" }
@@ -168,8 +164,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:aligned_0" "hv_lane0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:aligned_1" "hv_lane1_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_empty" "HV_lane0_empty" "ROCFIFOController_0:lane2_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_fifo_re" "ROCFIFOController_0:lane2_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_full" "HV_lane0_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_empty" "HV_lane1_empty" "ROCFIFOController_0:lane3_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_re" "ROCFIFOController_0:lane3_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_full" "HV_lane1_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:EMPTY" "serialfifo_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:FULL" "ROCFIFOController_0:uart_fifo_full" "serialfifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RCLOCK" "serialfifo_rclk" }
@@ -184,7 +182,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_ovfl" "e
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_uart" "use_uart" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_use_lane" "use_lane_switch_0:DCS_use_lane" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_0" "cal_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_1" "cal_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:error_count_0" "cal_lane0_error_count" }
@@ -203,9 +200,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RDCNT" "serial
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_data" "ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_size" "ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_tag" "ew_tag" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:state_count" "state_count" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_lane" "use_lane_switch_0:use_lane" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SERIAL_use_lane" "use_lane_switch_0:SERIAL_use_lane" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:state_count" "rocfifocntrl_state" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_lane" "use_lane" }
 
 
 # Re-enable auto promotion of pins of type 'pad'

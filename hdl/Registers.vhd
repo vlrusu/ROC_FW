@@ -61,58 +61,6 @@ entity Registers is
     DDRCFOOFFSET  : out std_logic_vector(31 downto 0);
     DDRCFODELTAHB : out std_logic_vector(31 downto 0);
     DDRCFONUMBERHB: out std_logic_vector(31 downto 0);
-
-    --DDRNHITS : out std_logic_vector(31 downto 0);
-    --DDRCS    : out std_logic;
-    --DDRWEN   : out std_logic;
-    --DDRREN   : out std_logic;
-    --DDRFIFOWEN : out std_logic;
-    --DDROFFSET: out std_logic_vector(31 downto 0);
-    --DDRDIAG0 : in  std_logic_vector(31 downto 0);
-    --DDRDIAG1 : in  std_logic_vector(31 downto 0);
-    --DDRPATTRN: out  std_logic_vector(1 downto 0);
-	 --DDRBURST : out std_logic_vector(7 downto 0);
-    --DDRRWEN  : out std_logic;
-    --DDRERRREN: out std_logic;
-    --DDRWRTREN: out std_logic;
-    --DDRRDTREN: out std_logic;
-	 --DDRRAMREN: out std_logic;
-    --DDRFORCERD  : out std_logic;
-		--
-    --DDRWRTIME: in  std_logic_vector(31 downto 0);
-    --DDRRDTIME: in  std_logic_vector(31 downto 0);
-    --DDRERRCNT: in  std_logic_vector(31 downto 0);
-    --DDRPTTREN: out std_logic;
-    --DDRERRLOC: in  std_logic_vector(31 downto 0);
-    --DDRFIFODIA: in  std_logic_vector(15 downto 0);
-    --DDRTRUEL : in  std_logic_vector(31 downto 0);
-    --DDRTRUEH : in  std_logic_vector(31 downto 0);
-    --DDREXPCL : in  std_logic_vector(31 downto 0);
-    --DDREXPCH : in  std_logic_vector(31 downto 0);
-	 --DDRRAMADDR : out std_logic_vector(31 downto 0);
-	 --DDRRAMDATA : in  std_logic_vector(31 downto 0);
-    --DDRLOCRAM: out  std_logic_vector(31 downto 0);
-	 --DDRWRBCNT : in  std_logic_vector(31 downto 0);
-	 --DDRRDBCNT : in  std_logic_vector(31 downto 0);
---
-    --DDRSEL      : out std_logic;
-    --DDRFULL     : in  std_logic;
-    --DDRFIFO_RE  : out std_logic;
-    --DDRSET      : out  std_logic;
-    --DDRPAGENO   : out std_logic_vector(31 downto 0);
-    --DDRPAGEWR   : in  std_logic_vector(31 downto 0);
-    --DDRPAGERD   : in  std_logic_vector(31 downto 0);
---
-    --DDRMEMFIFODATA0 : in  std_logic_vector(31 downto 0);
-    --DDRMEMFIFODATA1 : in  std_logic_vector(31 downto 0);
-    --DDRMEMFIFOFULL  : in  std_logic;
-    --DDRMEMFIFOEMPTY : in  std_logic;
-    --DDRTEMPFIFOFULL : in  std_logic;
-    --DDRTEMPFIFOEMPTY: in  std_logic;
-    --DDRMEMFIFO_RE   : out std_logic;
---
-    --DDRCONVRDCNT    : in std_logic_vector(16 downto 0);
-    --DDRCONVDATA     : in std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
     DTCSIMSTART   : out std_logic;
@@ -198,8 +146,8 @@ entity Registers is
     dtc_enable_reset : out std_logic;
     force_full : out std_logic;
     align_roc_to_digi : out std_logic;
-    dtc_error_address : out std_logic_vector(7 downto 0);
-    dtc_error_counter : in std_logic_vector(15 downto 0);
+    error_address : out std_logic_vector(7 downto 0);
+    error_counter : in std_logic_vector(15 downto 0);
     
     cal_serdes_reset_n : out std_logic;
     hv_serdes_reset_n : out std_logic;
@@ -209,7 +157,23 @@ entity Registers is
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
-    TIMERCOUNTER : in std_logic_vector(31 downto 0)
+    TIMERCOUNTER : in std_logic_vector(31 downto 0);
+
+    -- DIGIs commands driven by DTC via DRACRegisters
+    dcs_cal_init : in std_logic;
+    dcs_cal_data : in std_logic_vector(15 downto 0);
+    dcs_cal_addr : in std_logic_vector(8 downto 0);
+
+    dcs_hv_init : in std_logic;
+    dcs_hv_data : in std_logic_vector(15 downto 0);
+    dcs_hv_addr : in std_logic_vector(8 downto 0);
+    
+    dcs_enable_fiber_clock  : in std_logic;    
+    dcs_enable_fiber_marker : in std_logic;  
+  
+    dcs_ewm_enable_50mhz    : in std_logic;
+    dcs_use_lane            : in std_logic_vector(3 downto 0);
+    dcs_force_full          : in std_logic
 
     --cal_ss_n : out std_logic;
     --cal_sclk : out std_logic;
@@ -228,13 +192,11 @@ architecture synth of Registers is
 
 
    constant CRDDRRESETN		: std_logic_vector(7 downto 0) := x"10";
-   constant CRTIMERENABLE	: std_logic_vector(7 downto 0):= x"12";
-   constant CRTIMERRESET	: std_logic_vector(7 downto 0):= x"13";
-   constant CRTIMERCOUNTER	: std_logic_vector(7 downto 0):= x"14";
-   constant	CRDTCALIGNRESETN	:	std_logic_vector(7 downto 0) := x"15";
-   constant	CRTVSRESETN		:	std_logic_vector(7 downto 0) := x"16";
-
-   constant CRUSEUART       : std_logic_vector(7 downto 0) := x"F1";  -- last DTC reply [31:16] = addr, [15:0] = data 
+   constant CRTIMERENABLE	: std_logic_vector(7 downto 0) := x"12";
+   constant CRTIMERRESET	: std_logic_vector(7 downto 0) := x"13";
+   constant CRTIMERCOUNTER	: std_logic_vector(7 downto 0) := x"14";
+   constant	CRDTCALIGNRESETN: std_logic_vector(7 downto 0) := x"15";
+   constant	CRTVSRESETN     : std_logic_vector(7 downto 0) := x"16";
 
   ------------------------------------------------------------------------------
   --  Invert the spi clock for CAL, multiplexer enable
@@ -261,22 +223,6 @@ architecture synth of Registers is
    constant CRDDRDREQSENT: std_logic_vector(7 downto 0):= x"2E";  -- no. of DREQs sent to DTC
    constant CRDDRDREQNULL: std_logic_vector(7 downto 0):= x"2F";  -- no. of null size DREQs sent to DTC
    
-   --constant CRDDRNHITS : 	std_logic_vector(7 downto 0) := x"20";  -- a 31-bit register to set up the number of hits to be written/read from memory
-   --constant CRDDROFFSET: 	std_logic_vector(7 downto 0) := x"21";  -- 31-bit memory address offset 
-   --constant CRDDRCS    : 	std_logic_vector(7 downto 0) := x"22";  -- 1-bit chip select (to decide if we are writing to memory or to FIFO - in reality an SRAM)
-   --constant CRDDRWEN   : 	std_logic_vector(7 downto 0) := x"23";  -- a DDR WR-only enable: auto-clearing
-   --constant CRDDRREN   : 	std_logic_vector(7 downto 0) := x"24";  -- a DDR RD-only with pattern compare enable: auto-clearing
-   --constant CRDDRFIFOWEN: 	std_logic_vector(7 downto 0) := x"25";-- a DMA_EN to transfer data from FIFO to  memory that has to be set high and low by hand
-   --constant CRDDRDIAG0 : 	std_logic_vector(7 downto 0) := x"26";  -- 32-bit diagnostic bus: used for MEMFIFO_RD_CNT
-   --constant CRDDRRAMADDR: 	std_logic_vector(7 downto 0) := x"27";  -- addr to last DDR content RAM 
-   --constant CRDDRDIAG1 : 	std_logic_vector(7 downto 0) := x"28";  -- 32-bit diagnostic bus: used for DDR_RD_CNT (cumulative)
-   --constant CRDDRRPATTRN: 	std_logic_vector(7 downto 0):= x"29";  -- 2-bit to specify test patter: 0=> +1, 1=> -1, 2=> A's & 5's, 3=> PRBG
-   --constant CRDDRRAMDATA: 	std_logic_vector(7 downto 0) := x"2A";  -- data from last DDR content RAM 
-   --constant CRDDRRAMREN: 	std_logic_vector(7 downto 0)	:= x"2B";  -- read enable for RAM with latest DDR read values: auto-clearing 
-   --constant CRDDRERRLOC: 	std_logic_vector(7 downto 0) := x"2C";  -- 32-bit DDR error location (x8 to determine DDR address with error)
-   --constant CRDDRPTTREN: 	std_logic_vector(7 downto 0) := x"2D";  -- a WR_EN that has to be set high and low by hand
-   --constant CRDDRFORCERD:	std_logic_vector(7 downto 0) := x"2E";  -- set DDR3_FULL=1 .AND. MEM_RD_CNT=0 to force DDR3 read: auto-clearing
-		--
    constant CRDDRSERIALSET:   std_logic_vector(7 downto 0):= x"30"; 	-- if 1, setup DDR tests via SERIAL, if 0 assumed setup via DCS
    constant CRDDRHBTAG  : 	   std_logic_vector(7 downto 0):= x"31";  -- bit [31:0] of last DTC Heartbeat Tag
    constant CRDDRPRETAG : 	   std_logic_vector(7 downto 0):= x"32";  -- bit [31:0] of last DTC Prefetch Tag
@@ -293,23 +239,6 @@ architecture synth of Registers is
    constant CRDDRSIZERD:   std_logic_vector(7 downto 0):= x"3D";  -- event size(*3) read from DREQ FIFO:[31] = DREQ_FIFO EMPTY, [16:0] DREQ_FIFO_RDCNT
    constant CRDDRCTRLREADY: std_logic_vector(7 downto 0) := x"3E";  -- DDR ctrl ready
    
-   --constant CRDDRSEL   : std_logic_vector(7 downto 0) := x"30";   -- 1-bit serial readout select (1 => DIGIFIFO readout via DDR3, 0 => DIGIFIFO readout directly)
-   --constant CRDDRFULL  : std_logic_vector(7 downto 0) := x"31";   --  DDR3 full flag: if 1, DDRPAGENO have been written to memory. When DDRPAGENO have been readout, goes back to 0 
-   --constant CRDDRFIFORE: std_logic_vector(7 downto 0) := x"32";   --  start reading 1KB page of DDR3 memory 
-   --constant CRDDRSET   : std_logic_vector(7 downto 0):= x"33"; 	--  if 1, use DDR simulator data to TOP_SERDES; if 0, use DDR data to TOP_SERDES
-		--
-   --constant CRDDRPAGENO: std_logic_vector(7 downto 0) := x"34";   --  how many 1KB pages of DIGIFIFO we want to write to DDR3: max is 2Gb/1KB = 2**18-1 = 262143 
-   --constant CRDDRPAGEWR: std_logic_vector(7 downto 0) := x"35";   --  how many 1KB pages have been written to DDR3
-   --constant CRDDRPAGERD: std_logic_vector(7 downto 0) := x"36";   --  how many 1KB pages have been read from DDR3
-   --constant CRDDRMEMFIFODATA0  : std_logic_vector(7 downto 0) := x"37";
-   --constant CRDDRMEMFIFODATA1  : std_logic_vector(7 downto 0) := x"38";
-   --constant CRDDRMEMFIFOFULL    : std_logic_vector(7 downto 0) := x"39";
-   --constant CRDDRMEMFIFOEMPTY   : std_logic_vector(7 downto 0) := x"3A";
-   --constant CRDDRMEMFIFORE      : std_logic_vector(7 downto 0) := x"3B";
-   --constant CRDDRTEMPFIFOFULL   : std_logic_vector(7 downto 0) := x"3C"; 
-   --constant CRDDRTEMPFIFOEMPTY  : std_logic_vector(7 downto 0) := x"3D"; 
-   --constant CRDDRCONVDATA       : std_logic_vector(7 downto 0) := x"3E";  -- DATA out of DIGIFIFO or PATTERN_FIFO
-   --constant CRDDRCONVRDCNT      : std_logic_vector(7 downto 0) := x"3F"; -- RDCNT out of DIGIFIFO or PATTERN_FIFO
 
 -------------------------------------------------------------------------------
 -- -SERDES 
@@ -406,28 +335,16 @@ architecture synth of Registers is
 	constant CR_CAL_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B8";
 	constant CR_HV_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B9";
 
-    constant CR_DTC_ERROR_ADDRESS		: std_logic_vector(7 downto 0) := x"E0";
-    constant CR_DTC_ERROR_COUNTER		: std_logic_vector(7 downto 0) := x"E1";
+    constant CR_ERROR_ADDRESS		    : std_logic_vector(7 downto 0) := x"E0";
+    constant CR_ERROR_COUNTER		    : std_logic_vector(7 downto 0) := x"E1";
+-- other register implicitely used
+--      0xED to drive   cal_serdes_reset_n , hv_serdes_reset_n , dtc_serdes_reset_n 
+--      0xEE to drive   align_roc_to_digi
+--      0xEF to drive   serial_force_full
+--      0xF0 to drive   event_window_expected
+    constant CR_USE_UART                : std_logic_vector(7 downto 0) := x"F1";  -- send DIGI data to DIGIReaderFIFO. bypassing ROCFIFOs 
+    constant CR_DIGIRW_SEL              : std_logic_vector(7 downto 0) := x"F2";  -- select source of some signals as fiber (if 0) or serail (if 1)
 
--------------------------------------------------------------------------------
--- DDR SPEED TESTS
------------------------------------------------------------------------------- 
-   --constant CRDDRTRUEL:		std_logic_vector(7 downto 0) := x"C0";  -- LSB 32-bit for DDR read with error
-   --constant CRDDRTRUEH: 	std_logic_vector(7 downto 0) := x"C1";  -- MSB 32-bit for DDR read with error
-   --constant CRDDREXPCL: 	std_logic_vector(7 downto 0) := x"C2";  -- LSB 32-bit for DDR expected with error
-   --constant CRDDREXPCH: 	std_logic_vector(7 downto 0) := x"C3";  -- MSB 32-bit for DDR expected with error
-   --constant CRDDRBURST: 	std_logic_vector(7 downto 0) := x"C4";	 -- DDR BURST size (ex:0x3 = 256 bits, 0x7F = 1kB)	
-   --constant CRDDRRWEN: 		std_logic_vector(7 downto 0) := x"C5";  -- a simultaneous DDR WR&RD EN: auto-clearing 
-   --constant CRDDRERRREN:	std_logic_vector(7 downto 0) := x"C6";  -- read enable for FIFOs with DDR errors: auto-clearing 
-   --constant CRDDRWRTREN:	std_logic_vector(7 downto 0) := x"C7";  -- read enable for DDR-Writes timer FIFO: auto-clearing 
-   --constant CRDDRRDTREN:	std_logic_vector(7 downto 0) := x"C8";  -- read enable for DDR-Reads timer FIFO: auto-clearing 
-   --constant CRDDRFIFODIA: 	std_logic_vector(7 downto 0) := x"C9";  -- FIFO STATUS for timing and error FIFOs: bit 0/1 => WRTIME E/F;  4/5 RDTIME E/F;  8/9 ERROR E/F
-   --constant CRDDRWRTIME:	std_logic_vector(7 downto 0) := x"CA";  -- 32-bit timer for DDR writes
-   --constant CRDDRRDTIME:	std_logic_vector(7 downto 0) := x"CB";  -- 32-bit timer for DDR reads
-   --constant CRDDRERRCNT:	std_logic_vector(7 downto 0) := x"CC";  -- 32-bit DDR error count
-   --constant CRDDRLOCRAM:	std_logic_vector(7 downto 0) := x"CD";  -- 32-bit DDR location to start write to TPSRAM(x8 to determine DDR address)
-   --constant CRDDRWRBCNT: 	std_logic_vector(7 downto 0) := x"CE";  -- DDR Write-data burst count 
-   --constant CRDDRRDBCNT: 	std_logic_vector(7 downto 0) := x"CF";  -- DDR Read-data burst count 
 
   -------------------------------------------------------------------------------
   -- Signal declarations
@@ -487,47 +404,72 @@ architecture synth of Registers is
     signal hv_address_in : std_logic_vector(8 downto 0);
 
 
+-- added signals to deal with DIGI_RW commands via DCS packets from fiber
+    signal  digirw_sel      : std_logic;    -- if 0 (default) registers are driven by fiber; if 1, registers are driven by serial
 
+    signal serial_cal_init  : std_logic;
+    signal serial_cal_data  : std_logic_vector(15 downto 0);
+    signal serial_cal_addr  : std_logic_vector(8 downto 0);
 
+    signal serial_hv_init   : std_logic;
+    signal serial_hv_data   : std_logic_vector(15 downto 0);
+    signal serial_hv_addr   : std_logic_vector(8 downto 0);
+
+    signal dcs_cal_init_reg : std_logic;
+    signal syncd_cal_init   : std_logic;
+    signal dcs_hv_init_reg  : std_logic;
+    signal syncd_hv_init    : std_logic;
+    
+    signal serial_enable_fiber_clock    : std_logic;
+    signal serial_enable_fiber_marker   : std_logic;
+    signal serial_ewm_enable_50mhz      : std_logic;
+    signal serial_force_full: std_logic;
+    signal serial_use_lane  : std_logic_vector(3 downto 0);
+    
 begin
 
-     --calSPIController : SPIController
-        --port map(
-            --reset_n => PRESETn,
-            --clk => PCLK,
-            --
-            --init => cal_init,
-            --busy => cal_busy,
-            --
-            --data_in => cal_data_in,
-            --address => cal_address_in,
-            --data_out => cal_data_out,
-        --
-            --ss_n => cal_ss_n,
-            --sclk => cal_sclk,
-            --mosi => cal_mosi,
-            --miso => cal_miso
-        --);
---
---
-     --hvSPIController : SPIController
-        --port map(
-            --reset_n => PRESETn,
-            --clk => PCLK,
-            --
-            --init => hv_init,
-            --busy => hv_busy,
-            --
-            --data_in => hv_data_in,
-            --address => hv_address_in,
-            --data_out => hv_data_out,
-        --
-            --ss_n => hv_ss_n,
-            --sclk => hv_sclk,
-            --mosi => hv_mosi,
-            --miso => hv_miso
-        --);
+ -- added logic to deal with DIGI commands via DTC
+    enable_fiber_clock  <=  dcs_enable_fiber_clock  when digirw_sel = '0'    else   serial_enable_fiber_clock;    
+    enable_fiber_marker <=  dcs_enable_fiber_marker when digirw_sel = '0'    else   serial_enable_fiber_marker; 
+    ewm_enable_50mhz    <=  dcs_ewm_enable_50mhz    when digirw_sel = '0'    else   serial_ewm_enable_50mhz;
+    use_lane            <=  dcs_use_lane            when digirw_sel = '0'    else   serial_use_lane;
+    force_full          <=  dcs_force_full          when digirw_sel = '0'    else   serial_force_full;
+    
+  -- Synchronize DTC signals for DIGI_RW on PCLK 
+    p_DIGIRW : process (PRESETn, PCLK)
+    begin
+        if (PRESETn = '0') then
+            
+            syncd_cal_init  <= '0';
+            syncd_hv_init   <= '0';
+            
+        elsif (PCLK'event and PCLK = '1') then
+            
+            dcs_cal_init_reg    <= dcs_cal_init;
+            if  dcs_cal_init = '1' and dcs_cal_init_reg = '0'   then  
+                syncd_cal_init  <= '1';
+            else
+                syncd_cal_init  <= '0';
+            end if;
+                
+            dcs_hv_init_reg     <= dcs_hv_init;
+            if  dcs_hv_init = '1' and dcs_hv_init_reg = '0'   then  
+                syncd_hv_init  <= '1';
+            else
+                syncd_hv_init  <= '0';
+            end if;
 
+            cal_init        <= syncd_cal_init   when digirw_sel = '0'    else serial_cal_init;
+            cal_data_in     <= dcs_cal_data     when digirw_sel = '0'    else serial_cal_data;
+            cal_address_in  <= dcs_cal_addr     when digirw_sel = '0'    else serial_cal_addr;
+
+            hv_init         <= syncd_hv_init    when digirw_sel = '0'    else serial_hv_init;
+            hv_data_in      <= dcs_hv_data      when digirw_sel = '0'    else serial_hv_data;
+            hv_address_in   <= dcs_hv_addr      when digirw_sel = '0'    else serial_hv_addr;
+            
+        end if;
+    end process p_DIGIRW;
+    
 
     hvTWIController_0 : TWIController
         -- port map
@@ -569,8 +511,7 @@ begin
 
         );
 
-
-
+        
   PREADY  <= '1';
   PSLVERR <= '0';
 -------------------------------------------------------------------------------
@@ -631,62 +572,6 @@ begin
         when CRDDROFFSETTAG =>
           DataOut(31 downto 0) <= DDROFFSETTAG;
 
-          --when CRDDRDIAG0 =>
-          --DataOut(31 downto 0) <= DDRDIAG0;
-        --when CRDDRDIAG1 =>
-          --DataOut(31 downto 0) <= DDRDIAG1;
-			 --
-        --when CRDDRWRTIME =>
-          --DataOut(31 downto 0) <= DDRWRTIME;
-        --when CRDDRRDTIME =>
-          --DataOut(31 downto 0) <= DDRRDTIME;
-        --when CRDDRERRCNT =>
-          --DataOut(31 downto 0) <= DDRERRCNT;
-        --when CRDDRERRLOC =>
-          --DataOut(31 downto 0) <= DDRERRLOC;
-        --when CRDDRFIFODIA =>
-          --DataOut(15 downto 0) <= DDRFIFODIA;
-        --when CRDDRTRUEL =>
-          --DataOut(31 downto 0) <= DDRTRUEL;
-        --when CRDDRTRUEH =>
-          --DataOut(31 downto 0) <= DDRTRUEH;
-        --when CRDDREXPCL =>
-          --DataOut(31 downto 0) <= DDREXPCL;
-        --when CRDDREXPCH =>
-          --DataOut(31 downto 0) <= DDREXPCH;
-        --when CRDDRRAMDATA =>
-          --DataOut(31 downto 0) <= DDRRAMDATA;
-        --when CRDDRWRBCNT =>
-          --DataOut(31 downto 0) <= DDRWRBCNT;
-        --when CRDDRRDBCNT =>
-          --DataOut(31 downto 0) <= DDRRDBCNT;
---
---
-        --when CRDDRFULL =>
-          --DataOut(0) <= DDRFULL;
-        --when CRDDRPAGEWR =>
-          --DataOut(31 downto 0) <= DDRPAGEWR;
-        --when CRDDRPAGERD =>
-          --DataOut(31 downto 0) <= DDRPAGERD;
---
-        --when CRDDRMEMFIFOFULL =>
-          --DataOut(0) <= DDRMEMFIFOFULL;
-        --when CRDDRMEMFIFOEMPTY =>
-          --DataOut(0) <= DDRMEMFIFOEMPTY;
-        --when CRDDRMEMFIFODATA0 =>
-          --DataOut(31 downto 0) <= DDRMEMFIFODATA0;
-        --when CRDDRMEMFIFODATA1 =>
-          --DataOut(31 downto 0) <= DDRMEMFIFODATA1;
-        --when CRDDRTEMPFIFOFULL =>
-          --DataOut(0) <= DDRTEMPFIFOFULL;
-        --when CRDDRTEMPFIFOEMPTY =>
-          --DataOut(0) <= DDRTEMPFIFOEMPTY;
---
-        --when CRDDRCONVDATA =>
-          --DataOut(31 downto 0) <= DDRCONVDATA;
-        --when CRDDRCONVRDCNT =>
-          --DataOut(16 downto 0) <= DDRCONVRDCNT;
---
         when CRDTCDATAREAD =>
           DataOut(31 downto 0) <= DTCDATAREAD;
         when CRDDRCTRLREADY =>
@@ -762,10 +647,9 @@ begin
         when CR_HV_SERDES_ERRORS =>
             DataOut(7 downto 0) <= hv_lane0_error_count;
             DataOut(15 downto 8) <= hv_lane1_error_count;
-        when CR_DTC_ERROR_COUNTER =>
-            DataOut(15 downto 0) <= dtc_error_counter;
+        when CR_ERROR_COUNTER =>
+            DataOut(15 downto 0) <= error_counter;
             
-
         when others =>
           DataOut <= (others => '0');
       end case;
@@ -791,252 +675,258 @@ begin
 
 --*****************************************************************************************
   -- Control registers writing
-  p_reg_seq : process (PRESETn, PCLK, PSEL, PENABLE, PWRITE)
-  begin
+p_reg_seq : process (PRESETn, PCLK, PSEL, PENABLE, PWRITE)
+begin
     if (PRESETn = '0') then
-      DDR_RESETN 			<= '1';
-		DTCALIGN_RESETN	<= '1';
-      DIGIDEVICE_RESETN	<= '1';
-		TVS_RESETN			<=	'1';
+        DDR_RESETN 		    <= '1';
+        DTCALIGN_RESETN	    <= '1';
+        DIGIDEVICE_RESETN	<= '1';
+        TVS_RESETN		    <=	'1';
 		
-      INVERTCALSPICLCK  <= '0';
-
-      DDRSERIALSET      <= '0';
-      DDRPTTREN         <= '0';
-      DDRCFOEN          <= '0';
-      DDRCFOSTART       <= '0';
-      DDRPREFETCHEN     <= '0';
-      DDRERRREQ         <= b"00";
-      DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
-      DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
-      DDRCFONUMBERHB    <= x"0000_0001";   
-
-      --DDRCS             <= '0';
-      --DDRWEN            <= '0';
-      --DDRREN            <= '0';
-      --DDRFIFOWEN        <= '0';
-      --DDRSEL            <= '0';
-      --DDRSET            <= '0';
-      --DDRPTTREN         <= '0';
-      --DDRFIFO_RE        <= '0';
-      --DDRMEMFIFO_RE     <= '0';
-      --DDRPAGENO         <= x"0000_0000"; 
-      --DDROFFSET         <= x"0000_0000"; 
-      --DDRNHITS          <= x"0000_0001"; 
-      --DDRPATTRN         <= b"00";
-      --DDRRAMADDR        <= x"FFFF_FFFF";
-      --DDRLOCRAM         <= x"0000_0000"; 
-		--
-		--DDRFORCERD		<= '0';
+        INVERTCALSPICLCK  <= '0';
+        
+        DDRSERIALSET      <= '0';
+        DDRPTTREN         <= '0';
+        DDRCFOEN          <= '0';
+        DDRCFOSTART       <= '0';
+        DDRPREFETCHEN     <= '0';
+        DDRERRREQ         <= b"00";
+        DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
+        DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
+        DDRCFONUMBERHB    <= x"0000_0001";   
 		
-      DTCSIMSTART    <= '0';
-      DTCSIMBLKEN    <= '0';
-      DTCSIMPARAM    <= x"0000_0000";
-      DTCSIMADDR     <= x"0000_0000";
-      DTCSIMDATA     <= x"0000_0000";
-      DTCSIMSPILLDATA<= x"0000_0000";
-      DTCSIMBLKDATA  <= x"0000";
-      DTCSIMBLKADDR  <= b"0000000";
+        DTCSIMSTART    <= '0';
+        DTCSIMBLKEN    <= '0';
+        DTCSIMPARAM    <= x"0000_0000";
+        DTCSIMADDR     <= x"0000_0000";
+        DTCSIMDATA     <= x"0000_0000";
+        DTCSIMSPILLDATA<= x"0000_0000";
+        DTCSIMBLKDATA  <= x"0000";
+        DTCSIMBLKADDR  <= b"0000000";
 
-      SERDES_RE <= '0';
-      serdes_re0 <= '0';
-      serdes_re1 <= '0';
-      serdes_re2 <= '0';
-      serdes_re3 <= '0';
-      use_lane <= b"0000";
+        SERDES_RE   <= '0';
+        serdes_re0  <= '0';
+        serdes_re1  <= '0';
+        serdes_re2  <= '0';
+        serdes_re3  <= '0';
+        --use_lane    <= b"0000";
+        serial_use_lane <= b"0000";
       
-      cal_lane0_pcs_reset_n <= '1';
-      cal_lane1_pcs_reset_n <= '1';
-      cal_lane0_pma_reset_n <= '1';
-      cal_lane1_pma_reset_n <= '1';
-      hv_lane0_pcs_reset_n <= '1';
-      hv_lane1_pcs_reset_n <= '1';
-      hv_lane0_pma_reset_n <= '1';
-      hv_lane1_pma_reset_n <= '1';
+        cal_lane0_pcs_reset_n <= '1';
+        cal_lane1_pcs_reset_n <= '1';
+        cal_lane0_pma_reset_n <= '1';
+        cal_lane1_pma_reset_n <= '1';
+        hv_lane0_pcs_reset_n <= '1';
+        hv_lane1_pcs_reset_n <= '1';
+        hv_lane0_pma_reset_n <= '1';
+        hv_lane1_pma_reset_n <= '1';
       
-      cal_serdes_reset_n <= '1';
-      hv_serdes_reset_n <= '1';
-      dtc_serdes_reset_n <= '1';
+        cal_serdes_reset_n <= '1';
+        hv_serdes_reset_n <= '1';
+        dtc_serdes_reset_n <= '1';
       
-      dtc_enable_reset <= '0';
+        dtc_enable_reset <= '0';
       
-      cal_init <= '0';
-      hv_init <= '0';
-      ewm_50mhz <= '0';
-      ewm_enable_50mhz <= '0';
-      use_uart <= '0';
+        --cal_init <= '0';
+        --hv_init <= '0';
+        serial_cal_init <= '0';
+        serial_hv_init <= '0';
+        
+        ewm_50mhz <= '0';
+        --ewm_enable_50mhz <= '0';
+        serial_ewm_enable_50mhz <= '0';
+        use_uart <= '0';
       
-      write_to_fifo <= '0';
-      reset_fifo_n <= '1';
-      dummy_status_address <= (others => '0');
-      force_full <= '0';
-      align_roc_to_digi <= '0';
+        write_to_fifo <= '0';
+        reset_fifo_n <= '1';
+        dummy_status_address <= (others => '0');
+        --force_full <= '0';
+        serial_force_full <= '0';
+        align_roc_to_digi <= '0';
       
-      enable_fiber_clock <= '0';
-      enable_fiber_marker <= '0';
-      dtc_error_address <= (others => '0');
+        --enable_fiber_clock <= '0';
+        --enable_fiber_marker <= '0';
+        serial_enable_fiber_clock <= '0';
+        serial_enable_fiber_marker <= '0';
+      
+        error_address <= (others => '0');
 		
     elsif (PCLK'event and PCLK = '1') then
 		DDR_RESETN  <= '1';
 		
-		SERDES_RE <= '0';
-      serdes_re0 <= '0';
-      serdes_re1 <= '0';
-      serdes_re2 <= '0';
-      serdes_re3 <= '0';
+        SERDES_RE <= '0';
+        serdes_re0 <= '0';
+        serdes_re1 <= '0';
+        serdes_re2 <= '0';
+        serdes_re3 <= '0';
       
-      --DIGI_RESET  <= '1';
-      --reset_fifo_n <= '1';
+        --DIGI_RESET  <= '1';
+        --reset_fifo_n <= '1';
      
-      cal_init  <= '0';
-      hv_init   <= '0';
---
--- this are meant to pulses 
-      DTCSIMSTART    <= '0';
-      DTCSIMBLKEN    <= '0';
-      DDRCFOSTART    <= '0';
+        --cal_init <= '0';
+        --hv_init <= '0';
+        serial_cal_init <= '0';
+        serial_hv_init <= '0';
+        
+        -- this are meant to be pulses 
+        DTCSIMSTART    <= '0';
+        DTCSIMBLKEN    <= '0';
+        DDRCFOSTART    <= '0';
       
-      if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
+        if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
 			
-          when CRDDRRESETN =>
-            DDR_RESETN <= '0';
-			 when CRDTCALIGNRESETN =>
-            DTCALIGN_RESETN <= PWDATA(0);
-          when CRINVERTCALSPICLCK =>
-            INVERTCALSPICLCK <= PWDATA(0);
-			 when CRTVSRESETN =>
+            when CRDDRRESETN =>
+                DDR_RESETN <= '0';
+            when CRDTCALIGNRESETN =>
+                DTCALIGN_RESETN <= PWDATA(0);
+            when CRINVERTCALSPICLCK =>
+                INVERTCALSPICLCK <= PWDATA(0);
+            when CRTVSRESETN =>
 				TVS_RESETN <= PWDATA(0);
 				
-          when CRTIMERRESET =>
-            TIMERRESET<=PWDATA(0);
+            when CRTIMERRESET =>
+                TIMERRESET<=PWDATA(0);
 				
-          when CRTIMERENABLE =>
-            TIMERENABLE <= PWDATA(0);
-				
-          when CRDDRSERIALSET =>
-            DDRSERIALSET <= PWDATA(0);
-          when CRDDRPTTREN =>
-            DDRPTTREN <= PWDATA(0);
-          when CRDDRERRREQ =>
-            DDRERRREQ <= PWDATA(1 downto 0);
-          when CRDDRCFOEN =>
-            DDRCFOEN <= PWDATA(0);
-          when CRDDRPREFEN =>
-            DDRPREFETCHEN <= PWDATA(0);
-          when CRDDRCFOSTART =>
-            DDRCFOSTART <= '1';
-          when CRDDRCFOOFFSET =>
-            DDRCFOOFFSET <= PWDATA(31 downto 0);
-          when CRDDRCFODELTAHB =>
-            DDRCFODELTAHB  <= PWDATA(31 downto 0);
-          when CRDDRCFONOHB  =>
-            DDRCFONUMBERHB <= PWDATA(31 downto 0);
+            when CRTIMERENABLE =>
+                TIMERENABLE <= PWDATA(0);
+            
+            when CRDDRSERIALSET =>
+                DDRSERIALSET <= PWDATA(0);
+            when CRDDRPTTREN =>
+                DDRPTTREN <= PWDATA(0);
+            when CRDDRERRREQ =>
+                DDRERRREQ <= PWDATA(1 downto 0);
+            when CRDDRCFOEN =>
+                DDRCFOEN <= PWDATA(0);
+            when CRDDRPREFEN =>
+                DDRPREFETCHEN <= PWDATA(0);
+            when CRDDRCFOSTART =>
+                DDRCFOSTART <= '1';
+            when CRDDRCFOOFFSET =>
+                DDRCFOOFFSET <= PWDATA(31 downto 0);
+            when CRDDRCFODELTAHB =>
+                DDRCFODELTAHB  <= PWDATA(31 downto 0);
+            when CRDDRCFONOHB  =>
+                DDRCFONUMBERHB <= PWDATA(31 downto 0);
 
-          when CRDTCSIMSTART =>
-            DTCSIMSTART <= '1';
-          when CRDTCSIMBLKEN =>
-            DTCSIMBLKEN <= '1';
-          when CRDTCSIMPARAM =>
-            DTCSIMPARAM <= PWDATA(31 downto 0);
-          when CRDTCSIMADDR =>
-            DTCSIMADDR <= PWDATA(31 downto 0);
-          when CRDTCSIMDATA =>
-            DTCSIMDATA <= PWDATA(31 downto 0);
-          when CRDTCSIMSPILLDT =>
-            DTCSIMSPILLDATA <= PWDATA(31 downto 0);
-          when CRDTCSIMBLKDT =>
-            DTCSIMBLKDATA <= PWDATA(15 downto 0);
-          when CRDTCSIMBLKAD =>
-            DTCSIMBLKADDR <= PWDATA(6 downto 0);
-          when CRSERDESRE =>
-            SERDES_RE <= '1';
+            when CRDTCSIMSTART =>
+                DTCSIMSTART <= '1';
+            when CRDTCSIMBLKEN =>
+                DTCSIMBLKEN <= '1';
+            when CRDTCSIMPARAM =>
+                DTCSIMPARAM <= PWDATA(31 downto 0);
+            when CRDTCSIMADDR =>
+                DTCSIMADDR <= PWDATA(31 downto 0);
+            when CRDTCSIMDATA =>
+                DTCSIMDATA <= PWDATA(31 downto 0);
+            when CRDTCSIMSPILLDT =>
+                DTCSIMSPILLDATA <= PWDATA(31 downto 0);
+            when CRDTCSIMBLKDT =>
+                DTCSIMBLKDATA <= PWDATA(15 downto 0);
+            when CRDTCSIMBLKAD =>
+                DTCSIMBLKADDR <= PWDATA(6 downto 0);
+            when CRSERDESRE =>
+                SERDES_RE <= '1';
    
-          when CRSERDESRESET =>
-            DIGIDEVICE_RESETN	<= PWDATA(0);
+            when CRSERDESRESET =>
+                DIGIDEVICE_RESETN	<= PWDATA(0);
          
-          when CRSERDESHOWMANY =>
-            SERDES_HOWMANY <= PWDATA(12 downto 0);
+            when CRSERDESHOWMANY =>
+                SERDES_HOWMANY <= PWDATA(12 downto 0);
 
-          when CRCALSPIINIT =>
-            cal_init <= '1';
-          when CRCALSPIADDRESS =>
-            cal_address_in <= PWDATA(8 downto 0);
-          when CRCALSPIDATA =>
-            cal_data_in <= PWDATA(15 downto 0);
+            when CRCALSPIINIT =>
+                --cal_init <= '1';
+                serial_cal_init <= '1';
+            when CRCALSPIADDRESS =>
+                --cal_address_in <= PWDATA(8 downto 0);
+                serial_cal_addr <= PWDATA(8 downto 0);
+            when CRCALSPIDATA =>
+                --cal_data_in <= PWDATA(15 downto 0);
+                serial_cal_data <= PWDATA(15 downto 0);
 
-          when CRHVSPIINIT =>
-            hv_init <= '1';
-          when CRHVSPIADDRESS =>
-            hv_address_in <= PWDATA(8 downto 0);
-          when CRHVSPIDATA =>
-            hv_data_in <= PWDATA(15 downto 0);
+            when CRHVSPIINIT =>
+                --hv_init <= '1';
+                serial_hv_init <= '1';
+            when CRHVSPIADDRESS =>
+                --hv_address_in <= PWDATA(8 downto 0);
+                serial_hv_addr <= PWDATA(8 downto 0);
+            when CRHVSPIDATA =>
+                --hv_data_in <= PWDATA(15 downto 0);
+                serial_hv_data <= PWDATA(15 downto 0);
 
-          when CREWM =>
-            ewm_50mhz <= PWDATA(0);
-          when CREWMENABLE =>
-            ewm_enable_50mhz <= PWDATA(0);
-          when CREWMDELAY =>
-            ewm_delay <= PWDATA(15 downto 0);
-        when CREWMEARLY =>
-            event_window_early_cut <= PWDATA(15 downto 0);
-        when CREWMLATE =>
-            event_window_late_cut <= PWDATA(15 downto 0);
-        when CRROCTVS_ADDR =>
-            ROCTVS_ADDR <= PWDATA(1 downto 0);
+            when CREWM =>
+                ewm_50mhz <= PWDATA(0);
+            when CREWMENABLE =>
+                --ewm_enable_50mhz <= PWDATA(0);
+                serial_ewm_enable_50mhz <= PWDATA(0);
+            when CREWMDELAY =>
+                ewm_delay <= PWDATA(15 downto 0);
+            when CREWMEARLY =>
+                event_window_early_cut <= PWDATA(15 downto 0);
+            when CREWMLATE =>
+                event_window_late_cut <= PWDATA(15 downto 0);
+            when CRROCTVS_ADDR =>
+                ROCTVS_ADDR <= PWDATA(1 downto 0);
             
-        when CR_FIFO_RESET =>
-            reset_fifo_n <= PWDATA(0);
+            when CR_FIFO_RESET =>
+                reset_fifo_n <= PWDATA(0);
          
-        when CR_SERDES_WRITE_FIFO =>
-            write_to_fifo <= PWDATA(0);
+            when CR_SERDES_WRITE_FIFO =>
+                write_to_fifo <= PWDATA(0);
 
-        when CR_DUMMY_ADDRESS =>
-            dummy_status_address <= PWDATA(3 downto 0);
+            when CR_DUMMY_ADDRESS =>
+                dummy_status_address <= PWDATA(3 downto 0);
             
-        when CRSERDES_RE =>
-            serdes_re0 <= PWDATA(0);
-            serdes_re1 <= PWDATA(1);
-            serdes_re2 <= PWDATA(2);
-            serdes_re3 <= PWDATA(3);
-            use_lane <= PWDATA(3 downto 0);
+            when CRSERDES_RE =>
+                serdes_re0 <= PWDATA(0);
+                serdes_re1 <= PWDATA(1);
+                serdes_re2 <= PWDATA(2);
+                serdes_re3 <= PWDATA(3);
+                --use_lane   <= PWDATA(3 downto 0);
+                serial_use_lane   <= PWDATA(3 downto 0);
             
-        when CR_ENABLE_FIBER_CLOCK =>
-            enable_fiber_clock <= PWDATA(0);
-        when CR_ENABLE_FIBER_MARKER =>
-            enable_fiber_marker <= PWDATA(0);
-        when CR_DTC_ENABLE_RESET =>
-            dtc_enable_reset <= PWDATA(0);
-        when CR_DIGI_SERDES_RESETS =>
-            cal_lane0_pcs_reset_n <= PWDATA(0);
-            cal_lane1_pcs_reset_n <= PWDATA(1);
-            cal_lane0_pma_reset_n <= PWDATA(2);
-            cal_lane1_pma_reset_n <= PWDATA(3);
-            hv_lane0_pcs_reset_n <= PWDATA(4);
-            hv_lane1_pcs_reset_n <= PWDATA(5);
-            hv_lane0_pma_reset_n <= PWDATA(6);
-            hv_lane1_pma_reset_n <= PWDATA(7);
+            when CR_ENABLE_FIBER_CLOCK =>
+                --enable_fiber_clock <= PWDATA(0);
+                serial_enable_fiber_clock <= PWDATA(0);
+            when CR_ENABLE_FIBER_MARKER =>
+                --enable_fiber_marker <= PWDATA(0);
+                serial_enable_fiber_marker <= PWDATA(0);
+            when CR_DTC_ENABLE_RESET =>
+                dtc_enable_reset <= PWDATA(0);
+            when CR_DIGI_SERDES_RESETS =>
+                cal_lane0_pcs_reset_n <= PWDATA(0);
+                cal_lane1_pcs_reset_n <= PWDATA(1);
+                cal_lane0_pma_reset_n <= PWDATA(2);
+                cal_lane1_pma_reset_n <= PWDATA(3);
+                hv_lane0_pcs_reset_n <= PWDATA(4);
+                hv_lane1_pcs_reset_n <= PWDATA(5);
+                hv_lane0_pma_reset_n <= PWDATA(6);
+                hv_lane1_pma_reset_n <= PWDATA(7);
             
-        when X"EF" =>
-            force_full <= PWDATA(0);
-        when X"EE" =>
-            align_roc_to_digi <= PWDATA(0);
-        when X"ED" =>
-            cal_serdes_reset_n <= PWDATA(0);
-            hv_serdes_reset_n <= PWDATA(1);
-            dtc_serdes_reset_n <= PWDATA(2);
+            when X"EF" =>
+                --force_full <= PWDATA(0);
+                serial_force_full <= PWDATA(0);
+            when X"EE" =>
+                align_roc_to_digi <= PWDATA(0);
+            when X"ED" =>
+                cal_serdes_reset_n <= PWDATA(0);
+                hv_serdes_reset_n <= PWDATA(1);
+                dtc_serdes_reset_n <= PWDATA(2);
             
-        when CR_DTC_ERROR_ADDRESS =>
-            dtc_error_address <= PWDATA(7 downto 0);
-        when X"F0" =>
-            event_window_expected <= PWDATA(15 downto 0);
---        when X"F1" =>
-        when CRUSEUART  =>
-            use_uart <= PWDATA(0);
-            
-          when others =>
+            when CR_ERROR_ADDRESS =>
+                error_address <= PWDATA(7 downto 0);
+            when X"F0" =>
+                event_window_expected <= PWDATA(15 downto 0);
+            --when X"F1" =>
+            when CR_USE_UART  =>
+                use_uart <= PWDATA(0);
+            when CR_DIGIRW_SEL =>
+                digirw_sel <= PWDATA(0);
+				            
+            when others =>
         end case;
-      end if;
+        end if;
     end if;
   end process p_reg_seq;
 

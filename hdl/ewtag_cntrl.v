@@ -71,17 +71,24 @@ module ewtag_cntrl(
 	input    tag_done,			// EVT_FIFO has been emptied
    
     // diagnostics counters
-    output    reg [31:0]  hb_cnt,
-    output    reg [31:0]  hb_seen_cnt,
-    output    reg [31:0]  hb_null_cnt,
-    output    reg [31:0]  pref_seen_cnt,
-	output    reg [31:0]  start_tag_cnt,
-	output    reg [31:0]  tag_done_cnt,
-	output    reg [31:0]  tag_null_cnt,
-	output    reg [31:0]  tag_sent_cnt,
+    output  reg [31:0]  hb_cnt,
+    output  reg [31:0]  hb_seen_cnt,
+    output  reg [31:0]  hb_null_cnt,
+    output  reg [31:0]  pref_seen_cnt,
+	output  reg [31:0]  start_tag_cnt,
+	output  reg [31:0]  tag_done_cnt,
+	output  reg [31:0]  tag_null_cnt,
+	output  reg [31:0]  tag_sent_cnt,
    
+    output  reg[2:0]    ewtag_state,
+    output  reg[1:0]    datareq_state,
+    output  reg[15:0]   hb_empty_overlap_count,
+    output  reg[15:0]   ew_fifo_emptied_count,
+    output  reg[15:0]   tag_valid_count,
+    output  reg[15:0]   tag_error_count,
+
 	// exchanged with EW_SIZE_STORE_AND_FETCH
-	input	   tag_valid,		   // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
+	input	    tag_valid,		   // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
 	output reg	tag_fetch,     // REQTAG (or PREFTAG) seen 	-> drive ew_size_store_and_fetch_cntrl/FETCH
     output reg  [`EVENT_TAG_BITS-1:0]	evt_tag_fetch	// request window tag
 );
@@ -94,13 +101,13 @@ localparam [2:0]    WAIT	=	3'b000,
                     START	=	3'b010, 
                     HOLD	=	3'b011; 
 
-reg	[2:0]   ewtag_state;
-reg   hb_error;
-reg 	spilltag_re;
-reg   ew_fifo_emptied_reg, ew_fifo_emptied_pulse;
-reg   hold_ew_fifo_emptied;
-reg   ewtag_offset_re, ewtag_offset_re1, ewtag_offset_re2, ewtag_offset_re3;
-reg   ewtag_offset_pulse;
+//reg	[2:0]   ewtag_state;
+reg     hb_error;
+reg     spilltag_re;
+reg     ew_fifo_emptied_reg, ew_fifo_emptied_pulse;
+reg     hold_ew_fifo_emptied;
+reg     ewtag_offset_re, ewtag_offset_re1, ewtag_offset_re2, ewtag_offset_re3;
+reg     ewtag_offset_pulse;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DATAREQ_STATE encoding (on DREQCLK)
@@ -109,7 +116,7 @@ localparam [1:0]  IDLE  =  2'b00,
                   VALID =  2'b01,
                   LAST  =  2'b11;
                   
-reg   [1:0] datareq_state;
+//reg   [1:0] datareq_state;
 reg   tag_sent_hold;
 reg   tag_null_hold;
 
@@ -118,7 +125,9 @@ reg   ewtag_offset_valid;  // delayed copy of pulse on start of new SPILL
 reg	[`EVENT_TAG_BITS-1:0]	ewtag_offset_in;  // buffer for external register TAG or last TAG from PREFETCH/DREQ
 
 //// for diagnostics
-reg         tag_error;
+reg tag_error;
+reg tag_error_reg;
+reg tag_valid_reg;
 
 // for timing cross-domain FIFOs
 wire  spilltag_full, spilltag_empty;
@@ -179,8 +188,8 @@ begin
    if(resetn_serdesclk == 1'b0)
    begin
 		hb_cnt		<= 0;
-		hb_error	   <= 1'b0;
-		ew_fifo_emptied_pulse<= 1'b0;
+		hb_error    <= 1'b0;
+		ew_fifo_emptied_pulse   <= 1'b0;
 		hold_ew_fifo_emptied	<= 1'b0;
       
 		pattern_init   <= 1'b0;
@@ -192,7 +201,10 @@ begin
 		ewtag_offset_re2  <= 1'b0;
 		ewtag_offset_re3  <= 1'b0;
 		ewtag_offset_latch<= 1'b0;
-      ewtag_offset_pulse<= 1'b0;
+        ewtag_offset_pulse<= 1'b0;
+        
+        hb_empty_overlap_count <= 16'b0;
+        ew_fifo_emptied_count <= 16'b0;
 	end
 	else
 	begin
@@ -204,34 +216,41 @@ begin
 		if(hb_cnt >= 65536)  hb_error <= 1'b1;
 		else                 hb_error <= 1'b0;
 		
-      ew_fifo_emptied_pulse     <= ew_fifo_emptied;
+        ew_fifo_emptied_pulse     <= ew_fifo_emptied;
       
 		hold_ew_fifo_emptied <= 0;
 		if (hb_on_serdesclk && ew_fifo_emptied_pulse) hold_ew_fifo_emptied <= 1;
+        
+        if (ew_fifo_emptied == 1'b1)        ew_fifo_emptied_count  <= ew_fifo_emptied_count + 1'b1;
+        if (hold_ew_fifo_emptied == 1'b1)   hb_empty_overlap_count <= hb_empty_overlap_count + 1'b1;
 		
-		if (hb_on_serdesclk) 					                     hb_cnt <= hb_cnt + 1;
-		else if (ew_fifo_emptied_pulse || hold_ew_fifo_emptied) 	hb_cnt <= hb_cnt - 1;
+		if (hb_on_serdesclk) 					                hb_cnt <= hb_cnt + 1;
+		else if (ew_fifo_emptied_pulse || hold_ew_fifo_emptied) hb_cnt <= hb_cnt - 1;
       
-      //
-      // State Machine to control REN of SPILLTAG_FIFO and FIFOs WEN 
+        // diagnostic counters
+        if (ew_fifo_emptied == 1'b1)        ew_fifo_emptied_count  <= ew_fifo_emptied_count + 1'b1;
+        if (hold_ew_fifo_emptied == 1'b1)   hb_empty_overlap_count <= hb_empty_overlap_count + 1'b1;
+		
+        //
+        // State Machine to control REN of SPILLTAG_FIFO and FIFOs WEN 
 		case(ewtag_state)
       
-	   // at least one HB has been received
+        // at least one HB has been received
 		WAIT:
 		begin
 			spilltag_re	<= 0;
-         ewtag_offset_re <= 0;
+            ewtag_offset_re <= 0;
 			if (hb_cnt>0) ewtag_state <= READ;
 		end
 
 		// read SPILLTAG FIFO
-	   READ:
+        READ:
 		begin
 			if(!spilltag_empty) 
-         begin
-            spilltag_re <= 1;
-            ewtag_state <= START;
-         end
+            begin
+                spilltag_re <= 1;
+                ewtag_state <= START;
+            end
 		end
 		
 		// start simulate event tag while waiting for SPILLTAG output to settle
@@ -243,142 +262,152 @@ begin
 			ewtag_state    <= HOLD;
 		end
 		
-	   // Pass SPILLTAG output to simulated tag logic. 
-      // Use restart of local tag count to mark start of new spill and generate latch for EWTAG offset 
-	   HOLD:
+        // Pass SPILLTAG output to simulated tag logic. 
+        // Use restart of local tag count to mark start of new spill and generate latch for EWTAG offset 
+        HOLD:
 		begin
 			pattern_init   <= 0;
 			spill_ewtag_out<= spilltag_rdata;
-         if (spilltag_rdata == 20'b1) ewtag_offset_re <= 1;
+            if (spilltag_rdata == 20'b1) ewtag_offset_re <= 1;
 			if (ew_fifo_emptied_pulse) ewtag_state <= WAIT;
 		end
 		
-      default:
-      begin
-         ewtag_state	<=	WAIT;
-      end
+        default:
+        begin
+            ewtag_state	<=	WAIT;
+        end
       
-      endcase
+        endcase
       
-      // read EWTAG_OFFSET after FIFO empty goes low and
-      // generate EWTAG_OFFSET latch after waiting for EWTAG_OFFSET_OUT to settle
-      ewtag_offset_re1     <= (ewtag_offset_re && !ewtag_offset_empty);
-      ewtag_offset_re2     <= ewtag_offset_re1;
-      ewtag_offset_re3     <= ewtag_offset_re2;
-      ewtag_offset_latch   <= ewtag_offset_re3;
+        // read EWTAG_OFFSET after FIFO empty goes low and
+        // generate EWTAG_OFFSET latch after waiting for EWTAG_OFFSET_OUT to settle
+        ewtag_offset_re1     <= (ewtag_offset_re && !ewtag_offset_empty);
+        ewtag_offset_re2     <= ewtag_offset_re1;
+        ewtag_offset_re3     <= ewtag_offset_re2;
+        ewtag_offset_latch   <= ewtag_offset_re3;
       
-      ewtag_offset_pulse   <= ewtag_offset_re1 && !ewtag_offset_re2;
+        ewtag_offset_pulse   <= ewtag_offset_re1 && !ewtag_offset_re2;
 	end
 end
 
 
 always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
-   if(resetn_dreqclk == 1'b0)
-   begin
-      is_first_spill    <= 1'b1;		
-      ewtag_offset_valid<= 1'b0;
+    if(resetn_dreqclk == 1'b0)
+    begin
+        is_first_spill    <= 1'b1;		
+        ewtag_offset_valid<= 1'b0;
 		ewtag_offset_in   <= 0;
       
 		tag_fetch	   <=	1'b0;
-      evt_tag_fetch	<=	0;
+        evt_tag_fetch	<=	0;
       
 		data_ready	   <= 1'b0;
 		last_word	   <= 1'b0;
 		
-      tag_error      <= 1'b0;
-      start_tag_cnt  <= 0;
-      tag_done_cnt   <= 0; 
-      tag_null_cnt   <= 0; 
-      tag_sent_cnt   <= 0; 
+        tag_error      <= 1'b0;
+        start_tag_cnt  <= 0;
+        tag_done_cnt   <= 0; 
+        tag_null_cnt   <= 0; 
+        tag_sent_cnt   <= 0; 
       
-      tag_sent_hold  <= 1'b0;
-      tag_null_hold  <= 1'b0;
-      datareq_state  <= IDLE;
-   end
-   else
-   begin
+        tag_sent_hold  <= 1'b0;
+        tag_null_hold  <= 1'b0;
+        datareq_state  <= IDLE;
+        
+        tag_valid_reg   <= 1'b0;
+        tag_error_reg   <= 1'b0;
+        
+        tag_valid_count <= 16'b0;
+        tag_error_count <= 16'b0;
+    end
+    else
+    begin
          
-      // handle EWTAG offset at the start of SPILL:
-      // can be from outside register, on very first spill of a run, OR from last DATAREQ
-      if (start_spill) 
-      begin
-         if (is_first_spill)
-         begin  
-            is_first_spill    <= 1'b0;
-            ewtag_offset_in   <= reg_ewtag_offset;
-         end
-      end
-      // wait for EWTAG_OFFSET to settle: used as latch for EWTAG_OFFSET in EW_FIFO_CNTRL
-      ewtag_offset_valid   <= start_spill;  
-      
-      //
-      // generate FETCH TAG and its latch for EW_SIZE_AND_STORE_CNTRL
-      // (can be either DATAREQ or PREFETCH)
-      if (start_fetch)
-      begin
-         tag_fetch      <= 1'b1;
-         evt_tag_fetch  <= event_window_fetch;
-         start_tag_cnt  <= start_tag_cnt + 1'b1; 
-      end
-      else if (tag_valid) tag_fetch    <= 1'b0;
-          
-      //
-      // buffer any TAG_SENT and TAG_NULL from EW_FIFO_CNTRL
-      // (they can come early when using PREFETCH)
-      if (tag_sent)  tag_sent_hold <= 1'b1;
-      if (tag_null)  tag_null_hold <= 1'b1;
-      
-      //
-      // DATAREQ protocol state machine
-      last_word   <= 1'b0;
-      tag_error   <= 1'b0;
-      
-      case(datareq_state)
-      
-      // wait for DATAREQ_EVENT_START to proceed
-      IDLE:
-      begin
-         if (event_start)  datareq_state <= VALID;
-      end
-      
-      // use (buffered) TAG_SENT to issue DATAREQ_DATA_VALID
-      VALID:
-      begin
-         if (tag_sent_hold) 
-         begin
-            data_ready     <= 1'b1;
-            tag_sent_hold  <= 1'b0;
-            tag_sent_cnt   <= tag_sent_cnt + 1'b1;   
-            datareq_state  <= LAST;
-         end
-      end
-      
-      // wait for TAG_DONE or (buffered) TAG_NULL to clear DATAREQ_DATA_VALID and issue DATAREQ_LAST_WORD
-      LAST:
-      begin
-         if (tag_sent_cnt != start_tag_cnt) tag_error <= 1'b1;
-         if (tag_done || tag_null_hold) 
-         begin
-            data_ready     <= 1'b0;
-            last_word      <= 1'b1;
-            tag_null_hold  <= 1'b0;
-            datareq_state  <= IDLE;
-            
-            // for diagnostics
-            if (tag_done)  
-            begin
-               tag_done_cnt<= tag_done_cnt + 1'b1;
+        // handle EWTAG offset at the start of SPILL:
+        // can be from outside register, on very first spill of a run, OR from last DATAREQ
+        if (start_spill) 
+        begin
+            if (is_first_spill)
+            begin  
+                is_first_spill    <= 1'b0;
+                ewtag_offset_in   <= reg_ewtag_offset;
             end
-            if (tag_null_hold)  
-            begin
-               tag_done_cnt<= tag_done_cnt + 1'b1;
-               tag_null_cnt<= tag_null_cnt + 1'b1;
-            end
-         end
-      end
+        end
+        // wait for EWTAG_OFFSET to settle: used as latch for EWTAG_OFFSET in EW_FIFO_CNTRL
+        ewtag_offset_valid   <= start_spill;  
       
-      endcase
+        //
+        // generate FETCH TAG and its latch for EW_SIZE_AND_STORE_CNTRL
+        // (can be either DATAREQ or PREFETCH)
+        if (start_fetch)
+        begin
+            tag_fetch      <= 1'b1;
+            evt_tag_fetch  <= event_window_fetch;
+            start_tag_cnt  <= start_tag_cnt + 1'b1; 
+        end
+        else if (tag_valid) tag_fetch    <= 1'b0;
+        
+        //
+        // buffer any TAG_SENT and TAG_NULL from EW_FIFO_CNTRL
+        // (they can come early when using PREFETCH)
+        if (tag_sent)  tag_sent_hold <= 1'b1;
+        if (tag_null)  tag_null_hold <= 1'b1;
+      
+        //
+        // DATAREQ protocol state machine
+        last_word   <= 1'b0;
+        tag_error   <= 1'b0;
+        
+        // diagnostic counters
+        tag_valid_reg   <= tag_valid;
+        if (tag_valid == 1'b1 && tag_valid_reg == 1'b0) tag_valid_count <= tag_valid_count + 1'b1;
+        tag_error_reg   <= tag_error;  
+        if (tag_error == 1'b1 && tag_error_reg == 1'b0) tag_error_count <= tag_error_count + 1'b1;
+      
+        case(datareq_state)
+      
+        // wait for DATAREQ_EVENT_START to proceed
+        IDLE:
+        begin
+            if (event_start)  datareq_state <= VALID;
+        end
+      
+        // use (buffered) TAG_SENT to issue DATAREQ_DATA_VALID
+        VALID:
+        begin
+            if (tag_sent_hold) 
+            begin
+                data_ready     <= 1'b1;
+                tag_sent_hold  <= 1'b0;
+                tag_sent_cnt   <= tag_sent_cnt + 1'b1;   
+                datareq_state  <= LAST;
+            end
+        end
+      
+        // wait for TAG_DONE or (buffered) TAG_NULL to clear DATAREQ_DATA_VALID and issue DATAREQ_LAST_WORD
+        LAST:
+        begin
+            if (tag_sent_cnt != start_tag_cnt) tag_error <= 1'b1;
+            if (tag_done || tag_null_hold) 
+            begin
+                data_ready     <= 1'b0;
+                last_word      <= 1'b1;
+                tag_null_hold  <= 1'b0;
+                datareq_state  <= IDLE;
+                
+                // for diagnostics
+                if (tag_done)  tag_done_cnt<= tag_done_cnt + 1'b1;
+                
+                if (tag_null_hold)  
+                begin
+                    tag_done_cnt<= tag_done_cnt + 1'b1;
+                    tag_null_cnt<= tag_null_cnt + 1'b1;
+                end
+            end
+        end
+      
+        endcase
 	end
 end	
 

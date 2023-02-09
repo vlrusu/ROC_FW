@@ -6,5 +6,5 @@ create_generated_clock -name {cal_clk_out} -divide_by 1 -source [ get_pins { PF_
 set_output_delay -0.1 -min  -clock { cal_clk_out } [ get_ports { ROC_CAL_LVDS0_P } ]
 set_output_delay 2.6 -max  -clock { cal_clk_out } [ get_ports { ROC_CAL_LVDS0_P } ]
 
-set_false_path -from [ get_pins { SLOWCONTROLS_0/Registers_0/enable_fiber_clock/CLK SLOWCONTROLS_0/Registers_0/enable_fiber_marker/CLK } ]
+set_false_path -from [ get_pins { SLOWCONTROLS_0/Registers_0/enable_fiber_clock/CLK SLOWCONTROLS_0/Registers_0/serial_enable_fiber_marker/CLK } ]
 #set_false_path -from [ get_pins { DTCInterface_0/ForwardDetector_0/fifo_rst/CLK } ]

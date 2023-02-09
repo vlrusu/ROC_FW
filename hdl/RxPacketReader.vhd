@@ -52,18 +52,22 @@ port (
     EVT_MODE                    : out std_logic_vector(31 downto 0);
 	 
 	eventmarker	: out std_logic;
+	evm_for_dreq: out std_logic;
 	clockmarker : out std_logic;
 	loopmarker 	: out std_logic;
 	othermarker : out std_logic;
 	retrmarker 	: out std_logic;
 	retr_seq	: out std_logic_vector(2 downto 0);
-	event_marker_count : out std_logic_vector(15 downto 0);
-	clock_marker_count : out std_logic_vector(15 downto 0);
-	loop_marker_count : out std_logic_vector(15 downto 0);
-	other_marker_count : out std_logic_vector(15 downto 0);
-	retr_marker_count : out std_logic_vector(15 downto 0);
+	event_marker_count  : out std_logic_vector(15 downto 0);
+	evm_for_dreq_count  : out std_logic_vector(31 downto 0);
+	clock_marker_count  : out std_logic_vector(15 downto 0);
+	loop_marker_count   : out std_logic_vector(15 downto 0);
+	other_marker_count  : out std_logic_vector(15 downto 0);
+	retr_marker_count   : out std_logic_vector(15 downto 0);
 	 
-	rx_error_count 	    : out std_logic_vector(15 downto 0);
+    comma_err_count     : out std_logic_vector(15 downto 0);
+ 
+    rx_error_count 	    : out std_logic_vector(15 downto 0);
 	seq_error_count     : out std_logic_vector(15 downto 0);
 	marker_error_count  : out std_logic_vector(15 downto 0)
 
@@ -73,29 +77,30 @@ end RxPacketReader;
 architecture architecture_RxPacketReader of RxPacketReader is
 		
 	signal is_DTCpacket	: std_logic;
-	signal is_dcsreq 		: std_logic;
+	signal is_dcsreq 	: std_logic;
 	signal is_datareq 	: std_logic;
 	signal is_heartbeat	: std_logic;
 	signal is_prefetch 	: std_logic;
-	signal is_loadpretag : std_logic;
+	signal is_loadpretag: std_logic;
 		
-	signal is_evtmarker	: std_logic;
-	signal is_clkmarker	: std_logic;
-	signal is_loopmarker	: std_logic;
-	signal is_othermarker: std_logic;
-	signal is_retrmarker	: std_logic;
-	signal is_retrseq		: std_logic;
-	signal retr_seq_save	: std_logic_vector(2 downto 0);
-	signal is_marker_error : std_logic;
+	signal is_evtmarker	    : std_logic;
+	signal is_evm_for_dreq	: std_logic;
+	signal is_clkmarker	    : std_logic;
+	signal is_loopmarker    : std_logic;
+	signal is_othermarker   : std_logic;
+	signal is_retrmarker    : std_logic;
+	signal is_retrseq	    : std_logic;
+	signal retr_seq_save    : std_logic_vector(2 downto 0);
+	signal is_marker_error  : std_logic;
 		
-	signal onspill_old	:	std_logic;
-	signal is_firstHB   :   std_logic;
-    signal is_valid_EWM :   std_logic;
-	signal is_non_null_HB : std_logic;
+	signal onspill_old	    :	std_logic;
+	signal is_firstHB       :   std_logic;
+    signal is_valid_EWM     :   std_logic;
+	signal is_non_null_HB   : std_logic;
     
-	signal counter 		: unsigned(2 downto 0);
-	signal nullHB_counter : unsigned(7 downto 0);
-	signal word_count 	: integer range 0 to 31;
+	signal counter 		    : unsigned(2 downto 0);
+	signal nullHB_counter   : unsigned(7 downto 0);
+	signal word_count 	    : integer range 0 to 31;
 	 
 	signal seq_num 			: unsigned(2 downto 0);
 	signal seq_num_expected	: unsigned(2 downto 0);
@@ -108,7 +113,11 @@ architecture architecture_RxPacketReader of RxPacketReader is
 	signal rx_kchar_prev2: std_logic_vector(1 downto 0);
 	signal rx_data_prev3 : std_logic_vector(15 downto 0);
 	signal rx_kchar_prev3: std_logic_vector(1 downto 0);
-	 
+
+    -- for diagnostics to ErrorCounter
+	signal rx_error_seen : std_logic;
+	signal rx_comma_seen : std_logic;
+  
 begin
 	 
 	process(reset_n, aligned, clk)  
@@ -128,6 +137,7 @@ begin
 		is_prefetch		<= '0';
 		is_loadpretag	<= '0';
 		is_evtmarker	<= '0';
+        is_evm_for_dreq <= '0';
 		is_clkmarker	<= '0';
 		is_loopmarker	<= '0';
 		is_othermarker	<= '0';
@@ -150,8 +160,8 @@ begin
 		PREFETCH_SEEN	    <= '0';
 		ONSPILL			    <= '0';
 		NEWSPILL			<= '0';
-		SPILL_EVENT_WINDOW_TAG	<= (others => '0');	
-        EVT_MODE                <= (others => '0');
+		SPILL_EVENT_WINDOW_TAG	    <= (others => '0');	
+        EVT_MODE                    <= (others => '0');
 		HEARTBEAT_EVENT_WINDOW_TAG	<= (others => '0');	
 		PREFETCH_EVENT_WINDOW_TAG	<= (others => '0');	
 		
@@ -159,20 +169,25 @@ begin
 		marker_error_count  <= (others => '0');
 		  
 		counter <= (others => '1');
-		nullHB_counter <= (others => '0');
-		event_marker_count <= (others => '0');
-		clock_marker_count <= (others => '0');
-		loop_marker_count <= (others => '0');
-		other_marker_count <= (others => '0');
-		retr_marker_count <= (others => '0');
-		  
+		nullHB_counter      <= (others => '0');
+		event_marker_count  <= (others => '0');
+        evm_for_dreq_count  <= (others => '0');
+		clock_marker_count  <= (others => '0');
+		loop_marker_count   <= (others => '0');
+		other_marker_count  <= (others => '0');
+		retr_marker_count   <= (others => '0');
+        
 		rx_kchar_prev1 	<= (others => '0');
 		rx_data_prev1 	<= (others => '0');
 		rx_kchar_prev2 	<= (others => '0');
 		rx_data_prev2 	<= (others => '0');
 		rx_kchar_prev3 	<= (others => '0');
 		rx_data_prev3 	<= (others => '0');
-			
+        
+        rx_error_seen   <= '0';
+        rx_comma_seen   <= '0';
+		comma_err_count <= (others => '0');
+     
 	elsif rising_edge(clk) then
 	
 		HEARTBEAT_SEEN      <= '0';
@@ -192,6 +207,7 @@ begin
 		rx_data_prev3	<= rx_data_prev2;
 		  
 		eventmarker 	<= '0';
+        evm_for_dreq    <= '0';
 		clockmarker 	<= '0';
 		loopmarker 	    <= '0';
 		othermarker	    <= '0';
@@ -211,41 +227,46 @@ begin
 			is_DTCpacket <= '0';
 		end if;
 		  
-		-- clear error whem marker is re-established
+		-- clear error when marker is re-established
 		if (rx_kchar_prev2 = "11" and rx_kchar_prev1 = "11") then
 			is_marker_error <= '0';
 		end if;
 	 		  
 		if counter = 1 then 	-- for double markers
 			if (is_evtmarker = '1') then	
-				eventmarker <= '1'; 	
-				is_evtmarker <= '0'; 	
-				event_marker_count <= std_logic_vector(unsigned(event_marker_count) + 1);
+				eventmarker     <= '1'; 	
+				is_evtmarker    <= '0'; 	
+				event_marker_count  <= std_logic_vector(unsigned(event_marker_count) + 1);
+			end if;
+			if (is_evm_for_dreq = '1') then	
+				evm_for_dreq    <= '1'; 	
+				is_evm_for_dreq <= '0'; 	
+				evm_for_dreq_count  <= std_logic_vector(unsigned(evm_for_dreq_count) + 1);
 			end if;
 			if (is_clkmarker = '1') then 	
-				clockmarker <= '1'; 	
-				is_clkmarker <= '0'; 	
-				clock_marker_count <= std_logic_vector(unsigned(clock_marker_count) + 1);
+				clockmarker     <= '1'; 	
+				is_clkmarker    <= '0'; 	
+				clock_marker_count  <= std_logic_vector(unsigned(clock_marker_count) + 1);
 			end if;
 			if (is_loopmarker = '1') then	
-				loopmarker <= '1'; 	
-				is_loopmarker <= '0'; 	
+				loopmarker      <= '1'; 	
+				is_loopmarker   <= '0'; 	
 				--eventmarker <= '1'; 	
-				loop_marker_count <= std_logic_vector(unsigned(loop_marker_count) + 1);
+				loop_marker_count   <= std_logic_vector(unsigned(loop_marker_count) + 1);
 			end if;
 			if (is_othermarker = '1') then	
-				othermarker <= '1'; 	
-				is_othermarker <= '0'; 	
-				other_marker_count <= std_logic_vector(unsigned(other_marker_count) + 1);
+				othermarker     <= '1'; 	
+				is_othermarker  <= '0'; 	
+				other_marker_count  <= std_logic_vector(unsigned(other_marker_count) + 1);
 			end if;
 		end if;
 		if counter = 2 then	-- for retransmission (triple marker)
 			if (is_retrmarker) then 	
-				retrmarker 	<= '1'; 
+				retrmarker 	    <= '1'; 
 				is_retrmarker	<= '0'; 	
-				retr_seq 	<= retr_seq_save;
+				retr_seq 	    <= retr_seq_save;
 				retr_seq_save	<= (others=> '0');
-				retr_marker_count <= std_logic_vector(unsigned(retr_marker_count) + 1);
+				retr_marker_count   <= std_logic_vector(unsigned(retr_marker_count) + 1);
 			end if;
 		end if;
       
@@ -258,8 +279,10 @@ begin
 				if rx_kchar_prev1 = "10" then
 					if (rx_data_prev2 = X"1C10" and rx_data_prev1 = X"1CEF") then
 						counter <= (others => '0');
-						if (is_valid_EWM) then   -- count EWMs only if AFTER non-null HB 
-                            is_evtmarker    <= '1';
+                        -- count free running EVM
+                        is_evtmarker    <= '1';
+						if (is_valid_EWM) then   -- count EVMs only up to FIRST null HB 
+                            is_evm_for_dreq <= '1';
                             is_valid_EWM    <= '0';
                         end if;
 					elsif (rx_data_prev2 = X"1C11" and rx_data_prev1 = X"1CEE") then
@@ -277,7 +300,7 @@ begin
 						is_retrseq <= '1';
 					else
 					-- skip case of marker right after first DTC packet word (but it will also skip finding errors if marker is in the middle of a packet )
-					-- Still OK because it will be caught later by DCS/DREQProcessor either as CRC error or RX_packer error or both!
+					-- Still OK because it will be caught later by DCS/DREQProcessor either as CRC error or RX_packet error or both!
 						if (is_DTCpacket = '0') then	
 							is_marker_error	<= '1';
 							if (is_marker_error = '0') then	marker_error_count <= std_logic_vector(unsigned(marker_error_count) + 1);	end if;
@@ -293,13 +316,13 @@ begin
 			if(rx_data_prev1(7 downto 4) 	= rx_data_prev1(3 downto 0) and  
 				rx_data_prev1(11 downto 8) = rx_data_prev1(3 downto 0) and 
 				rx_data_prev1(15 downto 12)= rx_data_prev1(3 downto 0) ) 	then
-					is_retrseq 	<= '0';
-					is_retrmarker 	<= '1';
-					retr_seq_save	<= rx_data_prev1(2 downto 0);
+                is_retrseq 	<= '0';
+                is_retrmarker 	<= '1';
+                retr_seq_save	<= rx_data_prev1(2 downto 0);
 			else
-					is_marker_error	<= '1';
-					if (is_marker_error = '0') then	marker_error_count <= std_logic_vector(unsigned(marker_error_count) + 1);	end if;
-					is_retrseq 	<= '0';
+                is_marker_error	<= '1';
+                if (is_marker_error = '0') then	marker_error_count <= std_logic_vector(unsigned(marker_error_count) + 1);	end if;
+                is_retrseq 	<= '0';
 			end if;
 		end if;
 				
@@ -346,11 +369,16 @@ begin
 					rx_we <= '1';
 				elsif (is_datareq = '1' or is_prefetch = '1') then
 					req_we <= '1';
+                    if (rx_data_prev3 = X"BC3C") then 
+                        comma_err_count  <= std_logic_vector(unsigned(comma_err_count) + 1);	
+                        rx_comma_seen   <= '1';
+                    end if;
 				end if;
 					 
 				word_count <= word_count + 1;
 				rx_data_out <= rx_data_prev3;
-					 
+                
+                
 				-- save EWTag and Event Mode for heartbeat packet or Prefecth packet
 				if (is_heartbeat = '1') then
 					if (word_count = 3) then 	HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
@@ -363,7 +391,8 @@ begin
 						if (unsigned(EVT_MODE) > 0) then
                             SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
                         end if;
-						onspill_old <= ONSPILL; ONSPILL <= rx_data_prev3(0); 
+						onspill_old <= ONSPILL; 
+                        ONSPILL <= rx_data_prev3(0); 
 					end if;
 					-- restart SPILL_EVENT_WINDOW_TAG on ONSPILL rising edge or first non-null HB
 					if (word_count = 9)	then 	
@@ -403,10 +432,14 @@ begin
 				end if;
 					 
 				-- catch if KCHAR shows up in the middle of the DTC packet (unless valid marker)
-				if rx_kchar_prev3 = "10"    then	rx_error_count <= std_logic_vector(unsigned(rx_error_count) + 1);	end if;
+				if rx_kchar_prev3 = "10"    then	
+                    rx_error_count  <= std_logic_vector(unsigned(rx_error_count) + 1);	
+                    rx_error_seen   <= '1';
+                end if;
 				
 				if word_count = 9 then
-					word_count <= 0;
+					word_count      <= 0;
+                    rx_error_seen   <= '0';
 				end if;
 				
 			end if; 	-- if word_count = 0 
