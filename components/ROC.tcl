@@ -17,7 +17,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD0_P} -po
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD1_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVtoROC_SERDES_TXD1_P} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO1} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO2} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO2} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CLK_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CLK_P} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_DTC_SERDES_RXD0_N} -port_direction {IN} -port_is_pad {1}
@@ -61,7 +61,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO0} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO3} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO4} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO4} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO5} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK0_P} -port_direction {OUT} -port_is_pad {1}
