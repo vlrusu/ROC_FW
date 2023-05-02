@@ -7,6 +7,7 @@ build_design_hierarchy
 #Sourcing the Tcl files in which HDL+ core definitions are created for HDL modules
 source components/EW_FIFO_controller.tcl 
 source components/Registers.tcl 
+source components/DCSRegisters.tcl 
 build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
@@ -53,7 +54,10 @@ source components/PF_TVS_C0.tcl
 source components/PF_URAM_C0.tcl 
 source components/TVS_Interface.tcl 
 source components/UARTapb.tcl 
-source components/pwm.tcl 
+source components/pwm.tcl
+source components/DCS_RX_BUFFER.tcl 
+source components/DCS_TX_BUFFER.tcl
+source components/CMD_TO_PROC_BUFFER.tcl  
 source components/SLOWCONTROLS.tcl 
 source components/RxPacketFIFO.tcl 
 source components/CorePCS_C0.tcl 

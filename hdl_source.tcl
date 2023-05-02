@@ -41,3 +41,7 @@ import_files -library work -hdl_source hdl/req_err_switch.v
 import_files -library work -hdl_source hdl/counter_16bit.v
 import_files -library work -hdl_source hdl/pulse_stretcher.v
 import_files -library work -hdl_source hdl/tracker_params.vh
+import_files -library work -hdl_source hdl/DataStatusProcessor.vhd
+import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
+import_files -library work -hdl_source hdl/DCSWriteCMDProcessor.vhd
+import_files -library work -hdl_source hdl/DCSRegisters.vhd

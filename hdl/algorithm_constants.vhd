@@ -7,6 +7,12 @@ package algorithm_constants is
     ----==================================----
     -- Declaration of
     -- constants, types, signals etc.         
+    
+	constant CMDHEADER  : std_logic_vector(15 downto 0) := x"AABB"; -- header for start of DTC command to processor
+	constant CMDTRAILER : std_logic_vector(15 downto 0) := x"FFEE"; -- trailer for end of of DTC command to processor
+	constant CMDERROR 	: std_logic_vector(15 downto 0) := x"DEAD"; -- error word for DTC command
+	constant MAX_CMD_LENGHT : std_logic_vector(15 downto 0) := x"1FFB"; -- max. DTC command lenght in unit of 16-bit payload
+
 
  	constant gAPB_DWIDTH     		: integer := 16;  
 	constant gAPB_AWIDTH     		: integer := 16;	 
@@ -19,7 +25,7 @@ package algorithm_constants is
    
 	-- External DCS Block Address
  	constant ALGO_WADDR_WIDTH   	: natural := 8;	  
- 	constant ALGO_LOCADDR_WIDTH   : natural := 8;	  
+ 	constant ALGO_LOCADDR_WIDTH     : natural := 8;	  
  	constant ALGO_WDATA_WIDTH   	: natural := gAPB_DWIDTH;	 	 
  	constant ALGO_RADDR_WIDTH   	: natural := 8;	  		   
 	 
@@ -31,26 +37,26 @@ package algorithm_constants is
 	constant DCS_FIFO_ADDR_SIZE		: integer := 9;
 	constant NORMAL_FIFO_ADDR_SIZE	: integer := 9;
 	
-	constant DCS_FIFO_ADDR_DEPTH		: integer := 256;
+	constant DCS_FIFO_ADDR_DEPTH	: integer := 256;
 	constant NORMAL_FIFO_ADDR_DEPTH	: integer := 256;  		 
 	
 	-- RAM Retransmission Parameters
-	constant RAM_ADDR_WIDTH				: integer := 8;
-	constant RAM_ADDR_DEPTH 			: integer := 256;
+	constant RAM_ADDR_WIDTH			: integer := 8;
+	constant RAM_ADDR_DEPTH 		: integer := 256;
 	
 	-- Data Request	Parameters
-	constant DATAREQ_DWIDTH				: integer := 64;
+	constant DATAREQ_DWIDTH			: integer := 64;
    
 
    -- tracker specific Paramenter
-    constant EVENT_TAG_BITS	   : integer := 48;  -- max. Event Window count for duration of experiment 
-	constant SPILL_TAG_BITS	   : integer := 20;  -- EWTAG counter for duration of SPILL	
-	constant TRK_HIT_BITS	   : integer := 8;   -- max. no of tracker hits per Event Window (or 2**8-1 = 255)	
-	constant EVENT_SIZE_BITS   : integer := 10;  -- max. tracker Event size in units of 64-bit AXI beats (or 2**10 - 1 = 1023)
-	constant DDR_ADDRESS_BITS  : integer := 20;  -- max. no of 1 kB blocks in 8 Gb DDR memory (or 2**20 - 1 = 1048575)
-	constant MAX_STEP_BITS	   : integer := 3;   -- number of 1kB blocks needed to fit the maximum trackers event size (or 2**3 + 1 = 9 blocks) 
-	constant DIGI_BITS	      : integer := 32;  -- ROCFIFO output width
-	constant AXI_BITS	         : integer := 64;  -- AXI beat size
+    constant EVENT_TAG_BITS	    : integer := 48;  -- max. Event Window count for duration of experiment 
+	constant SPILL_TAG_BITS	    : integer := 20;  -- EWTAG counter for duration of SPILL	
+	constant TRK_HIT_BITS	    : integer := 8;   -- max. no of tracker hits per Event Window (or 2**8-1 = 255)	
+	constant EVENT_SIZE_BITS    : integer := 10;  -- max. tracker Event size in units of 64-bit AXI beats (or 2**10 - 1 = 1023)
+	constant DDR_ADDRESS_BITS   : integer := 20;  -- max. no of 1 kB blocks in 8 Gb DDR memory (or 2**20 - 1 = 1048575)
+	constant MAX_STEP_BITS	    : integer := 3;   -- number of 1kB blocks needed to fit the maximum trackers event size (or 2**3 + 1 = 9 blocks) 
+	constant DIGI_BITS	        : integer := 32;  -- ROCFIFO output width
+	constant AXI_BITS	        : integer := 64;  -- AXI beat size
    
    constant FIFO_DATA_SIZE  		   : integer := 40;  -- fits size for 3 events
    constant ROCFIFO_DEPTH  		   : integer := 17;  -- fits 65K 32-bit words
@@ -58,11 +64,11 @@ package algorithm_constants is
    
     ----==================================----	   
 	-- Packet Types
-	constant PACKET_TYPE_DCSRequest 			:  natural := 0;	  
+	constant PACKET_TYPE_DCSRequest 		:  natural := 0;	  
 	constant PACKET_TYPE_Heartbeat 			:  natural := 1;
 	constant PACKET_TYPE_DataRequest 		:  natural := 2;
 	constant PACKET_TYPE_DCSReply 			:  natural := 4;
-	constant PACKET_TYPE_DataHeader 			:  natural := 5;
+	constant PACKET_TYPE_DataHeader 		:  natural := 5;
 	constant PACKET_TYPE_DataPayload 		:  natural := 6;
 	constant PACKET_TYPE_DCSWritePayload 	:  natural := 7;
 	constant PACKET_TYPE_DCSReadPayload 	:  natural := 8;
