@@ -9,6 +9,9 @@
 --      <v4>: <04/05/2023>: MT adds number of packets for DCS Block Read (needed by DTC!)
 --      <v5>: <04/10/2023>: MT fixes to CRC calculation for DCS Block Read replies. Removed Double RD and WR
 --      <v6>: <04/20/2023>: MT major STATE MACHINE overhaul to make it more transparent and fix DCS Block Write decoding of additional packets
+--      <v7>: <05/03/2023>: MT added timeouts to WAIT_DATA_READY/CHECK_WRD1 state to deal with undefined DCS commands. 
+--                             If timeout is seen, either return TIMEOUT_WRD = 0xEFFE or clear DCS_WRITE data to prevent blocking the fiber 
+--                             from processing future commands.
 --
 -- Description: 
 --      Module decoding DCS operations. DCS Single RD, DCS Single WR (with ACK), DCS Block RD and DCS Block WRITE supported so far.
@@ -38,6 +41,9 @@ library IEEE;
 
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+
+library work;
+use work.algorithm_constants.all; 
 
 entity DCSProcessor is
 port (
@@ -124,6 +130,10 @@ architecture architecture_DCSProcessor of DCSProcessor is
     signal reg_data     : std_logic_vector(15 downto 0);
     signal data_to_read : std_logic_vector(15 downto 0);
 
+    signal delay_count      : integer range 0 to 31;
+    signal readTimeout      : unsigned(6 downto 0);
+    signal blkreadTimeout   : unsigned(6 downto 0);
+
 begin
 
     corrupted <= '0';
@@ -203,7 +213,11 @@ begin
         word_count  <= 0;
         word_in_blk_pckt<= 0;
         blk_wr_word_cnt <= 0;
-        blk_rd_word_cnt<= 0;
+        blk_rd_word_cnt <= 0;
+        
+        delay_count     <= 0;
+        readTimeout	    <= (others => '0');
+        blkreadTimeout	<= (others => '0');
         
     elsif rising_edge(clk) then
         
@@ -238,6 +252,7 @@ begin
                 state_count <= X"02";
                 fifo_re <= '1';
                 word_count <= 0;
+                delay_count<= 0;
                 blk_rd_word_cnt <= 0;
                 state <= SECONDREAD;
                 
@@ -273,8 +288,9 @@ begin
             -- what to do after depends if command contains only one or multiple packets (DCS BLOCK WR)
             when CHECKCRC =>
                 state_count <= X"04";
-                word_count <= 0;
-											  
+                word_count  <= 0;
+                readTimeout	    <= (others => '1');
+                    
                 if crc_data_in /= read_crc then
                     error_count <= std_logic_vector(unsigned(error_count) + 1);
                     state <= IDLE;
@@ -293,22 +309,22 @@ begin
             when SEND_ADDR =>
                 state_count <= X"05";
                 address_reg <= op_address;
-                
+                    
                 -- common to any BLOCK operation meant for uProcessor
                 if  is_blk_rw = '1'    then
                     blk_reg     <= '1';
                     blk_size    <= op_data;
                 end if;
-
+                    
                 if  read_write = '0'    then    -- if DCS WRITE operations....
-                    if  is_blk_rw = '0'   then  --   single DCS WRITE is straightforward   
+                    if  is_blk_rw = '0'   then  -- ... can be single DCS WRITE: handling is straightforward   
                         state   <= SEND_DATA;
-                    else                        --   block DCS WRITE requires more attention
+                    else                        -- ... or block DCS WRITE: it requires more attention
                         state   <= BLK_WRD1;
                     end if;
-                else                            -- if DCS READ operation...
-                    read_reg<= '1';
-                    state   <= WAIT_DATA_READY;     
+                else                            -- if any DCS READ operation, go to next state to handle data for single vs block operations 
+                    read_reg    <= '1';
+                    state       <= WAIT_DATA_READY;     
                 end if;
             
             -- send DCS SINGLE WRITE data and check if ACK packets is requested
@@ -318,7 +334,7 @@ begin
                 data_reg    <= op_data;
                 state       <= CHECK_FOR_ACK;
             
-            -- deal with WRITE_ACK: need to send a packet out, as if it was a DCS read!!
+            -- deal with WRITE_ACK: need to send a packet out, as if it was a DCS read
             -- (to be tested!!)
             when CHECK_FOR_ACK =>
                 state_count <= X"07";
@@ -328,12 +344,13 @@ begin
                         data_to_read<= op_data; 
                         state       <= SENDPACKET;
                     end if;
-                else -- for double DCS WR without ACK we are done!!
+                else -- for SINGLE DCS WR without ACK, we are done
                     state <= IDLE;
                 end if;
                 
             -- holding status for DCS READY to wait for READY signal 
             -- (indicating that modules have received the data words to be read)
+            -- Use timeout if READY never seen.
             when WAIT_DATA_READY =>
                 state_count <= X"08";
                 read_reg	<= '1';
@@ -352,7 +369,18 @@ begin
                     end if;
                 end if;
                  
-                if (ready = '1') then
+                -- for BLK RD timeout, reset FIRST_BLK and BLK_SIZE as to force only one packet when in SENDFIRSTPACKET
+                readTimeout	<= readTimeout - 1;
+                if  readTimeout = 1 then
+                    if  is_blk_rw = '1'   then
+                        blk_rd_word_cnt<= blk_rd_word_cnt + 1;
+                        first_blk   <= '0';
+                        blk_size    <= X"0003";
+                        blk_cnt_reg <= X"0003";
+                        blk_rd_word_left   <= (others => '0');
+                    end if;
+                    state <= SET_DATA;                    
+                elsif (ready = '1') then
                     if  is_blk_rw = '1'   then
                         blk_rd_word_cnt<= blk_rd_word_cnt + 1;
                         first_blk   <= '0';
@@ -360,14 +388,25 @@ begin
                     state <= SET_DATA;
                 end if;
                 
-            -- for DCS READ operations: decide which packet has to be send    
+                
+            -- for DCS READ operations: decide which packet has to be send
+            -- if TIMEOUT condition, return TIMEOUT_WRD
             when SET_DATA =>
                 state_count <= X"09";
-                data_to_read<= reg_data;
+                
                 if  is_blk_rw = '1'     then
-                    add_rd_pckt <= blk_pckt_size(12 downto 3);
+                    if  readTimeout = 0 then
+                        add_rd_pckt <= B"00_0000_0000";
+                    else
+                        add_rd_pckt <= blk_pckt_size(12 downto 3);
+                    end if;
                     state <= SENDFIRSTPACKET;
                 else
+                    if  readTimeout = 0 then
+                        data_to_read<= TIMEOUT_WRD; -- timeout word
+                    else
+                        data_to_read<= reg_data;
+                    end if;
                     state <= SENDPACKET;
                 end if;
                 
@@ -375,7 +414,8 @@ begin
             when BLK_WRD1 =>
                 state_count <= X"16";
                 write_reg	<= '1';
-                if  unsigned(blk_size) = X"0000" then -- send something, rely on DCSWriteProcessor to deal with BLK WRIT of null size
+                blkreadTimeout	<= (others => '1');
+                if  unsigned(blk_size) = X"0000" then -- send something, rely on DCSWriteProcessor to deal with BLK WRITE of null size
                     data_reg    <= (others => '0');
                     state       <= IDLE;
                 else 
@@ -384,11 +424,15 @@ begin
                     state       <= CHECK_WRD1;
                 end if;
              
-            --need to wait for DCSWriteCMDProcessor to acknowledge that DCSWriteCMD buffer is being filled    
+            -- need to wait for DCSWriteCMDProcessor to acknowledge that DCSWriteCMD buffer is being filled
+            -- add TIMEOUT in case the address is wrong and no acknowledge comes back from DCSWriteCMDProcessor
+            -- N.B. even with TIMEOUT, must still read all of the data sent by the BLK WRITE!!
             when CHECK_WRD1 =>
                 state_count <= X"17";
                 data_we     <= '1';
-                if  data_we_ack = '1'   then
+                
+                blkreadTimeout	<= blkreadTimeout - 1;
+                if  blkreadTimeout = 1 or data_we_ack = '1'   then
                     data_we <= '0';
                     if  blk_wr_word_cnt < to_integer(unsigned(blk_size))    then  
                         state   <= BLK_WRD2;
@@ -408,7 +452,7 @@ begin
             when CHECK_WRD2 =>
                 state_count <= X"19";
                 data_we     <= '1';
-                if  data_we_ack = '1'   then
+                if  blkreadTimeout = 0 or data_we_ack = '1'   then
                     data_we <= '0';
                     if  blk_wr_word_cnt < to_integer(unsigned(blk_size))    then  
                         state   <= BLK_WRD3;
@@ -428,7 +472,7 @@ begin
             when CHECK_WRD3 =>
                 state_count <= X"0F";
                 data_we     <= '1';
-                if  data_we_ack = '1'   then
+                if  blkreadTimeout = 0 or data_we_ack = '1'   then
                     data_we <= '0';
                     if  blk_wr_word_cnt < to_integer(unsigned(blk_size))    then  
                         state   <= BLKIDLE;
@@ -441,7 +485,6 @@ begin
             when BLKIDLE =>
                 state_count <= X"10";
                 if unsigned(fifo_rdcnt) > 9 then
---                    first_pckt  <= '0';
                     fifo_re     <= '1';
                     state <= FIRSTREAD;
                 end if;
@@ -455,10 +498,11 @@ begin
                 state       <= CHECK_BLK_WR;
                 
             -- decide with state to go next
+            -- N.B. even with TIMEOUT, must still read all of the data sent by the BLK WRITE!!
             when CHECK_BLK_WR =>
                 state_count <= X"12";
                 data_we     <= '1';
-                if  data_we_ack = '1'   then
+                if  blkreadTimeout = 0 or data_we_ack = '1'   then
                     data_we <= '0';
                     if  blk_wr_word_cnt < to_integer(unsigned(blk_size))    then  
                         if  word_in_blk_pckt < 9    then
@@ -471,7 +515,7 @@ begin
                     end if;
                 end if;
             
-         -- start putting together DATA REPLY packet   
+            -- start putting together DATA REPLY packet   
             when SENDPACKET =>
                 state_count <= X"0A";
                 word_count <= word_count + 1;
@@ -485,58 +529,35 @@ begin
                 end if;
                 if word_count = 0 then
                     fifo_data_out <= "10" & X"1C" & sequence_num & "0" & X"4";  -- k28.0 & D4.y
-                    --crc_rst <= '0';
-                    --crc_en <= '0';
                 elsif word_count = 1 then
                     fifo_data_out <= (others => '0'); -- DMA bytes
                     crc_data_out <= (others => '0');
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 2 then
                     fifo_data_out <= "00" & "10000" & link_id & X"40"; -- valid & reserved & roc_id & packet_type & hop_count
                     crc_data_out <= "10000" & link_id & X"40";
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 3 then -- for single DCS reply, 10-bit blk_packet_size set to 1 but ignored by the DTC
                     fifo_data_out <= "00" & "0000000000" & corrupted & dcs_fifo_empty & write_ack & opcode;
                     crc_data_out <= "0000000000" & corrupted & dcs_fifo_empty & write_ack & opcode;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 4 then
                     fifo_data_out <= "00" & op_address;
                     crc_data_out <= op_address;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 5 then
                     fifo_data_out <= "00" & data_to_read;
                     crc_data_out <= data_to_read;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 6 then
                     fifo_data_out <= (others => '0');
                     crc_data_out <= (others => '0');
-                    --fifo_data_out <= "00" & op2_address;
-                    --crc_data_out <= op2_address;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 7 then
                     fifo_data_out <= (others => '0');
                     crc_data_out <= (others => '0');
-                    --fifo_data_out <= "00" & op2_data;
-                    --crc_data_out <= op2_data;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 8 then
                     fifo_data_out <= (others => '0');
                     crc_data_out <= (others => '0');
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                     state <= CALCULATECRC;
                 end if;
                 
             when CALCULATECRC =>
                 state_count <= X"0B";
-                --fifo_we <= '0';
                 crc_rst <= '0';
                 crc_en <= '1';
                 state <= WRITECRC;
@@ -545,30 +566,32 @@ begin
                 state_count <= X"0C";
                 fifo_we <= '1';
                 fifo_data_out <= "00" & crc_data_in;
+                
                 --sequence_num <= std_logic_vector(unsigned(sequence_num) + 1); -- done in TxPacketWriter now
                 sequence_num  <= (others => '0');
-                if  is_blk_rw = '1' and unsigned(blk_rd_word_left) > X"0000"   then
+                
+                -- for TIMEOUT condition, we are done without any signal out to DCSReadCMDProcessor
+                if  (readTimeout = 0 or blkreadTimeout = 0) then
+                    state <= IDLE; 
+                elsif  is_blk_rw = '1' and unsigned(blk_rd_word_left) > X"0000"   then
                     pckt_done <= '1'; 
                     word_count <= 0; 
                     if  unsigned(blk_rd_word_left) > X"0008"    then
                         blk_cnt_reg     <= X"0008";
-                        blk_rd_word_left   <= std_logic_vector(unsigned(blk_rd_word_left) - 8); 
+                        blk_rd_word_left<= std_logic_vector(unsigned(blk_rd_word_left) - 8); 
                     else
                         blk_cnt_reg     <= blk_rd_word_left;
-                        blk_rd_word_left   <= (others => '0');
+                        blk_rd_word_left<= (others => '0');
                     end if;
                     state <= WAITTOSENDNEXT;
                 else
                     dcs_done<= '1';
                     state <= IDLE; 
                 end if;
-
                          
-         -- start putting together DATA REPLY packet   
+            -- start putting together DATA REPLY packet   
             when SENDFIRSTPACKET =>
                 state_count <= X"10";
-                --word_count <= word_count + 1;
-                --fifo_we <= '1';
                 if word_count = 0 then
                     word_count <= word_count + 1;
                     fifo_we <= '1';
@@ -583,43 +606,46 @@ begin
                 
                 if word_count = 0 then
                     fifo_data_out <= "10" & X"1C" & sequence_num & "0" & X"4";  -- k28.0 & D4.y
-                    --crc_rst <= '0';
-                    --crc_en <= '0';
                 elsif word_count = 1 then
                     fifo_data_out <= (others => '0'); -- DMA bytes
                     crc_data_out <= (others => '0');
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 2 then
                     fifo_data_out <= "00" & "10000" & link_id & X"40"; -- valid & reserved & roc_id & packet_type & hop_count
                     crc_data_out <= "10000" & link_id & X"40";
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 3 then
                     fifo_data_out <= "00" & add_rd_pckt & corrupted & dcs_fifo_empty & write_ack & opcode;
                     crc_data_out <= add_rd_pckt & corrupted & dcs_fifo_empty & write_ack & opcode;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 4 then
                     fifo_data_out <= "00" & op_address;
                     crc_data_out <= op_address;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 5 then
                     fifo_data_out <= "00" & blk_size;
                     crc_data_out <= blk_size;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
                 elsif word_count = 6 then
-                    blk_read_req    <= '1';  -- send request for next block data
-                    fifo_data_out   <= "00" & reg_from_cmd ;
-                    crc_data_out    <= reg_from_cmd;
-                    --crc_rst <= '0';
-                    --crc_en <= '1';
+                    blkreadTimeout	<= (others => '1');
+                    if   readTimeout = 0 then
+                        fifo_data_out   <= "00" & TIMEOUT_WRD;
+                        crc_data_out    <= TIMEOUT_WRD;
+                    else
+                        blk_read_req    <= '1';  -- send request for next block data
+                        fifo_data_out   <= "00" & reg_from_cmd ;
+                        crc_data_out    <= reg_from_cmd;
+                    end if;
                 elsif word_count = 7 then
-                    -- for block read, always wait for READY and send next BLK_READ_REQ
+                    -- deal with timeout condition by skipping READY<->REQ protocol and forcing TIMEOUT word out 
+                    -- for block read without TIMEOUT, always wait for READY and send next BLK_READ_REQ
                     -- then decide if no more block words are to be expected
-                    if  ready = '1' then
+                    blkreadTimeout	<= blkreadTimeout - 1;
+                    if  (readTimeout = 0 or blkreadTimeout = 1) then
+                        word_count <= word_count + 1;
+                        fifo_we <= '1';
+                        blk_rd_word_cnt<= blk_rd_word_cnt + 1;
+                        fifo_data_out   <= "00" & TIMEOUT_WRD;
+                        crc_rst <= '0';
+                        crc_en <= '1';
+                        fifo_data_out   <= "00" & TIMEOUT_WRD;
+                        crc_data_out    <= TIMEOUT_WRD;
+                    elsif  ready = '1' then
                         blk_read_req    <= '1';  
                         word_count <= word_count + 1;
                         fifo_we <= '1';
@@ -637,11 +663,21 @@ begin
                         crc_rst <= '0';
                         crc_en <= '0';
                         fifo_we <= '0';
-                        --word_count <= 7;    
                     end if;
                 elsif word_count = 8 then
-                    -- no BLK_READ_REQ for last work of packet
-                    if  ready = '1' then
+                    -- deal with timeout condition by skipping READY<->REQ protocol and forcing TIMEOUT word out 
+                    -- for block read without TIMEOUT,
+                    -- do not send BLK_READ_REQ for last work of packet
+                    if  (readTimeout = 0 or blkreadTimeout = 0) then
+                        word_count <= word_count + 1;
+                        fifo_we <= '1';
+                        blk_rd_word_cnt<= blk_rd_word_cnt + 1;
+                        crc_rst <= '0';
+                        crc_en <= '1';
+                        fifo_data_out   <= "00" & TIMEOUT_WRD;
+                        crc_data_out    <= TIMEOUT_WRD;
+                        state <= CALCULATECRC;
+                    elsif  ready = '1' then
                         word_count <= word_count + 1;
                         fifo_we <= '1';
                         crc_rst <= '0';
@@ -659,23 +695,20 @@ begin
                         crc_rst <= '0';
                         crc_en <= '0';
                         fifo_we <= '0';
-                        --word_count <= 8;    
                     end if;
                 end if;
             
             -- add "arbitrary" delay between DCS Block Read packets   
             when WAITTOSENDNEXT =>
                 state_count <= X"11";
-                word_count <= word_count + 1;
-                if  word_count = 16    then 
-                    word_count <= 0; 
+                delay_count <= delay_count + 1;
+                if  delay_count = 16    then 
+                    delay_count <= 0; 
                     state <= SENDNEXTPACKET;
                 end if;
                             
             when SENDNEXTPACKET =>
                 state_count <= X"12";
-                --word_count <= word_count + 1;
-                --fifo_we <= '1';
                 if word_count = 0 then
                     blk_start <= '1';
                     word_count <= word_count + 1;

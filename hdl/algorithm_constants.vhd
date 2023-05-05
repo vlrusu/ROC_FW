@@ -13,6 +13,7 @@ package algorithm_constants is
 	constant CMDERROR 	: std_logic_vector(15 downto 0) := x"DEAD"; -- error word for DTC command
 	constant MAX_CMD_LENGHT : std_logic_vector(15 downto 0) := x"1FFB"; -- max. DTC command lenght in unit of 16-bit payload
 
+	constant TIMEOUT_WRD : std_logic_vector(15 downto 0) := x"EFFE"; -- DCS read/write command resulted in an internal timeout
 
  	constant gAPB_DWIDTH     		: integer := 16;  
 	constant gAPB_AWIDTH     		: integer := 16;	 
