@@ -173,8 +173,21 @@ entity Registers is
   
     dcs_ewm_enable_50mhz    : in std_logic;
     dcs_use_lane            : in std_logic_vector(3 downto 0);
-    dcs_force_full          : in std_logic
+    dcs_force_full          : in std_logic;
 
+    PRBS_LOCK		: in  std_logic;
+    PRBS_ON		    : in  std_logic;
+    PRBS_ERRORCNT   : in  std_logic_vector(31 downto 0);
+    PRBS_EN         : out std_logic;
+    PRBS_ERROROUT   : out std_logic;
+    PRBS_ERRORCLR   : out std_logic;
+    
+    DDR_WREN        : out std_logic;
+    DDR_RDEN        : out std_logic;
+    DDR_BLOCK_NO    : out std_logic_vector(31 downto 0);
+    DDR_TEST_STATUS : in  std_logic_vector(3 downto 0);
+    DDR_TEST_ERRCNT : in  std_logic_vector(31 downto 0);
+    DDR_TEST_ERRLOC : in  std_logic_vector(31 downto 0)
     --cal_ss_n : out std_logic;
     --cal_sclk : out std_logic;
     --cal_mosi : out std_logic;
@@ -197,7 +210,7 @@ architecture synth of Registers is
    constant CRTIMERCOUNTER	: std_logic_vector(7 downto 0) := x"14";
    constant	CRDTCALIGNRESETN: std_logic_vector(7 downto 0) := x"15";
    constant	CRTVSRESETN     : std_logic_vector(7 downto 0) := x"16";
-
+   
   ------------------------------------------------------------------------------
   --  Invert the spi clock for CAL, multiplexer enable
   ------------------------------------------------------------------------------
@@ -335,9 +348,26 @@ architecture synth of Registers is
 	constant CR_CAL_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B8";
 	constant CR_HV_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B9";
 
-    constant CR_ERROR_ADDRESS		    : std_logic_vector(7 downto 0) := x"E0";
-    constant CR_ERROR_COUNTER		    : std_logic_vector(7 downto 0) := x"E1";
--- other register implicitely used
+------------------------------------------------------------------------------    
+---- PRBS & DDR MEMORY TEST SIGNALS
+------------------------------------------------------------------------------ 
+   constant	CRPRBS_EN	    : std_logic_vector(7 downto 0) := x"D0";    -- level HIGH for duration of PRBS pattern test
+   constant	CRPRBS_ERROROUT : std_logic_vector(7 downto 0) := x"D2";    -- inject ERROR into PRBS
+   constant	CRPRBS_ERRORCLR	: std_logic_vector(7 downto 0) := x"D3";	-- clear PRBS errors
+   constant	CRPRBS_ERRORCNT	: std_logic_vector(7 downto 0) := x"D9";	-- PRBS ERROR CNT 
+   constant	CRPRBS_ON	    : std_logic_vector(7 downto 0) := x"DA";	-- PRBS ON
+   constant	CRPRBS_LOCK		: std_logic_vector(7 downto 0) := x"DB";	-- PRBS fiber locked
+
+   constant CR_ERROR_ADDRESS: std_logic_vector(7 downto 0) := x"E0";
+   constant CR_ERROR_COUNTER: std_logic_vector(7 downto 0) := x"E1";
+
+   constant	CRDDR_WREN		: std_logic_vector(7 downto 0) := x"E2";	-- Start DDR pattern WRITE
+   constant	CRDDR_RDEN		: std_logic_vector(7 downto 0) := x"E3";	-- Start DDR pattern READ
+   constant	CRDDR_BLOCK_NO  : std_logic_vector(7 downto 0) := x"E4";	-- Number of 1kB DDR blocks to write
+   constant	CRDDR_TESTDIAG	: std_logic_vector(7 downto 0) := x"E5";	-- DDR test STATUS ( [0]=WRTIE DONE, [1]=READ DONE, [2]=ERROR SEEN ) 
+   constant	CRDDR_TESTERRCNT: std_logic_vector(7 downto 0) := x"E6";    -- number of errors in DDR test
+   constant	CRDDR_TESTERRLOC: std_logic_vector(7 downto 0) := x"E7";    -- addr of FIRST DDR test error
+-- -- other register implicitely used
 --      0xED to drive   cal_serdes_reset_n , hv_serdes_reset_n , dtc_serdes_reset_n 
 --      0xEE to drive   align_roc_to_digi
 --      0xEF to drive   serial_force_full
@@ -527,8 +557,24 @@ begin
           DataOut(0) <= INVERTCALSPICLCK;
             
         when CRTIMERCOUNTER =>
-            DataOut(31 downto 0) <= TIMERCOUNTER;
+          DataOut(31 downto 0)  <= TIMERCOUNTER;
             
+        when CRPRBS_LOCK =>
+          DataOut(0)            <= PRBS_LOCK;
+        when CRPRBS_ON =>
+          DataOut(0)            <= PRBS_ON;
+        when CRPRBS_ERRORCNT =>
+          DataOut(31 downto 0)  <= PRBS_ERRORCNT;
+            
+        when CRDDR_TESTDIAG =>
+          DataOut(3 downto 0) <= DDR_TEST_STATUS;
+        when CRDDR_TESTERRCNT =>
+          DataOut(31 downto 0) <= DDR_TEST_ERRCNT;
+        when CRDDR_TESTERRLOC =>
+          DataOut(31 downto 0) <= DDR_TEST_ERRLOC;
+        when CRDDR_BLOCK_NO =>
+          DataOut(31 downto 0) <= DDR_BLOCK_NO;
+          
         when CRDDRERROR =>
           DataOut(3 downto 0) <= DDRERROR;
         when CRDDRERRSEENL =>
@@ -685,6 +731,14 @@ begin
 		
         INVERTCALSPICLCK  <= '0';
         
+		PRBS_EN	 	      <= '0';
+		PRBS_ERROROUT 	  <= '0';
+		PRBS_ERRORCLR	  <= '0';
+        
+        DDR_WREN          <= '0';
+        DDR_RDEN          <= '0';
+        DDR_BLOCK_NO      <= x"0000_0000";
+        
         DDRSERIALSET      <= '0';
         DDRPTTREN         <= '0';
         DDRCFOEN          <= '0';
@@ -772,7 +826,13 @@ begin
         DTCSIMSTART    <= '0';
         DTCSIMBLKEN    <= '0';
         DDRCFOSTART    <= '0';
-      
+        
+		PRBS_ERROROUT	<= '0';
+		PRBS_ERRORCLR	<= '0';
+        
+        DDR_WREN        <= '0';        
+        DDR_RDEN        <= '0';        
+
         if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
 			
@@ -790,7 +850,21 @@ begin
 				
             when CRTIMERENABLE =>
                 TIMERENABLE <= PWDATA(0);
-            
+                
+			when CRPRBS_EN =>
+                PRBS_EN <= PWDATA(0);
+			when CRPRBS_ERROROUT =>
+                PRBS_ERROROUT   <= '1';
+			when CRPRBS_ERRORCLR =>
+                PRBS_ERRORCLR<= '1';
+                
+            when CRDDR_WREN =>
+                DDR_WREN <= '1';
+            when CRDDR_RDEN =>
+                DDR_RDEN <= '1';
+            when CRDDR_BLOCK_NO =>
+                DDR_BLOCK_NO <= PWDATA(31 downto 0);
+                
             when CRDDRSERIALSET =>
                 DDRSERIALSET <= PWDATA(0);
             when CRDDRPTTREN =>

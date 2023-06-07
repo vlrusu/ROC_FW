@@ -34,7 +34,7 @@ module MUX_TX(
 
    always @ (posedge TX_CLK)
    begin
-		TX_DATA 	   <= (PRBS_EN==1'b1) ? PRBS_DATA  : 	((DTCSIM_EN==1'b1) ? DTCSIM_DATA  : FIBER_DATA);
+		TX_DATA     <= (PRBS_EN==1'b1) ? PRBS_DATA  : 	((DTCSIM_EN==1'b1) ? DTCSIM_DATA  : FIBER_DATA);
 		TX_KCHAR    <= (PRBS_EN==1'b1) ? PRBS_KCHAR :	((DTCSIM_EN==1'b1) ? DTCSIM_KCHAR : FIBER_KCHAR);
    end
   

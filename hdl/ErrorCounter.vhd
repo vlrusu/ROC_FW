@@ -38,14 +38,13 @@ port (
     dreq_crc_error : in std_logic_vector(15 downto 0);
     seq_error_counter : in std_logic_vector(15 downto 0);
     marker_error : in std_logic_vector(15 downto 0);
-    event_marker_counter : in std_logic_vector(15 downto 0);   -- any event marker
+    event_marker_counter : in std_logic_vector(15 downto 0);   -- any event arker
     evm_for_dreq_counter : in std_logic_vector(15 downto 0);    -- markers with a non-null heartbeat PLUS 1
     clock_marker_counter : in std_logic_vector(15 downto 0);
     loop_marker_counter : in std_logic_vector(15 downto 0);
     other_marker_counter : in std_logic_vector(15 downto 0);
     retr_marker_counter : in std_logic_vector(15 downto 0);
     ewm_out_counter : in std_logic_vector(15 downto 0);       --  markers sent to the DIGIs
-    hb_counter : in std_logic_vector(15 downto 0);          -- HB counter
     
     dreq_timeout_counter : in std_logic_vector(15 downto 0);
     hb_empty_overlap_counter : in std_logic_vector(15 downto 0);
@@ -103,18 +102,18 @@ begin
     process(reset_n, clk)
     begin
     if reset_n = '0' then
-        rx_val_counter  <= (others => '0');
+        rx_val_counter <= (others => '0');
         aligned_counter <= (others => '0');
-        rx_err_counter  <= (others => '0');
-        b_cerr_counter  <= (others => '0');
-        invalid_k_counter   <= (others => '0');
-        code_err_n_counter  <= (others => '0');
-        rd_err_counter  <= (others => '0');
-        clk_counter     <= (others => '0');
-        counter_out     <= (others => '0');
-        event_window_seen   <= (others => '0');
+        rx_err_counter <= (others => '0');
+        b_cerr_counter <= (others => '0');
+        invalid_k_counter <= (others => '0');
+        code_err_n_counter <= (others => '0');
+        rd_err_counter <= (others => '0');
+        clk_counter <= (others => '0');
+        counter_out <= (others => '0');
+        event_window_seen <= (others => '0');
     elsif rising_edge(clk) then
-        if address = X"00" then
+         if address = X"00" then
             counter_out <= std_logic_vector(rx_val_counter);
         elsif address = X"01" then
             counter_out <= std_logic_vector(rx_err_counter);
@@ -196,17 +195,15 @@ begin
             counter_out <= reqEventWindowTag_debug(47 downto 32);
         elsif address = X"26" then
             counter_out <= comma_error_counter;
-        elsif address = X"27" then      -- 39
+        elsif address = X"27" then
             counter_out(7 downto 0) <= dcs_proc_state(7 downto 0);
             counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"28" then      -- 40
+        elsif address = X"28" then  -- 40
             counter_out(7 downto 0) <= dcs_rx_state(7 downto 0);
             counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"29" then      -- 41
+        elsif address = X"29" then
             counter_out(7 downto 0) <= dcs_tx_state(7 downto 0);
             counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"31" then        -- 49
-            counter_out <= hb_counter;
         else
             counter_out <= (others => '0');
         end if;

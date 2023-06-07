@@ -1,7 +1,7 @@
-# Exporting core Registers to TCL
-# Exporting Create HDL core command for module Registers
+# Exporting core DCSRegisters to TCL
+# Exporting Create HDL core command for module DCSRegisters
 create_hdl_core -file {hdl/DCSRegisters.vhd} -module {DCSRegisters} -library {work} -package {}
-# Exporting BIF information of  HDL core command for module Registers
+# Exporting BIF information of  HDL core command for module DCSRegisters
 hdl_core_add_bif -hdl_core_name {DCSRegisters} -bif_definition {APB:AMBA:AMBA2:slave} -bif_name {BIF_1} -signal_map {\
 "PADDR:PADDR" \
 "PENABLE:PENABLE" \

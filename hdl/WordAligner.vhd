@@ -24,13 +24,13 @@ use IEEE.numeric_std.all;
 entity WordAligner is
 port (
     reset_n : in std_logic;
-    clk : in std_logic;
-    k_char_in : in std_logic_vector(1 downto 0);
+    clk     : in std_logic;
+    k_char_in   : in std_logic_vector(1 downto 0);
     data_in : in std_logic_vector(15 downto 0);
     
-    word_aligned : out std_logic;
-    k_char_out : out std_logic_vector(1 downto 0);
-    data_out : out std_logic_vector(15 downto 0)
+    word_aligned: out std_logic;
+    k_char_out  : out std_logic_vector(1 downto 0);
+    data_out    : out std_logic_vector(15 downto 0)
 );
 end WordAligner;
 architecture architecture_WordAligner of WordAligner is
@@ -42,8 +42,10 @@ architecture architecture_WordAligner of WordAligner is
 
 begin
 
-    k_char_out <= k_char_in when offset = '0' else k_char_1Q(0) & k_char_in(1);
-    data_out <= data_in when offset = '0' else data_1Q(7 downto 0) & data_in(15 downto 8);
+--    k_char_out <= k_char_in when offset = '0' else k_char_1Q(0) & k_char_in(1);
+--    data_out <= data_in when offset = '0' else data_1Q(7 downto 0) & data_in(15 downto 8);
+    k_char_out  <= k_char_in when offset = '0' else k_char_in(0) & k_char_1Q(1);
+    data_out    <= data_in when offset = '0' else data_in(7 downto 0) & data_1Q(15 downto 8);
 
     process(reset_n, clk)
     begin
