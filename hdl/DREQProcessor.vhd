@@ -57,6 +57,7 @@ port (
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
     
     -- debug signals
+    leftTimeout			: out std_logic_vector(10 downto 0);
     dreq_timeout_count  : out std_logic_vector(15 downto 0);
     dreq_state_count    : out std_logic_vector(7 downto 0);
     dreq_error_count    : out std_logic_vector(15 downto 0);
@@ -103,6 +104,9 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal DREQ_WINDOW_TAG_UNKNOWN  : std_logic; 
     signal DREQ_TIMEOUT     : std_logic; 
     signal enableTimeout    : std_logic;
+
+    signal dreq_read_error  : std_logic;
+    signal dreq_end_error   : std_logic;
     
 begin
 
@@ -110,12 +114,14 @@ begin
     reqType 			<= unsigned(inbuffer(2)(7 downto 4));
     link_id 			<= inbuffer(2)(10 downto 8);
     reqEventWindowTag 	<= unsigned(inbuffer(5)) & unsigned(inbuffer(4)) & unsigned(inbuffer(3));
-    dgbDreq				<= inbuffer(7)(0);							-- debug data mask: if 1, ROC sends data for debugging purposes
+    dgbDreq				<= inbuffer(7)(0);					-- debug data mask: if 1, ROC sends data for debugging purposes
     dbgDataType			<= unsigned(inbuffer(7)(7 downto 4));  -- 0x0 special sequence; 0x1 External serial data; 0x2 Same as 0x1 WITH initial FIFO reset
     dbgDataPacketCnt	<= unsigned(inbuffer(8)(10 downto 0)); -- number of Debug Data packets
     read_crc 			<= inbuffer(9);
 	 
     sequence_num			<= "000";
+    
+    leftTimeout         <= std_logic_vector(readTimeout);
     
     process(reset_n, clk)
     begin
@@ -158,6 +164,13 @@ begin
         DREQ_TIMEOUT <= '0';
         enableTimeout <= '0';
         
+        dreq_read_error <= '0';
+        dreq_end_error  <= '0';
+        
+        DREQ_WINDOW_TAG_ERROR <= '0';
+        DREQ_WINDOW_TAG_BAD <= '0';
+        DREQ_WINDOW_TAG_UNKNOWN <= '0';
+        
     elsif rising_edge(clk) then
         crc_en <= '0';
         crc_rst <= '1';
@@ -169,6 +182,10 @@ begin
         DREQ_WINDOW_TAG_BAD <= '0';
         DREQ_WINDOW_TAG_UNKNOWN <= '0';
 				
+        if  unsigned(dreq_rdcnt) > 10 then
+            dreq_read_error <= '1';
+        end if;
+        
         case dreq_state is 
             when IDLE =>
                 dreq_state_count <= X"01";
@@ -210,8 +227,11 @@ begin
                 
                 if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG))  then  DREQ_WINDOW_TAG_ERROR <= '1';  end if;
                 if  (reqEventWindowTag(47 downto 31) > X"0000")  then  DREQ_WINDOW_TAG_BAD <= '1';  end if;
+                if  unsigned(dreq_rdcnt) > 0 then
+                    dreq_end_error <= '1';
+                end if;
                 
-                -- DO THIS ONLY AFRER CRC ERROR DETECTIO
+                -- DO THIS ONLY AFTER CRC ERROR DETECTION
                 ---- drive FETCH signals to DDRInterface/EW_SIZE_STORE_AND_FETCH_CONTROLLER
                 ---- Recognize PREFETCH and skip following DATA REQUEST                
                 --if (reqType = X"03" or (reqType = X"02" and reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG) ) ) then

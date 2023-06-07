@@ -31,48 +31,56 @@
 
 module ewtag_cntrl(
 //global signals
-    input xcvrclk,                               // XVCR RX clock
-    input resetn_xcvrclk,
-    input hb_valid,					               // pulse on XCVR CLK when HB has been decoded
-    input hb_null_valid,					            // pulse on XCVR CLK when null HB has been decoded
-    input pref_valid,					               // pulse on XCVR CLK when PREFETCH has been decoded
-	input	[`SPILL_TAG_BITS-1:0] spill_hbtag_in,	// local SPILL EWTAG counter
-
-// on 150 MHz SERDES clock
-	input	serdesclk,                            
+    input   xcvrclk,                // 200 MHz XVCR RX clock
+    input   resetn_xcvrclk,
+	input	serdesclk,              // 150 MHz SERDES clock                           
 	input	resetn_serdesclk,
-   
-	input	ew_fifo_emptied,     // at least one of the EWT_FIFOs can take data 
-                              // cleaned of spurious pulses at EXT_RST and aligned with SERDESCLK 
-	
-    output reg  pattern_init,						         // to PATTERN_FIFO_FILLER/CLUS_PATTERN_CNTRL: read next simulated cluster size
-	output reg  [`SPILL_TAG_BITS-1:0] spill_ewtag_out,  //                                            SPILL EWTAG to be passed to EWT_FIFO
-    output reg  ewtag_offset_latch,                    // to EW_FIFO_CNTRL: local spill EWTAG counter has restarted, ie first HB has been seen
-	output      [`EVENT_TAG_BITS-1:0] ewtag_offset_out, //                   EWTAG_OFFSET updated with first HB of new spill
-   
-// on DREQCLK clk:
-	input	dreqclk,                            
+	input	dreqclk,                // 80 MHz DREQ clock                            
 	input	resetn_dreqclk,
-	input	[`EVENT_TAG_BITS-1:0] reg_ewtag_offset,	   // EW offset from external register
-    
-    input   resetn_fifo,        // straigth from EXR_RST_N
+    input   resetn_fifo,            // straigth from EXR_RST_N
+        
+    // exchanged with TOP SERDES on XCVR CLK
+    input   hb_valid,               // pulse on XCVR CLK when HB has been decoded
+    input   hb_null_valid,          // pulse on XCVR CLK when null HB has been decoded
+    input   pref_valid,	            // pulse on XCVR CLK when PREFETCH has been decoded
+	input	[`SPILL_TAG_BITS-1:0]   spill_hbtag_in,	    // local SPILL EWTAG counter
+	input   [`EVENT_TAG_BITS-1:0]   hb_event_window,    // current EWTAG from HB
+        
+    // on SERDES clock
+	input	ew_fifo_emptied,    // at least one of the EWT_FIFOs can take data 
+                                // cleaned of spurious pulses at EXT_RST and aligned with SERDESCLK 
+        
+    // to PATTERN_FIFO_FILLER
+    output  reg  pattern_init,						    //  read next simulated cluster size
+	output  reg  [`SPILL_TAG_BITS-1:0] spill_ewtag_out, //  SPILL EWTAG to be passed to EWT_FIFO
    
-   // exchanged with TOP_SERDES
-	input		start_fetch,                           // FETCH observed (can be PREFETCH or DREQ)
-	input	[`EVENT_TAG_BITS-1:0]	event_window_fetch,  // EWTAG on fetch (can be PREFETCH or DREQ)
-    input    event_start,      // semaphone for DATA_READY!!
-    input    start_spill,      // pulse on SPILL rising edge	
-	output reg	data_ready, // level for the length of DREQ readout
-	output reg	last_word,  // signals last packet send (unused in TOP_SERDES)
+    // exchanged with TOP_SERDES on DREQCLK
+    input   start_spill,        // pulse on SPILL rising edge (ONSPILL or NEWSPILL)
+	input	start_fetch,        // FETCH observed (can be PREFETCH or DREQ)
+    input   event_start,        // semaphone for DATA_READY!!
+	input	[`EVENT_TAG_BITS-1:0]	event_window_fetch, // EWTAG on fetch (can be PREFETCH or DREQ)
+	output reg	data_ready,     // level for the length of DREQ readout
+	output reg	last_word,      // signals last packet send (unused in TOP_SERDES)
 	 
-	// exchanged with EW_FIFO_CONTROLLER
+    // exchanged with SLOWCONTROLS
+    input   serial_en,                  // select SERIAL driven Event Window offset via DDRSERIALSET
+	input   [31:0]    serial_offset,    // serial Event Window offset via DDRCFOOFFSET) 
+        
+    // exchanged with EW_FIFO_CONTROLLER
 	input    tag_sent,			//	REQTAG has been sent to EVT_FIFOs
 	input    tag_null,			//	REQTAG had no hits to send to EVT_FIFOs
 	input    tag_done,			// EVT_FIFO has been emptied
-   
-    // diagnostics counters
+    output  reg  ewtag_offset_latch,                    // to EW_FIFO_CNTRL: local spill EWTAG counter has restarted, ie first HB has been seen
+	output  [`EVENT_TAG_BITS-1:0] ewtag_offset_out,     //                 : EWTAG_OFFSET updated with first HB of new spill
+        
+	// exchanged with EW_SIZE_STORE_AND_FETCH
+	input	    tag_valid,		   // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
+	output reg	tag_fetch,     // REQTAG (or PREFTAG) seen 	-> drive ew_size_store_and_fetch_cntrl/FETCH
+    output reg  [`EVENT_TAG_BITS-1:0]	evt_tag_fetch,	// request window tag
+        
+    // diagnostics counters to DRACRegisters
+    output  reg [31:0]  hb_cnt_onhold,
     output  reg [31:0]  hb_cnt,
-    output  reg [31:0]  hb_seen_cnt,
     output  reg [31:0]  hb_null_cnt,
     output  reg [31:0]  pref_seen_cnt,
 	output  reg [31:0]  start_tag_cnt,
@@ -86,11 +94,9 @@ module ewtag_cntrl(
     output  reg[15:0]   ew_fifo_emptied_count,
     output  reg[15:0]   tag_valid_count,
     output  reg[15:0]   tag_error_count,
-
-	// exchanged with EW_SIZE_STORE_AND_FETCH
-	input	    tag_valid,		   // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
-	output reg	tag_fetch,     // REQTAG (or PREFTAG) seen 	-> drive ew_size_store_and_fetch_cntrl/FETCH
-    output reg  [`EVENT_TAG_BITS-1:0]	evt_tag_fetch	// request window tag
+    
+    input   dreq_full,
+    output  reg [`EVENT_TAG_BITS-1:0]   ewtag_dreq_full
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -117,41 +123,41 @@ localparam [1:0]  IDLE  =  2'b00,
                   LAST  =  2'b11;
                   
 //reg   [1:0] datareq_state;
-reg   tag_sent_hold;
-reg   tag_null_hold;
+reg     tag_sent_hold;
+reg     tag_null_hold;
 
-reg	is_first_spill;      // identifies very first spill at the beginning of the run
-reg   ewtag_offset_valid;  // delayed copy of pulse on start of new SPILL
-reg	[`EVENT_TAG_BITS-1:0]	ewtag_offset_in;  // buffer for external register TAG or last TAG from PREFETCH/DREQ
+reg	    is_first_spill;      // identifies very first spill at the beginning of the run
+reg     ewtag_offset_valid;  // delayed copy of pulse on start of new SPILL
+reg	    [`EVENT_TAG_BITS-1:0]	ewtag_offset_in;  // buffer for external register TAG or last TAG from PREFETCH/DREQ
 
 //// for diagnostics
-reg tag_error;
-reg tag_error_reg;
-reg tag_valid_reg;
+reg     tag_error;
+reg     tag_error_reg;
+reg     tag_valid_reg;
 
 // for timing cross-domain FIFOs
-wire  spilltag_full, spilltag_empty;
-wire  [`SPILL_TAG_BITS-1:0]	spilltag_rdata;
-wire  ewtag_offset_full, ewtag_offset_empty;
+wire    spilltag_full, spilltag_empty;
+wire    [`SPILL_TAG_BITS-1:0]	spilltag_rdata;
+wire    ewtag_offset_full, ewtag_offset_empty;
 //
 // CDC (Cross-Domain Clock) handshake for HB_VALID
 // 1) start REQ on clk_fast signal and clear on "synchronized ACKNOWLEDGE"
 // 2) synchronize REQ on clk_slow => REQ_SYNC
 // 3) feed-back REQ_SYNC as acknowlegde => ACK_SYNC 
 // 4) generate BUSY until ACKOWLEDGE is cleared
-reg   hb_on_serdesclk;
-reg   req, ack_req, ack_sync;
-reg   req_latch, req_sync;
-wire	busy;
+reg     hb_on_serdesclk;
+reg     req, ack_req, ack_sync;
+reg     req_latch, req_sync;
+wire    busy;
 
 always@(posedge xcvrclk, negedge resetn_xcvrclk)
 begin
    if(resetn_xcvrclk == 1'b0) 
    begin
       req <= 0;
-      hb_seen_cnt    <= 0;
-      hb_null_cnt    <= 0;
-      pref_seen_cnt  <= 0;
+      hb_cnt        <= 0;
+      hb_null_cnt   <= 0;
+      pref_seen_cnt <= 0;
    end
    else
    begin
@@ -161,9 +167,9 @@ begin
       if (hb_valid && !busy)	req <= 1'b1;
       else if (ack_sync)		req <= 1'b0;
       
-      if (hb_valid)     hb_seen_cnt    <= hb_seen_cnt + 1;
-      if (hb_null_valid)hb_null_cnt    <= hb_null_cnt + 1;
-      if (pref_valid)   pref_seen_cnt  <= pref_seen_cnt + 1;
+      if (hb_valid)     hb_cnt          <= hb_cnt + 1;
+      if (hb_null_valid)hb_null_cnt     <= hb_null_cnt + 1;
+      if (pref_valid)   pref_seen_cnt   <= pref_seen_cnt + 1;
    end
 end	
 
@@ -177,8 +183,8 @@ begin
 	begin
 		hb_on_serdesclk	<=	req_latch && !req_sync;
 			
-		req_latch<= req;
-		req_sync	<=	req_latch;
+		req_latch   <= req;
+		req_sync    <=	req_latch;
 	end
 end
 
@@ -187,7 +193,7 @@ always@(posedge serdesclk, negedge resetn_serdesclk)
 begin
    if(resetn_serdesclk == 1'b0)
    begin
-		hb_cnt		<= 0;
+		hb_cnt_onhold		<= 0;
 		hb_error    <= 1'b0;
 		ew_fifo_emptied_pulse   <= 1'b0;
 		hold_ew_fifo_emptied	<= 1'b0;
@@ -212,8 +218,8 @@ begin
 		// HB counter rules:
 		// - increase count on HEARTBEAT, decrease on EW_FIFO being emptied
 		// - if simultaneous, give priority to HEARTBEAT
-		// ** Use HB_ERROR to mark when HB_CNT goes over size of SPILLTAG_FIFO **
-		if(hb_cnt >= 65536)  hb_error <= 1'b1;
+		// ** Use HB_ERROR to mark when HB_CNT_ONHOLD goes over size of SPILLTAG_FIFO **
+		if(hb_cnt_onhold >= 65536)  hb_error <= 1'b1;
 		else                 hb_error <= 1'b0;
 		
         ew_fifo_emptied_pulse     <= ew_fifo_emptied;
@@ -224,8 +230,8 @@ begin
         if (ew_fifo_emptied == 1'b1)        ew_fifo_emptied_count  <= ew_fifo_emptied_count + 1'b1;
         if (hold_ew_fifo_emptied == 1'b1)   hb_empty_overlap_count <= hb_empty_overlap_count + 1'b1;
 		
-		if (hb_on_serdesclk) 					                hb_cnt <= hb_cnt + 1;
-		else if (ew_fifo_emptied_pulse || hold_ew_fifo_emptied) hb_cnt <= hb_cnt - 1;
+		if (hb_on_serdesclk) 					                hb_cnt_onhold <= hb_cnt_onhold + 1;
+		else if (ew_fifo_emptied_pulse || hold_ew_fifo_emptied) hb_cnt_onhold <= hb_cnt_onhold - 1;
       
         // diagnostic counters
         if (ew_fifo_emptied == 1'b1)        ew_fifo_emptied_count  <= ew_fifo_emptied_count + 1'b1;
@@ -240,7 +246,7 @@ begin
 		begin
 			spilltag_re	<= 0;
             ewtag_offset_re <= 0;
-			if (hb_cnt>0) ewtag_state <= READ;
+			if (hb_cnt_onhold>0) ewtag_state <= READ;
 		end
 
 		// read SPILLTAG FIFO
@@ -290,6 +296,26 @@ begin
 	end
 end
 
+// register EWT on DREQ_FULL
+reg dreq_full_reg, dreq_full_latch;
+always@(posedge dreqclk, negedge resetn_dreqclk)
+begin
+    if(resetn_dreqclk == 1'b0)
+    begin
+        dreq_full_reg   <= 1'b0;
+        dreq_full_latch <= 1'b0;
+        ewtag_dreq_full <= 0;
+    end 
+    else    
+    begin
+        dreq_full_reg   <= dreq_full;
+        dreq_full_latch <= dreq_full_reg;
+        if (dreq_full_reg == 1'b1 && dreq_full_latch == 1'b0) ewtag_dreq_full  <= hb_event_window;
+    end
+end
+
+wire    [`EVENT_TAG_BITS-1:0]   ewtag_offset;
+assign  ewtag_offset = (serial_en) ? {16'b0, serial_offset}: (hb_event_window-1);
 
 always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
@@ -331,7 +357,7 @@ begin
             if (is_first_spill)
             begin  
                 is_first_spill    <= 1'b0;
-                ewtag_offset_in   <= reg_ewtag_offset;
+                ewtag_offset_in   <= ewtag_offset;
             end
         end
         // wait for EWTAG_OFFSET to settle: used as latch for EWTAG_OFFSET in EW_FIFO_CNTRL

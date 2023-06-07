@@ -3,9 +3,9 @@
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component EVT_FIFO
 create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {EVT_FIFO} -params {\
-"AE_STATIC_EN:true"  \
+"AE_STATIC_EN:false"  \
 "AEVAL:2"  \
-"AF_STATIC_EN:false"  \
+"AF_STATIC_EN:true"  \
 "AFVAL:1020"  \
 "CTRL_TYPE:2"  \
 "DIE_SIZE:15"  \

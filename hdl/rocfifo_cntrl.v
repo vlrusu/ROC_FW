@@ -30,40 +30,40 @@ module rocfifo_cntrl#(
 	parameter 			NROCFIFO       =	1     // no. of ROCFIFO
 ) (
 //global signals
-   input    serdesclk,        // on 200 MHz input serdes clock
-   input    resetn_serdesclk,
+    input    serdesclk,        // on 200 MHz input serdes clock
+    input    resetn_serdesclk,
 
 	input	rocfifo0_full,         // ROCFIFO0 is FULL
-   input	[`DIGI_BITS-1:0] rocfifo0_data,  // data from ROCFIFO0 
+    input	[`DIGI_BITS-1:0] rocfifo0_data,  // data from ROCFIFO0 
 	input	rocfifo0_empty,         // ROCFIFO0 has some data
-   input	[`ROCFIFO_DEPTH-1:0] rocfifo0_wrcnt,  // WRCNT from ROCFIFO0 - unused 
+    input	[`ROCFIFO_DEPTH-1:0] rocfifo0_wrcnt,  // WRCNT from ROCFIFO0 - unused 
 
-   //input	rocfifo1_full,      
-   //input	[`DIGI_BITS-1:0] rocfifo1_data,  
+    //input	rocfifo1_full,      
+    //input	[`DIGI_BITS-1:0] rocfifo1_data,  
 	//input	rocfifo1_empty,     
-   //input	[`ROCFIFO_DEPTH-1:0] rocfifo1_wrcnt, 
+    //input	[`ROCFIFO_DEPTH-1:0] rocfifo1_wrcnt, 
 //
-   //input	rocfifo2_full,      
-   //input	[`DIGI_BITS-1:0] rocfifo2_data,  
+    //input	rocfifo2_full,      
+    //input	[`DIGI_BITS-1:0] rocfifo2_data,  
 	//input	rocfifo2_empty,     
-   //input	[`ROCFIFO_DEPTH-1:0] rocfifo2_wrcnt, 
+    //input	[`ROCFIFO_DEPTH-1:0] rocfifo2_wrcnt, 
 //
-   //input	rocfifo3_full,      
-   //input	[`DIGI_BITS-1:0] rocfifo3_data,  
+    //input	rocfifo3_full,      
+    //input	[`DIGI_BITS-1:0] rocfifo3_data,  
 	//input	rocfifo3_empty,     
-   //input	[`ROCFIFO_DEPTH-1:0] rocfifo3_wrcnt, 
+    //input	[`ROCFIFO_DEPTH-1:0] rocfifo3_wrcnt, 
 
-   input axi_start_on_serdesclk,  // ROCFIFO data is being written to DDR. Can start processing next HB.
+    input axi_start_on_serdesclk,  // ROCFIFO data is being written to DDR. Can start processing next HB.
 
 	output rocfifo0_re,	   // ROCFIFO0 read enable
 	//output rocfifo1_re,	   
 	//output rocfifo2_re,	   
 	//output rocfifo3_re,	   
    
-   output reg  curr_ewfifo_wr,
-   output reg  ew_done,                         // full event payload read from N x ROC_FIFO
-   output reg  ew_fifo_we,                      // EW_FIFOs write enable
-   output reg  ew_ovfl,                         // size overflow
+    output reg  curr_ewfifo_wr,
+    output reg  ew_done,                         // full event payload read from N x ROC_FIFO
+    output reg  ew_fifo_we,                      // EW_FIFOs write enable
+    output reg  ew_ovfl,                         // size overflow
 	output reg  [`DIGI_BITS-1:0]    ew_data,	   // data to EW_FIFOs
 	output reg  [`EVENT_SIZE_BITS-1:0]  ew_size,    // EW size in units of 64-bits AXI beats
 	output reg  [`SPILL_TAG_BITS-1:0] ew_tag      // EW SPILL TAG

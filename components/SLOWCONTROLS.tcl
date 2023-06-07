@@ -7,7 +7,12 @@ auto_promote_pad_pins -promote_all 0
 
 # Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_MISO} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CMD_IN_WE} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK_RESETN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_RE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCTRLREADY} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {EXT_RST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MISO} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PCLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PENABLE} -port_direction {IN}
@@ -100,6 +105,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {calsda} -port_direction {I
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hvsda} -port_direction {INOUT}
 
 # Create top level Bus Ports
+sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQCNT} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQNULL} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQREAD} -port_direction {IN} -port_range {[31:0]}
@@ -162,6 +168,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {serdes_rdcnt1} -port_directio
 sd_create_bus_port -sd_name ${sd_name} -port_name {serdes_rdcnt2} -port_direction {IN} -port_range {[12:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serdes_rdcnt3} -port_direction {IN} -port_range {[12:0]}
 
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_CMD_STATUS} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_DIAG_DATA} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_Q} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFODELTAHB} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFONUMBERHB} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFOOFFSET} -port_direction {OUT} -port_range {[31:0]}
@@ -199,13 +210,45 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 
 
+# Add AND2_1 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_1}
+
+
+
 # Add APB3_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {APB3} -instance_name {APB3_0}
 
 
 
+# Add CMD_TO_PROC_BUFFER_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {CMD_TO_PROC_BUFFER} -instance_name {CMD_TO_PROC_BUFFER_0}
+
+
+
 # Add counter32_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {counter32} -hdl_file {hdl\counter32.v} -instance_name {counter32_0}
+
+
+
+# Add DCS_RX_BUFFER_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {DCS_RX_BUFFER} -instance_name {DCS_RX_BUFFER_0}
+
+
+
+# Add DCS_TX_BUFFER_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {DCS_TX_BUFFER} -instance_name {DCS_TX_BUFFER_0}
+
+
+
+# Add DCSRegisters_0 instance
+sd_instantiate_hdl_core -sd_name ${sd_name} -hdl_core_name {DCSRegisters} -instance_name {DCSRegisters_0}
+# Exporting Parameters of instance DCSRegisters_0
+sd_configure_core_instance -sd_name ${sd_name} -instance_name {DCSRegisters_0} -params {\
+"APB_ADDRESS_WIDTH:32" \
+"APB_DATA_WIDTH:32" }\
+-validate_rules 0
+sd_save_core_instance_config -sd_name ${sd_name} -instance_name {DCSRegisters_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {DCSRegisters_0}
 
 
 
@@ -360,14 +403,29 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "Registers_0:TVS_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "TVS_Interface_0:resetn_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:Y" "CMD_TO_PROC_BUFFER_0:RRESET_N" "DCSRegisters_0:PRESETn" "DCS_RX_BUFFER_0:RESET_N" "DCS_TX_BUFFER_0:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE0n" "PREAMPSPI_1:SPISS[0:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE1n" "PREAMPSPI_1:SPISS[1:1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MISO" "PREAMPSPI_1:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MOSI" "PREAMPSPI_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_SCLK" "MX2_0:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_IN_WE" "CMD_TO_PROC_BUFFER_0:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:EMPTY" "DCSRegisters_0:PROC_CMD_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:FULL" "DCSRegisters_0:PROC_CMD_FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RCLOCK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RE" "DCSRegisters_0:PROC_CMD_RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WCLOCK" "DCS_CLK" "DCS_TX_BUFFER_0:RCLOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WRESET_N" "DCS_CLK_RESETN" "DCS_TX_BUFFER_0:RRESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_EMPTY" "DCS_RX_BUFFER_0:EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_FULL" "DCS_RX_BUFFER_0:FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_RE" "DCS_RX_BUFFER_0:RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_WE" "DCS_RX_BUFFER_0:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_WE" "DCS_TX_BUFFER_0:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:RE" "DCS_TX_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOEN" "Registers_0:DDRCFOEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOSTART" "Registers_0:DDRCFOSTART" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCTRLREADY" "Registers_0:DDRCTRLREADY" }
@@ -379,7 +437,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIDEVICE_RESETN" "Registers_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCALIGN_RESETN" "Registers_0:DTCALIGN_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMBLKEN" "Registers_0:DTCSIMBLKEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMSTART" "Registers_0:DTCSIMSTART" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE0n" "PREAMPSPI_0:SPISS[0:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE1n" "PREAMPSPI_0:SPISS[1:1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MISO" "PREAMPSPI_0:SPISDI" }
@@ -454,6 +511,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI2_SCLK" "SPI_KEY_0:SPISCLKO"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TX" "UARTapb_0:TX" }
 
 # Add bus net connections
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_IN_DATA" "CMD_TO_PROC_BUFFER_0:DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:Q" "DCSRegisters_0:PROC_CMD_DATA_IN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RDCNT" "DCSRegisters_0:PROC_CMD_RDCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_CMD_STATUS" "DCS_CMD_STATUS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_DIAG_DATA" "DCS_DIAG_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_IN" "DCS_RX_BUFFER_0:DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_OUT" "DCS_RX_BUFFER_0:Q" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_TX_BUFFER_0:DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_BUFFER_0:WRCNT" "DCS_RX_WRCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFODELTAHB" "Registers_0:DDRCFODELTAHB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFONUMBERHB" "Registers_0:DDRCFONUMBERHB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOOFFSET" "Registers_0:DDRCFOOFFSET" }
@@ -542,6 +610,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_seen" "pattern_err_switch_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APB3mmaster" "APB3mmaster" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave0" "GPIO_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave1" "pwm_0:APBslave" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave10" "DCSRegisters_0:BIF_1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave2" "Registers_0:BIF_1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave3" "UARTapb_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave4" "SPI0_0:APB_bif" }

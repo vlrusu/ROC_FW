@@ -74,6 +74,7 @@ module EW_FIFO_controller #(
 	output   reg   tag_sent,         // DDR read is done
 	output   reg	tag_null,         // DDR read is done for event with no hits
 	output   reg   et_fifo_emptied,  // pulse on EVT_FIFO becoming available: used to clear DATA_READY and generate LAST_WORD
+    output   et_fifo_full,              // current ET FIFO is almost full (ie has 511 hits)
 // diagnostics
 	output	reg	header1_error, header2_error,
 	output	reg	data_error, event_error,
@@ -152,8 +153,9 @@ reg   ew_fifo0_empty_pulse,  ew_fifo1_empty_pulse;
 // EVTFIFOs WRITE signals on SYSCLK time domain     
 reg   curr_etfifo_wr;  	// when 0/1, when EVT_fifo0/1 is being written
 reg   et_fifo_we;
-wire	et_fifo0_we,	et_fifo1_we;						// EVT_FIFO write enable
-wire	et_fifo0_full, et_fifo1_full, et_fifo_full;	// EVT_FIFO almost full (to give time to stop DIGIFIFO read)
+wire	et_fifo0_we,	et_fifo1_we;	// EVT_FIFO write enable
+wire	et_fifo0_full, et_fifo1_full;   // EVT_FIFO full (ie 511 hits in event)
+//wire    et_fifo_full;	
 reg   [`AXI_BITS-1:0] et_fifo_wdata;
 wire  [`AXI_BITS-1:0] et_fifo0_wdata, et_fifo1_wdata;	// data to EVT_FIFOs
 
@@ -1422,7 +1424,7 @@ end
 
 //
 // EVT_FIFOs (64x1024) to allow up to 512(256) packets(hits) per window from DDR
-//  These FIFOs have ALMOST_EMPTY=2 (unused) 
+//  These FIFOs have ALMOST_FULL=1024 to tag max. no of hits (255) 
 EVT_FIFO		evt_fifo0 (
 	.WCLOCK	(sysclk),
 	.WRESET_N(resetn_fifo),
@@ -1433,8 +1435,9 @@ EVT_FIFO		evt_fifo0 (
 	.RE		(et_fifo0_re),
 	// Outputs
 	.EMPTY	(et_fifo0_empty),
-	.AEMPTY	(	),
-	.FULL		(et_fifo0_full),
+//	.AEMPTY	(	),
+	.FULL		( ),
+	.AFULL		(et_fifo0_full),
 	.Q			(et_fifo0_rdata)
 );
 	
@@ -1448,8 +1451,9 @@ EVT_FIFO		evt_fifo1 (
 	.RE		(et_fifo1_re),
 	// Outputs
 	.EMPTY	(et_fifo1_empty),
-	.AEMPTY	(	),
-	.FULL		(et_fifo1_full),
+//	.AEMPTY	(	),
+	.FULL		( ),
+	.AFULL		(et_fifo1_full),
 	.Q			(et_fifo1_rdata)	
 );
 

@@ -27,7 +27,7 @@ use work.algorithm_constants.all;
 entity DRACRegisters is
 port (
     --<port_name> : <direction> <type>;
-    DCS_CLK				: IN  std_logic;				-- 50 MHz clock
+    DCS_CLK				: IN  std_logic;				-- 200 MHz clock
 	READ_REG			: IN  std_logic;				
 	WRITE_REG			: IN  std_logic;				
     READY_REG 			: OUT  std_logic;					-- signal that requested data is on DATA_OUT
@@ -35,13 +35,19 @@ port (
     ADDR_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_OUT			: OUT  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
+    IS_DRAC_REGISTER    : OUT  std_logic;           -- signal that DATA_OUT is driven by DRACRegister
    
    -- Debugging
     DEBUG_REG_0			: IN  std_logic_vector(15 downto 0);
     PREREAD_PULSE		: OUT std_logic;
 	SEL_RST				: OUT std_logic;
 
-   -- DRAC specific registers
+    -- DTC to RISKV diagnostic registers
+    DCS_CMD_STATUS	    : IN  std_logic_vector(15 downto 0);	-- status of DCS command to RiskV
+    DCS_TX_WRCNT	    : IN  std_logic_vector(7 downto 0);     -- DCS_TX_BUFFER WRCNT
+    DCS_RX_WRCNT	    : IN  std_logic_vector(7 downto 0);     -- DCS_RX_BUFFER WRCNT
+
+    -- DRAC specific registers
     DCS_CAL_LANE0_EMPTY : IN std_logic;             -- ROCFIFO for CAL Lane 0 is empty
     DCS_CAL_LANE1_EMPTY : IN std_logic;             -- ROCFIFO for CAL Lane 1 is empty
     DCS_HV_LANE0_EMPTY  : IN std_logic;             -- ROCFIFO for HV  Lane 0 is empty
@@ -50,35 +56,37 @@ port (
     DCS_CAL_LANE1_FULL  : IN std_logic;             -- ROCFIFO for CAL Lane 1 is empty
     DCS_HV_LANE0_FULL   : IN std_logic;             -- ROCFIFO for HV  Lane 0 is empty
     DCS_HV_LANE1_FULL   : IN std_logic;             -- ROCFIFO for HV  Lane 1 is empty
-    DCS_EVT_ERR       : IN  std_logic;                -- error seen for EVENT Tag number
-    DCS_HDR1_ERR      : IN  std_logic;                -- error seen in header 1
-    DCS_HDR2_ERR      : IN  std_logic;                -- error seen in header 2
-    DCS_DATA_ERR      : IN  std_logic;                -- error seen for pattern data
-    DCS_ERR_EXPC      : IN  std_logic_vector(63 DOWNTO 0);   -- one of four expected 64-bit with error
-    DCS_ERR_SEEN      : IN  std_logic_vector(63 DOWNTO 0);   -- one of four seen 64-bit with error
+    DCS_EVT_ERR      : IN  std_logic;               -- error seen for EVENT Tag number
+    DCS_HDR1_ERR     : IN  std_logic;               -- error seen in header 1
+    DCS_HDR2_ERR     : IN  std_logic;               -- error seen in header 2
+    DCS_DATA_ERR     : IN  std_logic;               -- error seen for pattern data
+    DCS_ERR_EXPC     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four expected 64-bit with error
+    DCS_ERR_SEEN     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four seen 64-bit with error
     DCS_DREQ_FIFO_FULL: IN  std_logic;                -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
-    DCS_STORE_POS     : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
-    DCS_STORE_CNT     : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
+    DCS_STORE_POS    : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
+    DCS_STORE_CNT    : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
     DCS_DREQ_FIFO_EMPTY:IN  std_logic;                -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
-    DCS_FETCH_POS    : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes fetched from a partially read FIFO entry (0 to 2)
-    DCS_FETCH_CNT    : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully read DREQ FIFO read entries
-    DCS_EVMCNT       : IN  std_logic_vector(31 DOWNTO 0);   -- number of Event Markers with non-null HB plus first null HB seen
-    DCS_HBCNT        : IN  std_logic_vector(31 DOWNTO 0);   -- number of HB seen
-    DCS_NULLHBCNT    : IN  std_logic_vector(31 DOWNTO 0);   -- number of null HB seen
-    DCS_HBONHOLD     : IN  std_logic_vector(31 DOWNTO 0);   -- number of HB not processed
-    DCS_PREFCNT      : IN  std_logic_vector(31 DOWNTO 0);   -- number of Prefetch seen
-    DCS_DREQCNT      : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request seen
-    DCS_DREQREAD     : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request read from DDR
-    DCS_DREQSENT     : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request sent to DTC
-    DCS_DREQNULL     : IN  std_logic_vector(31 DOWNTO 0);   -- number of Data Request with null payload
-    DCS_SPILLCNT     : IN  std_logic_vector(19 DOWNTO 0);   -- number of HB from start of SPILL
-    DCS_HBTAG        : IN  std_logic_vector(47 DOWNTO 0);   -- last HB tag
-    DCS_PREFTAG      : IN  std_logic_vector(47 DOWNTO 0);   -- last PREFETCH tag
-    DCS_FETCHTAG     : IN  std_logic_vector(47 DOWNTO 0);   -- last FETCH tag
-    DCS_DREQTAG      : IN  std_logic_vector(47 DOWNTO 0);   -- last DREQ tag
-    DCS_OFFSETTAG    : IN  std_logic_vector(47 DOWNTO 0);   -- offset TAG in present SPILL
-    DCS_ERR_REQ      : OUT std_logic_vector(1 downto 0);		-- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
-    DCS_TAG_OFFSET   : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
+    DCS_FETCH_POS   : IN  std_logic_vector(1 DOWNTO 0);     -- number of sizes fetched from a partially read FIFO entry (0 to 2)
+    DCS_FETCH_CNT   : IN  std_logic_vector(19 DOWNTO 0);    -- number of fully read DREQ FIFO read entries
+    DCS_EVMCNT      : IN  std_logic_vector(31 DOWNTO 0);    -- number of Event Markers with non-null HB plus first null HB seen
+    DCS_HBCNT       : IN  std_logic_vector(31 DOWNTO 0);    -- number of HB seen
+    DCS_NULLHBCNT   : IN  std_logic_vector(31 DOWNTO 0);    -- number of null HB seen
+    DCS_HBONHOLD    : IN  std_logic_vector(31 DOWNTO 0);    -- number of HB not processed
+    DCS_PREFCNT     : IN  std_logic_vector(31 DOWNTO 0);    -- number of Prefetch seen
+    DCS_DREQCNT     : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request seen
+    DCS_DREQREAD    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request read from DDR
+    DCS_DREQSENT    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request sent to DTC
+    DCS_DREQNULL    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request with null payload
+    DCS_SPILLCNT    : IN  std_logic_vector(19 DOWNTO 0);    -- number of HB from start of SPILL
+    DCS_HBTAG       : IN  std_logic_vector(47 DOWNTO 0);    -- last HB tag
+    DCS_PREFTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- last PREFETCH tag
+    DCS_FETCHTAG    : IN  std_logic_vector(47 DOWNTO 0);    -- last FETCH tag
+    DCS_DREQTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- last DREQ tag
+    DCS_OFFSETTAG   : IN  std_logic_vector(47 DOWNTO 0);    -- offset TAG in present SPILL
+    DCS_FULLTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- first TAG with DREQ full
+    DCS_TAG_LOST    : IN  std_logic_vector(47 downto 0);	-- first TAG with EVM counter falling behing of HB counter
+    DCS_ERR_REQ     : OUT std_logic_vector(1 downto 0);     -- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
+    DCS_TAG_OFFSET  : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
 
     DCS_DDRRESET    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
@@ -100,7 +108,9 @@ port (
     dcs_cal_addr    : out std_logic_vector(8 downto 0);     -- write CAL_ADDRESS_IN via DCS reg 25
     dcs_hv_init     : out std_logic;                        -- generate HV_INIT via DCS reg 26: must toggle 0->1->0 after DATA abd ADDR have been set
     dcs_hv_data     : out std_logic_vector(15 downto 0);    -- write HV_DATA_IN via DCS reg 27
-    dcs_hv_addr     : out std_logic_vector(8 downto 0)      -- write HV_ADDRESS_IN via DCS reg 28
+    dcs_hv_addr     : out std_logic_vector(8 downto 0);     -- write HV_ADDRESS_IN via DCS reg 28,
+    dcs_status_sel  : out std_logic_vector(2 downto 0)      -- write which info to send to Data header STATUS BITS via DCS reg 30
+                                                            -- 0 (def) is selected bits like DREQ EMPTY and FULL;  for thers, see DataStatusProcessor
 );
 end DRACRegisters;
 
@@ -156,6 +166,7 @@ begin
 			
 		DCS_RESETFIFO   <= '0';
         DCS_ERROR_ADDR  <= (others => '0'); 
+        IS_DRAC_REGISTER<= '0';
 
 		pattern_en_reg	<= '0';	
 		free_evm_en_reg	<= '0';	
@@ -187,6 +198,7 @@ begin
         dcs_hv_init     <= '0';
         dcs_hv_data     <= (others => '0');
         dcs_hv_addr     <= (others => '0');
+        dcs_status_sel  <= (others => '0');
       
    elsif rising_edge(DCS_CLK) then
 			
@@ -195,6 +207,7 @@ begin
 		--ALGO_RESET    <= '0'; 				
 		PREREAD_PULSE   <= '0';
 		DATA_OUT      	<= (others => '0');
+        IS_DRAC_REGISTER<= '0';
 			
 		read_latch		<= '0';
 		write_latch		<= '0';
@@ -287,6 +300,8 @@ begin
                 dcs_hv_data <= drac_wdata(15 downto 0);
          elsif (drac_addrs = 28) then
                 dcs_hv_addr <= drac_wdata(8 downto 0);
+         elsif (drac_addrs = 30) then   -- 0x14
+                dcs_status_sel <= drac_wdata(2 downto 0);
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -302,6 +317,7 @@ begin
 		elsif (drac_read = '1') then  
 				
 			READY_REG		<= '1';
+            IS_DRAC_REGISTER<= '1';               -- default is high. Overwritten is unrecognized address
 			read_latch		<= drac_read;
 			if (drac_read = '1' and read_latch = '0') then 	             
 				readCounter 	<= readCounter + 1;  
@@ -442,15 +458,28 @@ begin
 				DATA_OUT <= DCS_EVMCNT(15 downto 0);
 			elsif (drac_addrs = 65) then		 	 
 				DATA_OUT <= DCS_EVMCNT(31 downto 16);
-			--elsif (drac_addrs = 126) then		 	 
-				--fifo_re   <= PREREAD_PULSE;
-				--DATA_OUT <= "00000000" & fifo_rdata;
-			--elsif (drac_addrs >= 127 and drac_addrs <255) then   -- allow for one register per straw
-				--ram_we    <= '0';
-				--ram_addr  <= drac_addrs(7 downto 0);
-				----DATA_OUT <= "00000000" & ram_rdata;							-- only 8-bit ram data allowed!!
+			elsif (drac_addrs = 66) then		 	 
+				DATA_OUT <= DCS_FULLTAG(15 downto 0);
+			elsif (drac_addrs = 67) then		 	 
+				DATA_OUT <= DCS_FULLTAG(31 downto 16);
+			elsif (drac_addrs = 68) then		 	 
+				DATA_OUT <= DCS_FULLTAG(47 downto 32);
+			elsif (drac_addrs = 69) then		 	 
+				DATA_OUT <= DCS_TAG_LOST(15 downto 0);
+			elsif (drac_addrs = 70) then		 	 
+				DATA_OUT <= DCS_TAG_LOST(31 downto 16);
+			elsif (drac_addrs = 71) then		 	 
+				DATA_OUT <= DCS_TAG_LOST(47 downto 32);
+            -- DCS CMD Registers
+			elsif (drac_addrs = 128) then		-- 0x80 	 
+				DATA_OUT <= DCS_CMD_STATUS;
+			elsif (drac_addrs = 129) then		-- 0x81 	 
+				DATA_OUT <= X"00" & DCS_TX_WRCNT;
+			elsif (drac_addrs = 130) then		-- 0x82 	 
+				DATA_OUT <= X"00" & DCS_RX_WRCNT;
 			else	
-				DATA_OUT <= drac_addrs;		  --Unmapped Addresses
+				DATA_OUT            <= drac_addrs;		  --Unmapped Addresses
+                IS_DRAC_REGISTER    <= '0';               -- unrecognized DRACRegister address
 			end if;								  							   		   
 				
 		end if;    -- if drac_write or read 
