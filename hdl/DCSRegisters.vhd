@@ -53,7 +53,7 @@ port (
     PSLVERR :   out std_logic;            -- APB error signal
    
     PROC_CMD_DATA_IN:   in  std_logic_vector(15 downto 0);
-    PROC_CMD_RDCNT  :   in  std_logic_vector(7 downto 0);
+    PROC_CMD_RDCNT  :   in  std_logic_vector(10 downto 0);
     PROC_CMD_EMPTY  :   in  std_logic;
     PROC_CMD_FULL   :   in  std_logic;
     PROC_CMD_RE     :   out std_logic;

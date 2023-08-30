@@ -3,7 +3,7 @@
 //
 `ifndef _trk_params_h
 `define _trk_params_h
-   `define  EVENT_TAG_BITS	   48    // max. Event Window count for duration of experiment 
+   `define  EVENT_TAG_BITS	  48    // max. Event Window count for duration of experiment 
    `define  SPILL_TAG_BITS    20    // EWTAG counter for duration of SPILL	
    `define  TRK_HIT_BITS      8     // max. no of tracker hits per Event Window (or 2**8-1 = 255)	
    `define  EVENT_SIZE_BITS   10    // max. tracker Event size in units of 64-bit AXI beats (or 2**10 - 1 = 1023)

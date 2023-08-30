@@ -19,14 +19,14 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "PREFETCH:false"  \
 "RAM_OPT:0"  \
 "RDCNT_EN:true"  \
-"RDEPTH:128"  \
+"RDEPTH:1024"  \
 "RE_POLARITY:0"  \
 "READ_DVALID:false"  \
 "RWIDTH:16"  \
 "SYNC:0"  \
 "SYNC_RESET:0"  \
 "UNDERFLOW_EN:false"  \
-"WDEPTH:128"  \
+"WDEPTH:1024"  \
 "WE_POLARITY:0"  \
 "WRCNT_EN:false"  \
 "WRITE_ACK:false"  \

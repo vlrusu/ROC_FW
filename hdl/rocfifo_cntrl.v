@@ -7,6 +7,7 @@
 //      v2.0: <Jan. 2022>: added multiple ROCs handling
 //      v3.0: <Feb. 2022>: added logic to deal with tag with overflow hits (ie more than 512 hits -> 2047 64-bit words)
 //      v4.0: <Mar. 2022>: change EW_SIZE output dimensions to [EVENT_SIZE_BITS:0] => MAX allowed value is 4096
+//      v5.0: <July 2023>: added  NEWSPILL_RESET input to reset some internal signals 
 //
 // Description: 
 //
@@ -32,6 +33,8 @@ module rocfifo_cntrl#(
 //global signals
     input    serdesclk,        // on 200 MHz input serdes clock
     input    resetn_serdesclk,
+    
+    input   newspill_reset,     // add reset on NEWSPILL
 
 	input	rocfifo0_full,         // ROCFIFO0 is FULL
     input	[`DIGI_BITS-1:0] rocfifo0_data,  // data from ROCFIFO0 
@@ -132,32 +135,41 @@ reg[15:0]timeout_cnt;
 
 always@(posedge serdesclk, negedge resetn_serdesclk)
 begin
-   if(resetn_serdesclk == 1'b0)
+    if(resetn_serdesclk == 1'b0)
 	begin
-      index       = 0;
-      curr_ewfifo_wr <= 1'b1;
-      rocfifo_re  <= 0;
-      ew_fifo_we  <= 1'b0;
-      ew_done	   <= 1'b0;
-      ew_ovfl     <= 1'b0;
-      ew_data     <= 0;
-      ew_size     <= 0;
-      ew_tag      <= 0;
-      ew_tag_error<= 1'b0;
-      curr_size   <= 0;
-      full_size   <= 0;
-      rd_cnt      <= 0;
-      full_rd_cnt <= 0;
+        index       = 0;
+        curr_ewfifo_wr <= 1'b1;
+        full_size   <= 0;
+        ew_size     <= 0;
+        
+        rocfifo_re  <= 0;
+        ew_fifo_we  <= 1'b0;
+        ew_done	    <= 1'b0;
+        ew_ovfl     <= 1'b0;
+        ew_data     <= 0;
+        ew_tag      <= 0;
+        ew_tag_error<= 1'b0;
+        curr_size   <= 0;
+        rd_cnt      <= 0;
+        full_rd_cnt <= 0;
 		wait_cnt    <= 0;
-      timeout_en  <= 0;
-      timeout_cnt <= 0;
-      data_state  <= RESET;
-   end
+        timeout_en  <= 0;
+        timeout_cnt <= 0;
+        data_state  <= RESET;
+    end
    
-   else
-   begin
-   
-      ew_fifo_we  <= 1'b0;
+    else
+    begin
+        
+        ew_fifo_we  <= 1'b0;
+      
+        if (newspill_reset)   
+        begin 
+            index           = 0;
+            curr_ewfifo_wr  <= 1'b1;
+            full_size   <= 0;
+            ew_size     <= 0;
+        end    
       
       case(data_state)
        

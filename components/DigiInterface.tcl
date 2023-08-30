@@ -36,6 +36,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_full} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_rclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {force_full} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_rclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_re} -port_direction {IN}
@@ -108,13 +109,19 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {DigiReaderFIFO} -i
 
 
 
+# Add edge_generator_1 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {edge_generator} -hdl_file {hdl\edge_generator.v} -instance_name {edge_generator_1}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_1:fallingEdge}
+
+
+
 # Add ROCFIFOController_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ROCFIFOController} -hdl_file {hdl\ROCFIFOController.vhd} -instance_name {ROCFIFOController_0}
 
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DigiLink_0:fifo_reset" "DigiLink_1:fifo_reset" "DigiReaderFIFO_0:RRESET_N" "DigiReaderFIFO_0:WRESET_N" "fifo_resetn" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DigiLink_0:fifo_reset" "DigiLink_1:fifo_reset" "DigiReaderFIFO_0:RRESET_N" "DigiReaderFIFO_0:WRESET_N" "edge_generator_1:resetn" "fifo_resetn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "serdesclk_resetn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "ROCFIFOController_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_lane0_empty" "DigiLink_0:lane0_empty" "ROCFIFOController_0:lane0_empty" }
@@ -142,7 +149,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:REF_CLK_PAD_P" "REF_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:align" "DigiLink_1:align" "align" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned_0" "cal_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned_1" "cal_lane1_aligned" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:fifo_rclk" "DigiLink_1:fifo_rclk" "DigiReaderFIFO_0:WCLOCK" "ROCFIFOController_0:clk" "fifo_rclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:fifo_rclk" "DigiLink_1:fifo_rclk" "DigiReaderFIFO_0:WCLOCK" "ROCFIFOController_0:clk" "edge_generator_1:clk" "fifo_rclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:force_full" "DigiLink_1:force_full" "force_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_fifo_re" "ROCFIFOController_0:lane0_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_fifo_re" "ROCFIFOController_0:lane1_re" }
@@ -179,7 +186,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_done" "e
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_full" "ew_fifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_we" "ew_fifo_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_ovfl" "ew_ovfl" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:newspill_reset" "edge_generator_1:risingEdge" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_uart" "use_uart" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_1:gate" "newspill" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_0" "cal_lane0_alignment" }

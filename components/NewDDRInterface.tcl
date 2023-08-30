@@ -140,6 +140,12 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_0:fallingEdge
 
 
 
+# Add edge_generator_1 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {edge_generator} -hdl_file {hdl\edge_generator.v} -instance_name {edge_generator_1}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_1:fallingEdge}
+
+
+
 # Add edge_generator_2 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {edge_generator} -hdl_file {hdl\edge_generator.v} -instance_name {edge_generator_2}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_2:fallingEdge}
@@ -172,6 +178,7 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ewtag_cntrl} -hd
 
 # Add OR2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {OR2} -instance_name {OR2_0}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {OR2_0:Y}
 
 
 
@@ -250,30 +257,30 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_fifo_we
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_ovfl" "pattern_switch_0:ew_ovfl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_ovfl_to_store" "ew_size_store_and_fetch_controller_0:store_overflow" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_we_store" "ew_size_store_and_fetch_controller_0:store_event_we" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ewtag_offset_seen" "ewtag_cntrl_0:ewtag_offset_latch" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ewtag_offset_seen" "ewtag_cntrl_0:ewtag_offset_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:header1_error" "header1_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:header2_error" "header2_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:last_word" "ewtag_cntrl_0:last_word" "last_word" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_dreqclk" "edge_generator_0:risingEdge" "ew_size_store_and_fetch_controller_0:fetch_newspill" "ewtag_cntrl_0:start_spill" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_sysclk" "edge_generator_2:risingEdge" "ew_size_store_and_fetch_controller_0:store_newspill" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:resetn_dreqclk" "dreqclk_resetn" "edge_generator_0:resetn" "ew_size_store_and_fetch_controller_0:rreset_n" "ewtag_cntrl_0:resetn_dreqclk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:resetn_serdesclk" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "resetn_serdesclk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:serdesclk" "ewtag_cntrl_0:serdesclk" "pattern_FIFO_filler_0:serdesclk" "serdesclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:resetn_serdesclk" "edge_generator_1:resetn" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "resetn_serdesclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:serdesclk" "edge_generator_1:clk" "ewtag_cntrl_0:serdesclk" "pattern_FIFO_filler_0:serdesclk" "serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_null" "ewtag_cntrl_0:tag_null" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_ovfl" "ew_size_store_and_fetch_controller_0:fetch_overflow" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_sent" "ewtag_cntrl_0:tag_sent" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_valid" "ew_size_store_and_fetch_controller_0:fetch_address_valid" "ewtag_cntrl_0:tag_valid" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FPGA_POR_N" "SYSCLKReset:FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "SYSCLKReset:INIT_DONE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWSPILL" "OR2_0:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWSPILL" "OR2_0:B" "edge_generator_0:gate" "edge_generator_1:gate" "edge_generator_2:gate" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ONSPILL" "OR2_0:A" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_0:Y" "edge_generator_0:gate" "edge_generator_2:gate" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_1:A" "SERIAL_pattern_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_1:Y" "pattern_switch_0:pattern_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RXCLK_RESETN" "ewtag_cntrl_0:resetn_xcvrclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_CLK" "ewtag_cntrl_0:xcvrclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"axi_start_on_serdesclk" "pattern_switch_0:DIGI_axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"data_ready" "ewtag_cntrl_0:data_ready" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_0:risingEdge" "ew_size_store_and_fetch_controller_0:fetch_newspill" "ewtag_cntrl_0:start_spill" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_2:risingEdge" "ew_size_store_and_fetch_controller_0:store_newspill" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_1:risingEdge" "pattern_FIFO_filler_0:newspill_reset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"event_start" "ewtag_cntrl_0:event_start" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_size_store_and_fetch_controller_0:fetch" "ewtag_cntrl_0:tag_fetch" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_null_valid" "hb_null_valid" }

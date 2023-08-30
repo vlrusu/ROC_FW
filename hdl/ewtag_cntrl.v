@@ -7,9 +7,9 @@
 //      11/27/2021 : add ONSPILL and SPILL_EWTAG
 //      02/16/2022 : increase depth of SPILLTAG FIFO to allow for events with very large hit no (up to overflow)
 //      02/20/2022 : merged with DATAREQ_CNTRL, for which
-//             v2:  02/03/2022: add SM to control DATAREQ protocol after introducing PREFETCH on-demand
-//                               (add input EVENT_START driven by DATAREQ_START_EVENT)
-//             v3:  02/08/2022: add handling of EWTAG_OFFSET on ONSPILL rising edge
+//      02/03/2022 : add SM to control DATAREQ protocol after introducing PREFETCH on-demand
+//                    (add input EVENT_START driven by DATAREQ_START_EVENT)
+//      07/19/2023 : use START_SPILL to change handling of EWTAG_OFFSET on NEWSPILL 
 //
 // Description: 
 //
@@ -55,7 +55,7 @@ module ewtag_cntrl(
 	output  reg  [`SPILL_TAG_BITS-1:0] spill_ewtag_out, //  SPILL EWTAG to be passed to EWT_FIFO
    
     // exchanged with TOP_SERDES on DREQCLK
-    input   start_spill,        // pulse on SPILL rising edge (ONSPILL or NEWSPILL)
+    input   start_spill,        // pulse on NEWSPILL rising edge 
 	input	start_fetch,        // FETCH observed (can be PREFETCH or DREQ)
     input   event_start,        // semaphone for DATA_READY!!
 	input	[`EVENT_TAG_BITS-1:0]	event_window_fetch, // EWTAG on fetch (can be PREFETCH or DREQ)
@@ -70,8 +70,8 @@ module ewtag_cntrl(
 	input    tag_sent,			//	REQTAG has been sent to EVT_FIFOs
 	input    tag_null,			//	REQTAG had no hits to send to EVT_FIFOs
 	input    tag_done,			// EVT_FIFO has been emptied
-    output  reg  ewtag_offset_latch,                    // to EW_FIFO_CNTRL: local spill EWTAG counter has restarted, ie first HB has been seen
-	output  [`EVENT_TAG_BITS-1:0] ewtag_offset_out,     //                 : EWTAG_OFFSET updated with first HB of new spill
+    output  reg  ewtag_offset_seen,                    // to EW_FIFO_CNTRL: local spill EWTAG counter has restarted, ie first HB has been seen
+	output  [`EVENT_TAG_BITS-1:0] ewtag_offset_out,    //                 : EWTAG_OFFSET updated with first HB of new spill
         
 	// exchanged with EW_SIZE_STORE_AND_FETCH
 	input	    tag_valid,		   // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
@@ -112,8 +112,8 @@ reg     hb_error;
 reg     spilltag_re;
 reg     ew_fifo_emptied_reg, ew_fifo_emptied_pulse;
 reg     hold_ew_fifo_emptied;
-reg     ewtag_offset_re, ewtag_offset_re1, ewtag_offset_re2, ewtag_offset_re3;
-reg     ewtag_offset_pulse;
+reg     ewtag_offset_en, ewtag_offset_en1, ewtag_offset_en2, ewtag_offset_en3;
+reg     ewtag_offset_re;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DATAREQ_STATE encoding (on DREQCLK)
@@ -181,10 +181,10 @@ begin
    if(resetn_serdesclk == 1'b0) hb_on_serdesclk	<= 0;
 	else
 	begin
-		hb_on_serdesclk	<=	req_latch && !req_sync;
+		hb_on_serdesclk <=	req_latch && !req_sync;
 			
-		req_latch   <= req;
-		req_sync    <=	req_latch;
+		req_latch   <=  req;
+		req_sync    <=  req_latch;
 	end
 end
 
@@ -202,15 +202,15 @@ begin
 		spilltag_re	   <= 1'b0;
 		ewtag_state	   <= WAIT;
       
-		ewtag_offset_re   <= 1'b0;
-		ewtag_offset_re1  <= 1'b0;
-		ewtag_offset_re2  <= 1'b0;
-		ewtag_offset_re3  <= 1'b0;
-		ewtag_offset_latch<= 1'b0;
-        ewtag_offset_pulse<= 1'b0;
+		ewtag_offset_en     <= 1'b0;
+		ewtag_offset_en1    <= 1'b0;
+		ewtag_offset_en2    <= 1'b0;
+		ewtag_offset_en3    <= 1'b0;
+		ewtag_offset_seen   <= 1'b0;
+        ewtag_offset_re     <= 1'b0;
         
-        hb_empty_overlap_count <= 16'b0;
-        ew_fifo_emptied_count <= 16'b0;
+        hb_empty_overlap_count  <= 16'b0;
+        ew_fifo_emptied_count   <= 16'b0;
 	end
 	else
 	begin
@@ -220,7 +220,7 @@ begin
 		// - if simultaneous, give priority to HEARTBEAT
 		// ** Use HB_ERROR to mark when HB_CNT_ONHOLD goes over size of SPILLTAG_FIFO **
 		if(hb_cnt_onhold >= 65536)  hb_error <= 1'b1;
-		else                 hb_error <= 1'b0;
+		else                        hb_error <= 1'b0;
 		
         ew_fifo_emptied_pulse     <= ew_fifo_emptied;
       
@@ -245,7 +245,7 @@ begin
 		WAIT:
 		begin
 			spilltag_re	<= 0;
-            ewtag_offset_re <= 0;
+            ewtag_offset_en <= 0;
 			if (hb_cnt_onhold>0) ewtag_state <= READ;
 		end
 
@@ -264,8 +264,8 @@ begin
 		START:
 		begin
 			spilltag_re    <= 0;
-			pattern_init   <= 1;
-			ewtag_state    <= HOLD;
+            pattern_init   <= 1;
+            ewtag_state    <= HOLD;
 		end
 		
         // Pass SPILLTAG output to simulated tag logic. 
@@ -274,7 +274,10 @@ begin
 		begin
 			pattern_init   <= 0;
 			spill_ewtag_out<= spilltag_rdata;
-            if (spilltag_rdata == 20'b1) ewtag_offset_re <= 1;
+            //if (spilltag_rdata == 20'b1) ewtag_offset_en <= 1;
+            // use IS_FIRST_SPILL to enable EWTAG_OFFSET_EN
+            if (is_first_spill) ewtag_offset_en<= 1;
+            
 			if (ew_fifo_emptied_pulse) ewtag_state <= WAIT;
 		end
 		
@@ -287,12 +290,12 @@ begin
       
         // read EWTAG_OFFSET after FIFO empty goes low and
         // generate EWTAG_OFFSET latch after waiting for EWTAG_OFFSET_OUT to settle
-        ewtag_offset_re1     <= (ewtag_offset_re && !ewtag_offset_empty);
-        ewtag_offset_re2     <= ewtag_offset_re1;
-        ewtag_offset_re3     <= ewtag_offset_re2;
-        ewtag_offset_latch   <= ewtag_offset_re3;
+        ewtag_offset_en1    <= (ewtag_offset_en && !ewtag_offset_empty);
+        ewtag_offset_en2    <= ewtag_offset_en1;
+        ewtag_offset_en3    <= ewtag_offset_en2;
+        ewtag_offset_seen   <= ewtag_offset_en3;
       
-        ewtag_offset_pulse   <= ewtag_offset_re1 && !ewtag_offset_re2;
+        ewtag_offset_re     <= ewtag_offset_en1 && !ewtag_offset_en2;
 	end
 end
 
@@ -314,6 +317,7 @@ begin
     end
 end
 
+
 wire    [`EVENT_TAG_BITS-1:0]   ewtag_offset;
 assign  ewtag_offset = (serial_en) ? {16'b0, serial_offset}: (hb_event_window-1);
 
@@ -321,25 +325,25 @@ always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
     if(resetn_dreqclk == 1'b0)
     begin
-        is_first_spill    <= 1'b1;		
-        ewtag_offset_valid<= 1'b0;
-		ewtag_offset_in   <= 0;
+        is_first_spill      <= 1'b0;		
+        ewtag_offset_valid  <= 1'b0;
+		ewtag_offset_in     <= 0;
       
-		tag_fetch	   <=	1'b0;
+		tag_fetch       <=	1'b0;
         evt_tag_fetch	<=	0;
       
-		data_ready	   <= 1'b0;
-		last_word	   <= 1'b0;
+		data_ready	    <= 1'b0;
+		last_word	    <= 1'b0;
 		
-        tag_error      <= 1'b0;
-        start_tag_cnt  <= 0;
-        tag_done_cnt   <= 0; 
-        tag_null_cnt   <= 0; 
-        tag_sent_cnt   <= 0; 
+        tag_error       <= 1'b0;
+        start_tag_cnt   <= 0;
+        tag_done_cnt    <= 0; 
+        tag_null_cnt    <= 0; 
+        tag_sent_cnt    <= 0; 
       
-        tag_sent_hold  <= 1'b0;
-        tag_null_hold  <= 1'b0;
-        datareq_state  <= IDLE;
+        tag_sent_hold   <= 1'b0;
+        tag_null_hold   <= 1'b0;
+        datareq_state   <= IDLE;
         
         tag_valid_reg   <= 1'b0;
         tag_error_reg   <= 1'b0;
@@ -350,15 +354,14 @@ begin
     else
     begin
          
-        // handle EWTAG offset at the start of SPILL:
-        // can be from outside register, on very first spill of a run, OR from last DATAREQ
+        if (ewtag_offset_en) is_first_spill <= 1'b0;
+         
+        // handle EWTAG offset at the start of SPILL by setting IS_FIRST_SPILL (and clearing it after it is used)
+        // EWTAG offset can be from outside register, on very first spill of a run, OR from last DATAREQ
         if (start_spill) 
         begin
-            if (is_first_spill)
-            begin  
-                is_first_spill    <= 1'b0;
-                ewtag_offset_in   <= ewtag_offset;
-            end
+            is_first_spill    <= 1'b1;
+            ewtag_offset_in   <= ewtag_offset;
         end
         // wait for EWTAG_OFFSET to settle: used as latch for EWTAG_OFFSET in EW_FIFO_CNTRL
         ewtag_offset_valid   <= start_spill;  
@@ -463,7 +466,7 @@ EWTAG_FIFO	ewtag_fifo_offset (
 	.WE		(ewtag_offset_valid),
 	.RCLOCK	(serdesclk),
 	.RRESET_N(resetn_fifo),
-	.RE		(ewtag_offset_pulse),
+	.RE		(ewtag_offset_re),
 	// Outputs
 	.EMPTY	(ewtag_offset_empty),
 	.FULL		(ewtag_offset_full),

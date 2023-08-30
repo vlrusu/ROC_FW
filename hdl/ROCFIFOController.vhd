@@ -5,7 +5,7 @@
 -- File history:
 --      v1.0: <Aug. 2021>: first version
 --      v2.0: <Mar. 2022>: Fixed size of EW_SIZE output as (EVENT_SIZE_BITS downto 0)  => MAX allowed value is 4096
---      <Revision number>: <Date>: <Comments>
+--      v3.0: <July 2023>: Added NEWSPILL_RESET input used as overall logic reset
 --      <Revision number>: <Date>: <Comments>
 --
 -- Description: 
@@ -56,6 +56,8 @@ port (
     ew_ovfl : out std_logic;
     ew_size : out std_logic_vector(EVENT_SIZE_BITS-1 downto 0);
     ew_tag  : out std_logic_vector(SPILL_TAG_BITS-1 downto 0);
+    
+    newspill_reset : in  std_logic;
     curr_ewfifo_wr : out std_logic;
     
     state_count : out std_logic_vector(7 downto 0);
@@ -134,9 +136,9 @@ begin
 
     
     
-    process(reset_n, clk)
+    process(reset_n, newspill_reset, clk)
     begin
-    if reset_n = '0' then
+    if reset_n = '0' OR newspill_reset = '1'  then
         state <= RESET;
         state_count <= (others => '0');
         

@@ -1,7 +1,11 @@
 --------------------------------------------------------------
+-- v0 :Started from Ryan provided version of 10/09/2020
+-- 
 -- Separate between
 --	   STORE signals: on sysclk, used to save event size to SIZE_FIFO
 --    FETCH signals: on dreqclk after PREFETCH packet: used to access event size from SIZE_FIFO and decode info to pass to DDR READ
+--
+--  v1 July 20, 2023: use STORE_NEWSPILL and FETCH_NEWSPILL to reset internal logic befor restarting from run PAUSE/HALT state
 --------------------------------------------------------------
 library IEEE;			
 use IEEE.STD_LOGIC_1164.all;            
@@ -130,12 +134,20 @@ begin
 				store_event_offset  <=	(others => '0');
                 cnt_store           <=	(others => '0');
 		 	   
-			else  -- else not reset
-         
-                -- mark start of new SPILL
-                if (store_newspill) then
-                    store_first <= '1';
-                end if;
+            -- reset everything on NEWSPILL
+            elsif(store_newspill = '1') then
+				store_pos 			<= (others => '0');
+				store_word			<= (others => '0');
+				store_first 		<= '1';  -- load event tag offset on first event even without ONSPILL
+				store_event_offset  <=	(others => '0');
+                cnt_store           <=	(others => '0');
+                
+            else  -- else not reset
+                
+                ---- mark start of new SPILL
+                --if (store_newspill) then
+                    --store_first <= '1';
+                --end if;
                 
                 if (store_we) then 
                     cnt_store <= cnt_store + 1; 
@@ -241,7 +253,7 @@ begin
 				fetch_tag	    <= (others => '0');
 				fetch_ddr_address   <= (others => '0');
                 cnt_fetch       <=	(others => '0');
-            
+                
 				next_ddr_address    <= (others => '0');  
 				next_read_event_tag <= (others => '0');  
 				
@@ -249,10 +261,34 @@ begin
 				fetch_has_not_fetched   <= '0';
 				fetch_timeout_error <= '0';	  
 				fetch_missing_error <= '0';
-                fetch_first         <= '1'; -- load event tag offset on first event even without ONSPILL
+                fetch_first         <= '1'; -- drives loading of event tag offset
                 fetch_runover       <= '0';
-            				
-			else  -- else not reset	   
+                
+            -- reset everything on NEWSPILL
+            elsif (fetch_newspill = '1') then
+            
+				fetch_done 	    <= '0';	
+				fetch_state     <= (others => '0');	
+				fetch_pos       <= (others => '0');	
+				fetch_word      <= (others => '0');	
+				fetch_overflow  <= '0';
+				fetch_size      <= (others => '0');	
+				fetch_tag	    <= (others => '0');
+				--fetch_ddr_address   <= (others => '0');
+                cnt_fetch       <=	(others => '0');
+                
+				--next_ddr_address    <= (others => '0');  
+				--next_read_event_tag <= (others => '0');  
+				
+				fetch_timeout_count <= (others => '0');	 
+				fetch_has_not_fetched   <= '0';
+				fetch_timeout_error <= '0';	  
+				fetch_missing_error <= '0';
+                fetch_first         <= '1'; -- drives loading of event tag offset
+                fetch_runover       <= '0';
+                
+                
+			else  -- else not reset	or NEWSPILL  
 			
                 if (fetch_re) then   
                     cnt_fetch <= cnt_fetch + '1'; 
@@ -263,8 +299,8 @@ begin
                 -- for SIZE_FIFO (it takes three events to fill it up!!). Marked with FETCH_HAS_NOT_FETCHED flag high.
 				fetch_store_pos	<= store_pos;
                 
-                -- register first STORE_EVENT_WE seen after start of a new SPILL and use to update expected event tag
-                if (fetch_newspill = '1') then   fetch_first <= '1';  end if;
+                ---- register first STORE_EVENT_WE seen after start of a new SPILL and use to update expected event tag
+                --if (fetch_newspill = '1') then   fetch_first <= '1';  end if;
                 
                 if (fetch_first = '1'  and  store_on_dreqclk = '1') then
                     fetch_first <= '0';

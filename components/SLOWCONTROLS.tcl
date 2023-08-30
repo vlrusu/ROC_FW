@@ -40,6 +40,10 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_CE0n} -port_dir
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_CE1n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_MOSI} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_SCLK} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_EMPTY} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_FULL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCFOEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCFOSTART} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRPREFETCHEN} -port_direction {OUT}
@@ -170,9 +174,9 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {serdes_rdcnt3} -port_directio
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_CMD_STATUS} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_DIAG_DATA} -port_direction {OUT} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_Q} -port_direction {OUT} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFODELTAHB} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFONUMBERHB} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFOOFFSET} -port_direction {OUT} -port_range {[31:0]}
@@ -420,11 +424,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RCLOCK" "D
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RE" "DCSRegisters_0:PROC_CMD_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WCLOCK" "DCS_CLK" "DCS_TX_BUFFER_0:RCLOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WRESET_N" "DCS_CLK_RESETN" "DCS_TX_BUFFER_0:RRESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_EMPTY" "DCS_RX_BUFFER_0:EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_FULL" "DCS_RX_BUFFER_0:FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_EMPTY" "DCS_RX_BUFFER_0:EMPTY" "DCS_RX_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_FULL" "DCS_RX_BUFFER_0:FULL" "DCS_RX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_RE" "DCS_RX_BUFFER_0:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_WE" "DCS_RX_BUFFER_0:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_WE" "DCS_TX_BUFFER_0:WE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:EMPTY" "DCS_TX_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:FULL" "DCS_TX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:RE" "DCS_TX_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOEN" "Registers_0:DDRCFOEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOSTART" "Registers_0:DDRCFOSTART" }

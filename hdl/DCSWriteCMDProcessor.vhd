@@ -5,7 +5,7 @@
 -- File history:
 --      <v1>: <07/18/22>: services single DCS Write commands to uProc
 --      <v2>: <08/10/22>: services single and block DCS Write commands to uProc
---      <Revision number>: <Date>: <Comments>
+--      <v3>: <08/03/23>:  remove address space check to start SM (done in DCSProcessor now)
 --
 -- Description: 
 --
@@ -97,8 +97,7 @@ begin
             when IDLE => 
                 state_count <= X"01";
                 cnt_length <= (others => '0');
-                -- DTC commands to microProcessor are in address space 0x100 - 0x200
-                if  WRITE_CMD = '1' and unsigned(ADDR_IN) > X"FF" and unsigned(ADDR_IN) < X"200"  then  
+                if  WRITE_CMD = '1'     then  
                     command_addr    <= ADDR_IN;
                     command_data    <= DATA_IN;
                     command_length  <= X"0001";

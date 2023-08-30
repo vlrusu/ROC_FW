@@ -6,6 +6,7 @@
 --      <v1>: <2021>: Decode DTC packets and separate DCS Requests from Data Requests
 --      <v2>: <02/2022>: Add Prefetch to Data Requests
 --		<v3>: <08/2022>: Add DCS Block Write to DTC Packet definition
+--      <v4>: <07/2023>: have first null HB to reset is_firstHB=1
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -446,27 +447,32 @@ begin
 						if (unsigned(EVT_MODE) > 0) then
                             SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
                         end if;
-                        -- ONSPILL logic this not seem to work for now (03/25/23): MT comments any use
+                        -- ONSPILL logic DOES not seem to work for now (03/25/23): MT comments any use
 						onspill_old <= ONSPILL; 
                         ONSPILL <= rx_data_prev3(0); 
 					end if;
 					-- restart SPILL_EVENT_WINDOW_TAG on ONSPILL rising edge
+                    -- MT 07/20/23: use NEWSPILL for now
 					if (word_count = 9)	then 	
                         is_heartbeat <= '0';
-                        if (unsigned(EVT_MODE) > 0) then 
+                        if (unsigned(EVT_MODE) > 0) then -- differentiate non_null from null HB
                             HEARTBEAT_SEEN  <= '1'; 
                             is_valid_EWM    <= '1';  -- start gate for EWM after any non-null HB
                             is_non_null_HB  <= '1';
                             if (is_firstHB = '1') then    
-                                NEWSPILL <= '1'; is_firstHB <= '0'; 
+                                NEWSPILL    <= '1'; 
+                                SPILL_EVENT_WINDOW_TAG	<= X"00001";
+                                is_firstHB  <= '0'; 
                                 nullHB_counter <= (others => '0'); 
-                            else  
-                                NEWSPILL <= '0';  
+                            --else  
+                                --NEWSPILL <= '0';  
                             end if;
-                        else
+                        else  -- must be NULL HB!
                             if (is_non_null_HB = '1') then  -- start gate for last EWM after first null HB after  
                                 is_valid_EWM    <= '1';
                                 is_non_null_HB  <= '0';
+                                NEWSPILL        <= '0';   -- clear NEWSPIL if only 1 non-null DREQ is requested 
+                                is_firstHB      <= '1';   -- re-establish condition for NEWSPILL to be issued on next DREQ w/o reset
                             else
                                 is_valid_EWM    <= '0';
                             end if;

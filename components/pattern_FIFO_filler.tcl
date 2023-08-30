@@ -8,6 +8,7 @@ auto_promote_pad_pins -promote_all 0
 # Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_done} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill_reset} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk} -port_direction {IN}
@@ -70,6 +71,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"curr_ewfifo_wr" "rocfifo_cntrl_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_done" "rocfifo_cntrl_0:ew_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_fifo_we" "rocfifo_cntrl_0:ew_fifo_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_ovfl" "rocfifo_cntrl_0:ew_ovfl" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"newspill_reset" "rocfifo_cntrl_0:newspill_reset" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:DATA" "clus_pattern_cntrl_0:pattern_data0" }

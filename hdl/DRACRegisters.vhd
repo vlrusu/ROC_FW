@@ -43,9 +43,14 @@ port (
 	SEL_RST				: OUT std_logic;
 
     -- DTC to RISKV diagnostic registers
-    DCS_CMD_STATUS	    : IN  std_logic_vector(15 downto 0);	-- status of DCS command to RiskV
-    DCS_TX_WRCNT	    : IN  std_logic_vector(7 downto 0);     -- DCS_TX_BUFFER WRCNT
-    DCS_RX_WRCNT	    : IN  std_logic_vector(7 downto 0);     -- DCS_RX_BUFFER WRCNT
+    DCS_CMD_STATUS	    : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- status of DCS command to RiskV
+    DCS_DIAG_DATA	    : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- diagnostic register via RiskV
+    DCS_TX_FULL 		: IN  std_logic;				--
+    DCS_TX_EMPTY 		: IN  std_logic;				--
+    DCS_TX_WRCNT	    : IN  std_logic_vector(10 downto 0);     -- DCS_TX_BUFFER WRCNT
+    DCS_RX_FULL 		: IN  std_logic;				--
+    DCS_RX_EMPTY 		: IN  std_logic;				--
+    DCS_RX_WRCNT	    : IN  std_logic_vector(10 downto 0);     -- DCS_RX_BUFFER WRCNT
 
     -- DRAC specific registers
     DCS_CAL_LANE0_EMPTY : IN std_logic;             -- ROCFIFO for CAL Lane 0 is empty
@@ -109,8 +114,9 @@ port (
     dcs_hv_init     : out std_logic;                        -- generate HV_INIT via DCS reg 26: must toggle 0->1->0 after DATA abd ADDR have been set
     dcs_hv_data     : out std_logic_vector(15 downto 0);    -- write HV_DATA_IN via DCS reg 27
     dcs_hv_addr     : out std_logic_vector(8 downto 0);     -- write HV_ADDRESS_IN via DCS reg 28,
+    dcs_format_vrs  : out std_logic_vector(7 downto 0);     -- pass Packer Format Version to Data Packer Header
     dcs_status_sel  : out std_logic_vector(2 downto 0)      -- write which info to send to Data header STATUS BITS via DCS reg 30
-                                                            -- 0 (def) is selected bits like DREQ EMPTY and FULL;  for thers, see DataStatusProcessor
+                                                            -- 0 (def) is selected bits like DREQ EMPTY and FULL;  for others, see DataStatusProcessor
 );
 end DRACRegisters;
 
@@ -198,6 +204,7 @@ begin
         dcs_hv_init     <= '0';
         dcs_hv_data     <= (others => '0');
         dcs_hv_addr     <= (others => '0');
+        dcs_format_vrs  <= (others => '0');
         dcs_status_sel  <= (others => '0');
       
    elsif rising_edge(DCS_CLK) then
@@ -300,6 +307,8 @@ begin
                 dcs_hv_data <= drac_wdata(15 downto 0);
          elsif (drac_addrs = 28) then
                 dcs_hv_addr <= drac_wdata(8 downto 0);
+         elsif (drac_addrs = 29) then   -- 0x13
+                dcs_format_vrs <= drac_wdata(7 downto 0);
          elsif (drac_addrs = 30) then   -- 0x14
                 dcs_status_sel <= drac_wdata(2 downto 0);
             --elsif (drac_addrs = 126) then
@@ -474,9 +483,11 @@ begin
 			elsif (drac_addrs = 128) then		-- 0x80 	 
 				DATA_OUT <= DCS_CMD_STATUS;
 			elsif (drac_addrs = 129) then		-- 0x81 	 
-				DATA_OUT <= X"00" & DCS_TX_WRCNT;
+				DATA_OUT <= '0' & DCS_TX_FULL & '0' & DCS_TX_EMPTY & '0' & DCS_TX_WRCNT;
 			elsif (drac_addrs = 130) then		-- 0x82 	 
-				DATA_OUT <= X"00" & DCS_RX_WRCNT;
+				DATA_OUT <= '0' & DCS_RX_FULL & '0' & DCS_RX_EMPTY & '0' & DCS_RX_WRCNT;
+			elsif (drac_addrs = 255) then		-- 0xFF 	 
+				DATA_OUT <= DCS_DIAG_DATA;
 			else	
 				DATA_OUT            <= drac_addrs;		  --Unmapped Addresses
                 IS_DRAC_REGISTER    <= '0';               -- unrecognized DRACRegister address

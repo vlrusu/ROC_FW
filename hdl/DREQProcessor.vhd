@@ -5,7 +5,7 @@
 -- File history:
 --      <v1>: <2021>: Decode Data Request only and generate Data Reply packet
 --      <v2>: <02/2022>: Add Prefetch decoding and drive new FETCH/FETCH_EVENT_WINDOW_TAG outputs, with logic to give priority to Prefetch data over Data Request packet, if present
---      <Revision number>: <Date>: <Comments>
+--      <v3>: <07/2023>: Add FORMAT_VRS to data header for Packet Format Version and drive with DRACRegister address 29
 --
 -- Description: 
 --
@@ -51,6 +51,7 @@ port (
     --Data Request (Reply Side) 	
     DATAREQ_DATA_READY		: IN  STD_LOGIC;
     DATAREQ_LAST_WORD		: IN  STD_LOGIC;			   
+    DATAREQ_FORMAT_VRS	    : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_STATUS			: IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_DATA			: IN  STD_LOGIC_VECTOR(DATAREQ_DWIDTH-1 downto 0);		   	--Data Reply
     DATAREQ_PACKETS_IN_EVT  : IN  STD_LOGIC_VECTOR(EVENT_SIZE_BITS-1 DOWNTO 0);
@@ -340,8 +341,8 @@ begin
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 7 then
-                    dreq_fifo_out <= "00" & x"00" & DATAREQ_STATUS;  -- Data Packer Format Version (15:8) | Status (7:0)	
-                    crc_data_out <= x"00" & DATAREQ_STATUS;
+                    dreq_fifo_out <= "00" & DATAREQ_FORMAT_VRS & DATAREQ_STATUS;  -- Data Packer Format Version (15:8) | Status (7:0)	
+                    crc_data_out <= DATAREQ_FORMAT_VRS & DATAREQ_STATUS;
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 8 then
