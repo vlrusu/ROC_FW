@@ -44,16 +44,11 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_EMPTY} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_FULL} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCFOEN} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCFOSTART} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRPREFETCHEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRPTTREN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRSERIALSET} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDR_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIDEVICE_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCALIGN_RESETN} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCSIMBLKEN} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCSIMSTART} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE0n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
@@ -127,7 +122,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DDRPRETAG} -port_direction {I
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSIZERD} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSIZEWR} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSPILLCNT} -port_direction {IN} -port_range {[19:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCDATAREAD} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PADDR} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PWDATA} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {SERDES_DATA} -port_direction {IN} -port_range {[31:0]}
@@ -136,8 +130,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_alignment} -port_di
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_error_count} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_alignment} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_error_count} -port_direction {IN} -port_range {[7:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {data_expc} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {data_seen} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_cal_addr} -port_direction {IN} -port_range {[8:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_cal_data} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_hv_addr} -port_direction {IN} -port_range {[8:0]}
@@ -148,12 +140,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_status_out1} -port_dire
 sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_status_out2} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_status_out3} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {error_counter} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {evt_expc} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {evt_seen} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_expc} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_seen} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_expc} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_seen} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_alignment} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_error_count} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_alignment} -port_direction {IN} -port_range {[3:0]}
@@ -177,15 +163,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_DIAG_DATA} -port_directio
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_Q} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFODELTAHB} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFONUMBERHB} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFOOFFSET} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMADDR} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMBLKADDR} -port_direction {OUT} -port_range {[6:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMBLKDATA} -port_direction {OUT} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMDATA} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMPARAM} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DTCSIMSPILLDATA} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRDATA} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {SERDES_HOWMANY} -port_direction {OUT} -port_range {[12:0]}
@@ -270,11 +248,6 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {INV} -instance_name {INV_0
 
 # Add MX2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_0}
-
-
-
-# Add pattern_err_switch_0 instance
-sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pattern_err_switch} -hdl_file {hdl\pattern_err_switch.v} -instance_name {pattern_err_switch_0}
 
 
 
@@ -432,17 +405,12 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_WE" "DCS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:EMPTY" "DCS_TX_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:FULL" "DCS_TX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:RE" "DCS_TX_RE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOEN" "Registers_0:DDRCFOEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOSTART" "Registers_0:DDRCFOSTART" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCTRLREADY" "Registers_0:DDRCTRLREADY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPREFETCHEN" "Registers_0:DDRPREFETCHEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPTTREN" "Registers_0:DDRPTTREN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSERIALSET" "Registers_0:DDRSERIALSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_RESETN" "Registers_0:DDR_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIDEVICE_RESETN" "Registers_0:DIGIDEVICE_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCALIGN_RESETN" "Registers_0:DTCALIGN_RESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMBLKEN" "Registers_0:DTCSIMBLKEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMSTART" "Registers_0:DTCSIMSTART" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE0n" "PREAMPSPI_0:SPISS[0:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE1n" "PREAMPSPI_0:SPISS[1:1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MISO" "PREAMPSPI_0:SPISDI" }
@@ -528,8 +496,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_BUFFER_0:WRCNT" "DCS_RX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFODELTAHB" "Registers_0:DDRCFODELTAHB" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFONUMBERHB" "Registers_0:DDRCFONUMBERHB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOOFFSET" "Registers_0:DDRCFOOFFSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQCNT" "Registers_0:DDRDREQCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQNULL" "Registers_0:DDRDREQNULL" }
@@ -548,17 +514,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPRETAG" "Registers_0:DDRPRET
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSIZERD" "Registers_0:DDRSIZERD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSIZEWR" "Registers_0:DDRSIZEWR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSPILLCNT" "Registers_0:DDRSPILLCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCDATAREAD" "Registers_0:DTCDATAREAD" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMADDR" "Registers_0:DTCSIMADDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMBLKADDR" "Registers_0:DTCSIMBLKADDR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMBLKDATA" "Registers_0:DTCSIMBLKDATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMDATA" "Registers_0:DTCSIMDATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMPARAM" "Registers_0:DTCSIMPARAM" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCSIMSPILLDATA" "Registers_0:DTCSIMSPILLDATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRERREXPC" "pattern_err_switch_0:err_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRERRREQ" "pattern_err_switch_0:err_en" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:DDRERRSEEN" "pattern_err_switch_0:err_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_VAL" "TVS_Interface_0:R_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_DATA" "SERDES_DATA" }
@@ -603,14 +559,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_rdcnt1" "ser
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_rdcnt2" "serdes_rdcnt2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:serdes_rdcnt3" "serdes_rdcnt3" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:use_lane" "use_lane" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"data_expc" "pattern_err_switch_0:data_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"data_seen" "pattern_err_switch_0:data_seen" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"evt_expc" "pattern_err_switch_0:evt_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"evt_seen" "pattern_err_switch_0:evt_seen" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr1_expc" "pattern_err_switch_0:hdr1_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr1_seen" "pattern_err_switch_0:hdr1_seen" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_expc" "pattern_err_switch_0:hdr2_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_seen" "pattern_err_switch_0:hdr2_seen" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APB3mmaster" "APB3mmaster" }

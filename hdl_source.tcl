@@ -1,11 +1,5 @@
 #Importing and Linking all the HDL source files used in the design
-import_files -library work -hdl_source hdl/cfo_emulator_switch.v
-import_files -library work -hdl_source hdl/cfo_emulator.v
-import_files -library work -hdl_source hdl/crc_ver.v
-import_files -library work -hdl_source hdl/DTC_simulator.v
-import_files -library work -hdl_source hdl/MARKER_Simulator.v
 import_files -library work -hdl_source hdl/algorithm_constants.vhd
-import_files -library work -hdl_source hdl/mux_to_xcvr.vhd
 import_files -library work -hdl_source hdl/RxController.vhd
 import_files -library work -hdl_source hdl/TxController.vhd
 import_files -library work -hdl_source hdl/ROCFIFOController.vhd
@@ -45,3 +39,4 @@ import_files -library work -hdl_source hdl/DataStatusProcessor.vhd
 import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
 import_files -library work -hdl_source hdl/DCSWriteCMDProcessor.vhd
 import_files -library work -hdl_source hdl/DCSRegisters.vhd
+import_files -library work -hdl_source hdl/MARKERProcessor.vhd

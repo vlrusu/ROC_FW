@@ -7,7 +7,7 @@
 --      <v2>: <02/2022>: Add Prefetch to Data Requests
 --		<v3>: <08/2022>: Add DCS Block Write to DTC Packet definition
 --      <v4>: <07/2023>: have first null HB to reset is_firstHB=1
---      <Revision number>: <Date>: <Comments>
+--      <v5>: <09/2023>: add logic to drive loopback marker back to fiber via RxMarkerFifo
 --      <Revision number>: <Date>: <Comments>
 --
 -- Description: 
@@ -56,10 +56,13 @@ port (
 	eventmarker	: out std_logic;
 	evm_for_dreq: out std_logic;
 	clockmarker : out std_logic;
-	loopmarker 	: out std_logic;
+	loopmarker  : out std_logic;
 	othermarker : out std_logic;
 	retrmarker 	: out std_logic;
 	retr_seq	: out std_logic_vector(2 downto 0);
+
+	marker_wen 	    : out std_logic;
+    rx_marker_out   : out std_logic_vector(17 downto 0);
     
 	event_marker_count  : out std_logic_vector(15 downto 0);
 	evm_for_dreq_count  : out std_logic_vector(31 downto 0);
@@ -150,7 +153,10 @@ begin
 		is_retrmarker	<= '0';
         is_anymarker	<= '0';	
         is_retrseq		<= '0';
-		
+        
+        marker_wen      <= '0';
+		rx_marker_out   <= B"11" & X"BC3C";
+        
 		onspill_old		<= '0';
         is_firstHB      <= '1';
         is_valid_EWM    <= '0';
@@ -218,6 +224,9 @@ begin
 		  
         is_anymarker	<= (is_evtmarker or is_clkmarker or is_loopmarker or is_othermarker or is_retrmarker);
         
+        marker_wen      <= is_loopmarker;
+        rx_marker_out   <= rx_kchar_prev3 & rx_data_prev3;
+        
         if aligned = '1' then
       
         hb_lost_reg     <= hb_lost;
@@ -252,7 +261,6 @@ begin
 		if counter = 0 then 	-- for double markers: COUNTER is reset on second word seen
 			if (is_evtmarker = '1') then	
 				eventmarker     <= '1'; 	
-				event_marker_count  <= std_logic_vector(unsigned(event_marker_count) + 1);
                 
                 if  evm_lost = '0'    and    event_marker_count /= std_logic_vector(unsigned(hb_count)-1)   then    
                     evm_lost <= '1';
@@ -261,20 +269,15 @@ begin
  			end if;
 			if (is_evm_for_dreq = '1') then	
 				evm_for_dreq    <= '1'; 	
-				evm_for_dreq_count  <= std_logic_vector(unsigned(evm_for_dreq_count) + 1);
 			end if;
 			if (is_clkmarker = '1') then 	
 				clockmarker     <= '1'; 	
-				clock_marker_count  <= std_logic_vector(unsigned(clock_marker_count) + 1);
 			end if;
 			if (is_loopmarker = '1') then	
 				loopmarker      <= '1'; 	
-				--eventmarker <= '1'; 	
-				loop_marker_count   <= std_logic_vector(unsigned(loop_marker_count) + 1);
 			end if;
 			if (is_othermarker = '1') then	
 				othermarker     <= '1'; 	
-				other_marker_count  <= std_logic_vector(unsigned(other_marker_count) + 1);
 			end if;
 		end if;
         
@@ -284,37 +287,45 @@ begin
 				--is_retrmarker	<= '0'; 	
 				retr_seq 	    <= retr_seq_save;
 				retr_seq_save	<= (others=> '0');
-				retr_marker_count   <= std_logic_vector(unsigned(retr_marker_count) + 1);
+				--retr_marker_count   <= std_logic_vector(unsigned(retr_marker_count) + 1);
 			end if;
             
             -- clear double markers
+            -- Generate single clock markers and count each of them
             if  eventmarker = '1'   then
 				eventmarker     <= '0'; 	
 				is_evtmarker    <= '0'; 	
+				event_marker_count  <= std_logic_vector(unsigned(event_marker_count) + 1);
             end if;
             if  evm_for_dreq = '1'   then
 				evm_for_dreq    <= '0'; 	
 				is_evm_for_dreq <= '0'; 	
+				evm_for_dreq_count  <= std_logic_vector(unsigned(evm_for_dreq_count) + 1);
             end if;
             if  clockmarker = '1'   then
 				clockmarker     <= '0'; 	
 				is_clkmarker    <= '0'; 	
+				clock_marker_count  <= std_logic_vector(unsigned(clock_marker_count) + 1);
             end if;
             if  loopmarker = '1'   then
 				loopmarker      <= '0'; 	
 				is_loopmarker   <= '0'; 	
+				loop_marker_count   <= std_logic_vector(unsigned(loop_marker_count) + 1);
             end if;
             if  othermarker = '1'   then
 				othermarker     <= '0'; 	
 				is_othermarker  <= '0'; 	
+				other_marker_count  <= std_logic_vector(unsigned(other_marker_count) + 1);
             end if;
             
 		end if;
         
-		if counter = 2 then	-- clear triple markers
+        -- clear triple markers
+		if counter = 2 then	
             if  retrmarker = '1'   then
 				retrmarker     <= '0'; 	
 				is_retrmarker  <= '0'; 	
+				retr_marker_count   <= std_logic_vector(unsigned(retr_marker_count) + 1);
             end if;
         end if;
         
@@ -337,8 +348,8 @@ begin
 						counter <= (others => '0');
 						is_clkmarker <= '1';
 					elsif (rx_data_prev2 = X"1C12" and rx_data_prev1 = X"1CED") then
-						counter <= (others => '0');
-						is_loopmarker <= '1';
+						counter         <= (others => '0');
+						is_loopmarker   <= '1';
 					elsif ( (rx_data_prev2 = X"1C13" and rx_data_prev1 = X"1CEC") or
                             (rx_data_prev2 = X"1C14" and rx_data_prev1 = X"1CEB")) then
 						counter <= (others => '0');

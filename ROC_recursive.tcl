@@ -12,10 +12,8 @@ build_design_hierarchy
 
 #Sourcing the Tcl files for creating individual components under the top level
 source components/COREJTAGDEBUG_C0.tcl 
-source components/CORERESET.tcl 
-source components/PACKET_FIFO.tcl 
-source components/EWTAG_FIFO.tcl 
-source components/DTCSimulator.tcl 
+source components/CORERESET.tcl  
+source components/EWTAG_FIFO.tcl  
 source components/CORERESET_PF_C1.tcl 
 source components/PF_TX_PLL_0.tcl 
 source components/PF_XCVR_0.tcl 
@@ -57,6 +55,7 @@ source components/UARTapb.tcl
 source components/pwm.tcl
 source components/DCS_RX_BUFFER.tcl 
 source components/DCS_TX_BUFFER.tcl
+source components/RxMkarkerFIFO.tcl
 source components/CMD_TO_PROC_BUFFER.tcl  
 source components/SLOWCONTROLS.tcl 
 source components/RxPacketFIFO.tcl 
