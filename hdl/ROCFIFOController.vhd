@@ -228,7 +228,7 @@ begin
                     full_size <= full_size + unsigned(current_data(30 downto 20) & '0');
                     
                     -- write header word to DigiReaderFIFO (but not to DDR)
-                   if use_uart then
+                    if (use_uart = '1' and unsigned(current_data(30 downto 20)) /= 0) then
                         uart_fifo_we    <= '1';
                         uart_fifo_data 	<= current_data;
                     end if;
@@ -305,7 +305,7 @@ begin
             when HOLD =>
                 state_count <= X"07";
                 ew_done <= '0';
-                if axi_start_on_serdesclk = '1' then
+                if axi_start_on_serdesclk = '1' or use_uart = '1' then
                     ew_size <= (others => '0');
                     full_size <= (others => '0');
                     ew_ovfl <= '0';
