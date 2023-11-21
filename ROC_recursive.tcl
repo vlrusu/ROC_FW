@@ -47,6 +47,7 @@ source components/PF_URAM_C0.tcl
 source components/TVS_Interface.tcl 
 source components/UARTapb.tcl 
 source components/pwm.tcl 
+source components/CORESPI_IAP.tcl 
 source components/SLOWCONTROLS.tcl 
 source components/RxPacketFIFO.tcl 
 source components/CorePCS_C0.tcl 
