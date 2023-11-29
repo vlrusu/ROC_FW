@@ -6,6 +6,7 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Scalar Ports
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISDI} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_MISO} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CALtoROC_SERDES_TXD0_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CALtoROC_SERDES_TXD0_P} -port_direction {IN} -port_is_pad {1}
@@ -38,6 +39,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {TDI} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TMS} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TRSTB} -port_direction {IN}
 
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISCLKO} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISDO} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISS} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALEVEN_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALEVEN_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALODD_N} -port_direction {OUT} -port_is_pad {1}
@@ -572,6 +576,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:A" "MIV_RV32IMC_C0_0:RES
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:B" "INV_2:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:C" "INV_1:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:Y" "DReqClkReset:EXT_RST_N" "HCLKReset:EXT_RST_N" "NewDDRInterface_0:EXT_RST_N" "SerdesClkReset:EXT_RST_N" "TOP_SERDES_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISCLKO" "SLOWCONTROLS_0:CALPROGSPISCLKO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDI" "SLOWCONTROLS_0:CALPROGSPISDI" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDO" "SLOWCONTROLS_0:CALPROGSPISDO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISS" "SLOWCONTROLS_0:CALPROGSPISS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALEVEN_N" "OUTBUF_DIFF_6:PADN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALEVEN_P" "OUTBUF_DIFF_6:PADP" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_CALODD_N" "OUTBUF_DIFF_5:PADN" }
