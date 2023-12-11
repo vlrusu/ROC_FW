@@ -933,14 +933,14 @@ set_io -port_name CALPROGSPISCLKO  \
 
 
 set_io -port_name CALPROGSPISDI  \
-    -pin_name P2                 \
+    -pin_name T5                 \
     -fixed true                  \
     -io_std LVCMOS33             \
     -DIRECTION INPUT
 
 
 set_io -port_name CALPROGSPISDO  \
-    -pin_name T5                 \
+    -pin_name P2                 \
     -fixed true                  \
     -io_std LVCMOS33             \
     -DIRECTION OUTPUT
