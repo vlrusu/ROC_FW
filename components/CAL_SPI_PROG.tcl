@@ -4,8 +4,8 @@
 # Create and Configure the core component CAL_SPI_PROG
 create_and_configure_core -core_vlnv {Actel:DirectCore:CORESPI:5.2.104} -component_name {CAL_SPI_PROG} -params {\
 "APB_DWIDTH:32"  \
-"CFG_CLK:7"  \
-"CFG_FIFO_DEPTH:4"  \
+"CFG_CLK:16"  \
+"CFG_FIFO_DEPTH:32"  \
 "CFG_FRAME_SIZE:8"  \
 "CFG_MODE:0"  \
 "CFG_MOT_MODE:3"  \
