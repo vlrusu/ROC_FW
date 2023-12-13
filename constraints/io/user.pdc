@@ -703,60 +703,6 @@ set_io -port_name ROCtoHV_LVTTL1  \
 # 
 
 
-# 
-# Unlocked I/O settings
-# The I/Os in this section are unplaced or placed but are not locked
-# the other listed attributes have been applied
-# 
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[0]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[1]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[2]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[3]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[4]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[5]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[6]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name {ALIGNMENT_LOSS_COUNTER[7]}  \
-    -io_std LVCMOS33                           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CLOCK_ALIGNED  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name word_aligned  \
-    -io_std LVCMOS33            \
-    -DIRECTION OUTPUT
 
 
 
@@ -950,4 +896,33 @@ set_io -port_name CALPROGSPISS  \
     -pin_name T6                \
     -fixed true                 \
     -io_std LVCMOS33            \
+    -DIRECTION OUTPUT
+    
+    
+    
+set_io -port_name HVPROGSPISCLKO  \
+    -pin_name R6              \
+    -fixed true               \
+    -io_std LVTTL             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HVPROGSPISDI  \
+    -pin_name N5            \
+    -fixed true             \
+    -io_std LVTTL           \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVPROGSPISDO  \
+    -pin_name N6            \
+    -fixed true             \
+    -io_std LVTTL           \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HVPROGSPISS  \
+    -pin_name P8           \
+    -fixed true            \
+    -io_std LVTTL          \
     -DIRECTION OUTPUT
