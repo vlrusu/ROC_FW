@@ -35,13 +35,13 @@ entity Registers is
       
     DDRSERIALSET  : out  std_logic;
     DDRPTTREN     : out std_logic;
-    DDRCFOEN      : out  std_logic;
-    DDRCFOSTART   : out  std_logic;
-    DDRPREFETCHEN : out  std_logic;
+--    DDRCFOEN      : out  std_logic;
+--    DDRCFOSTART   : out  std_logic;
+--    DDRPREFETCHEN : out  std_logic;
     DDRERROR      : in  std_logic_vector(3 downto 0);
-    DDRERRREQ     : out std_logic_vector(1 downto 0);
-    DDRERRSEEN    : in  std_logic_vector(63 downto 0);
-    DDRERREXPC    : in  std_logic_vector(63 downto 0);
+--    DDRERRREQ     : out std_logic_vector(1 downto 0);
+--    DDRERRSEEN    : in  std_logic_vector(63 downto 0);
+--    DDRERREXPC    : in  std_logic_vector(63 downto 0);
     DDRSIZEWR     : in  std_logic_vector(31 downto 0);
     DDRSIZERD     : in  std_logic_vector(31 downto 0);
     DDRHBCNT      : in  std_logic_vector(31 downto 0);
@@ -59,19 +59,19 @@ entity Registers is
     DDRDREQTAG    : in  std_logic_vector(31 downto 0);
     DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
     DDRCFOOFFSET  : out std_logic_vector(31 downto 0);
-    DDRCFODELTAHB : out std_logic_vector(31 downto 0);
-    DDRCFONUMBERHB: out std_logic_vector(31 downto 0);
+--    DDRCFODELTAHB : out std_logic_vector(31 downto 0);
+--    DDRCFONUMBERHB: out std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
-    DTCSIMSTART   : out std_logic;
-    DTCSIMBLKEN   : out std_logic;
-    DTCSIMPARAM   : out std_logic_vector(31 downto 0);
-    DTCSIMADDR    : out std_logic_vector(31 downto 0);
-    DTCSIMDATA    : out std_logic_vector(31 downto 0);
-    DTCSIMSPILLDATA: out std_logic_vector(31 downto 0);
-    DTCSIMBLKDATA : out std_logic_vector(15 downto 0);
-    DTCSIMBLKADDR : out std_logic_vector(6 downto 0);
-    DTCDATAREAD   : in std_logic_vector(31 downto 0);
+--    DTCSIMSTART   : out std_logic;
+--    DTCSIMBLKEN   : out std_logic;
+--    DTCSIMPARAM   : out std_logic_vector(31 downto 0);
+--    DTCSIMADDR    : out std_logic_vector(31 downto 0);
+--    DTCSIMDATA    : out std_logic_vector(31 downto 0);
+--    DTCSIMSPILLDATA: out std_logic_vector(31 downto 0);
+--    DTCSIMBLKDATA : out std_logic_vector(15 downto 0);
+--    DTCSIMBLKADDR : out std_logic_vector(6 downto 0);
+--    DTCDATAREAD   : in std_logic_vector(31 downto 0);
     
     hvscl   : out std_logic;
     calscl  : out std_logic;
@@ -531,14 +531,14 @@ begin
             
         when CRDDRERROR =>
           DataOut(3 downto 0) <= DDRERROR;
-        when CRDDRERRSEENL =>
-          DataOut(31 downto 0) <= DDRERRSEEN(31 downto 0);
-        when CRDDRERRSEENH =>
-          DataOut(31 downto 0) <= DDRERRSEEN(63 downto 32);
-        when CRDDRERREXPCL =>
-          DataOut(31 downto 0) <= DDRERREXPC(31 downto 0);
-        when CRDDRERREXPCH =>
-          DataOut(31 downto 0) <= DDRERREXPC(63 downto 32);
+--        when CRDDRERRSEENL =>
+--          DataOut(31 downto 0) <= DDRERRSEEN(31 downto 0);
+--        when CRDDRERRSEENH =>
+--          DataOut(31 downto 0) <= DDRERRSEEN(63 downto 32);
+--        when CRDDRERREXPCL =>
+--          DataOut(31 downto 0) <= DDRERREXPC(31 downto 0);
+--        when CRDDRERREXPCH =>
+--          DataOut(31 downto 0) <= DDRERREXPC(63 downto 32);
         when CRDDRSIZEWR =>
           DataOut(31 downto 0) <= DDRSIZEWR;
         when CRDDRSIZERD =>
@@ -572,8 +572,8 @@ begin
         when CRDDROFFSETTAG =>
           DataOut(31 downto 0) <= DDROFFSETTAG;
 
-        when CRDTCDATAREAD =>
-          DataOut(31 downto 0) <= DTCDATAREAD;
+--        when CRDTCDATAREAD =>
+--          DataOut(31 downto 0) <= DTCDATAREAD;
         when CRDDRCTRLREADY =>
           DataOut(0) <= DDRCTRLREADY;
           
@@ -687,22 +687,22 @@ begin
         
         DDRSERIALSET      <= '0';
         DDRPTTREN         <= '0';
-        DDRCFOEN          <= '0';
-        DDRCFOSTART       <= '0';
-        DDRPREFETCHEN     <= '0';
-        DDRERRREQ         <= b"00";
+--        DDRCFOEN          <= '0';
+--        DDRCFOSTART       <= '0';
+--        DDRPREFETCHEN     <= '0';
+--        DDRERRREQ         <= b"00";
         DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
-        DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
-        DDRCFONUMBERHB    <= x"0000_0001";   
+--        DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
+--        DDRCFONUMBERHB    <= x"0000_0001";   
 		
-        DTCSIMSTART    <= '0';
-        DTCSIMBLKEN    <= '0';
-        DTCSIMPARAM    <= x"0000_0000";
-        DTCSIMADDR     <= x"0000_0000";
-        DTCSIMDATA     <= x"0000_0000";
-        DTCSIMSPILLDATA<= x"0000_0000";
-        DTCSIMBLKDATA  <= x"0000";
-        DTCSIMBLKADDR  <= b"0000000";
+--        DTCSIMSTART    <= '0';
+--        DTCSIMBLKEN    <= '0';
+--        DTCSIMPARAM    <= x"0000_0000";
+--        DTCSIMADDR     <= x"0000_0000";
+--        DTCSIMDATA     <= x"0000_0000";
+--        DTCSIMSPILLDATA<= x"0000_0000";
+--        DTCSIMBLKDATA  <= x"0000";
+--        DTCSIMBLKADDR  <= b"0000000";
 
         SERDES_RE   <= '0';
         serdes_re0  <= '0';
@@ -769,9 +769,9 @@ begin
         serial_hv_init <= '0';
         
         -- this are meant to be pulses 
-        DTCSIMSTART    <= '0';
-        DTCSIMBLKEN    <= '0';
-        DDRCFOSTART    <= '0';
+--        DTCSIMSTART    <= '0';
+--        DTCSIMBLKEN    <= '0';
+--        DDRCFOSTART    <= '0';
       
         if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
@@ -795,37 +795,37 @@ begin
                 DDRSERIALSET <= PWDATA(0);
             when CRDDRPTTREN =>
                 DDRPTTREN <= PWDATA(0);
-            when CRDDRERRREQ =>
-                DDRERRREQ <= PWDATA(1 downto 0);
-            when CRDDRCFOEN =>
-                DDRCFOEN <= PWDATA(0);
-            when CRDDRPREFEN =>
-                DDRPREFETCHEN <= PWDATA(0);
-            when CRDDRCFOSTART =>
-                DDRCFOSTART <= '1';
+--            when CRDDRERRREQ =>
+--                DDRERRREQ <= PWDATA(1 downto 0);
+--            when CRDDRCFOEN =>
+--                DDRCFOEN <= PWDATA(0);
+--            when CRDDRPREFEN =>
+--                DDRPREFETCHEN <= PWDATA(0);
+--            when CRDDRCFOSTART =>
+--                DDRCFOSTART <= '1';
             when CRDDRCFOOFFSET =>
                 DDRCFOOFFSET <= PWDATA(31 downto 0);
-            when CRDDRCFODELTAHB =>
-                DDRCFODELTAHB  <= PWDATA(31 downto 0);
-            when CRDDRCFONOHB  =>
-                DDRCFONUMBERHB <= PWDATA(31 downto 0);
+--            when CRDDRCFODELTAHB =>
+--                DDRCFODELTAHB  <= PWDATA(31 downto 0);
+--            when CRDDRCFONOHB  =>
+--                DDRCFONUMBERHB <= PWDATA(31 downto 0);
 
-            when CRDTCSIMSTART =>
-                DTCSIMSTART <= '1';
-            when CRDTCSIMBLKEN =>
-                DTCSIMBLKEN <= '1';
-            when CRDTCSIMPARAM =>
-                DTCSIMPARAM <= PWDATA(31 downto 0);
-            when CRDTCSIMADDR =>
-                DTCSIMADDR <= PWDATA(31 downto 0);
-            when CRDTCSIMDATA =>
-                DTCSIMDATA <= PWDATA(31 downto 0);
-            when CRDTCSIMSPILLDT =>
-                DTCSIMSPILLDATA <= PWDATA(31 downto 0);
-            when CRDTCSIMBLKDT =>
-                DTCSIMBLKDATA <= PWDATA(15 downto 0);
-            when CRDTCSIMBLKAD =>
-                DTCSIMBLKADDR <= PWDATA(6 downto 0);
+--            when CRDTCSIMSTART =>
+--                DTCSIMSTART <= '1';
+--            when CRDTCSIMBLKEN =>
+--                DTCSIMBLKEN <= '1';
+--            when CRDTCSIMPARAM =>
+--                DTCSIMPARAM <= PWDATA(31 downto 0);
+--            when CRDTCSIMADDR =>
+--                DTCSIMADDR <= PWDATA(31 downto 0);
+--            when CRDTCSIMDATA =>
+--                DTCSIMDATA <= PWDATA(31 downto 0);
+--            when CRDTCSIMSPILLDT =>
+--                DTCSIMSPILLDATA <= PWDATA(31 downto 0);
+--            when CRDTCSIMBLKDT =>
+--                DTCSIMBLKDATA <= PWDATA(15 downto 0);
+--            when CRDTCSIMBLKAD =>
+--                DTCSIMBLKADDR <= PWDATA(6 downto 0);
             when CRSERDESRE =>
                 SERDES_RE <= '1';
    
