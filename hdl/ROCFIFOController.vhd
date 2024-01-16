@@ -240,7 +240,7 @@ begin
             when CHECK =>
                 state_count <= X"04";
                 
-                if full_size > MAX_BEATS then  -- set overflow condition of too many hits per window
+                if full_size > MAX_BEATS and use_uart = '0' then  -- set overflow condition of too many hits per window
                     --ew_ovfl <= '1';
                     ew_size <= std_logic_vector(to_unsigned(MAX_BEATS,ew_size'length));
                 else
@@ -261,17 +261,16 @@ begin
                     
                     -- use WR_CNT (in units of 32-bits) to decide when the event has reached the maximum allowed size 
                     wr_cnt <= wr_cnt + 1;
-                    
-                    if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
-                        if use_uart then
-                            uart_fifo_we    <= '1';
-                            uart_fifo_data 	<= current_data;
-                        else
+                    if use_uart = '1' then
+                        uart_fifo_we    <= '1';
+                        uart_fifo_data 	<= current_data;
+                    else
+                        if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
                             ew_fifo_we      <= '1';
                             ew_fifo_data    <= current_data;
+                        else
+                            ew_ovfl <= '1';
                         end if;
-                    else
-                        ew_ovfl <= '1';
                     end if;
                     
                     -- use RD_CNT (in units of 32-bits) to decide when the lane is done 
