@@ -73,7 +73,7 @@ port (
 end ROCFIFOController;
 architecture architecture_ROCFIFOController of ROCFIFOController is
     
-    type state_type is (RESET, IDLE, START, CHECK, COUNT, UPDATE, HOLD);
+    type state_type is (RESET, IDLE, START, START1 , START2, CHECK, COUNT0, COUNT1, COUNT2, COUNT3, UPDATE, HOLD);
     signal state            : state_type;
     
     signal current_lane : integer range 0 to NROCFIFO-1;
@@ -100,6 +100,9 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
 
     signal first_used_lane : integer range 0 to 4;
     signal active_lane : std_logic_vector(1 downto 0);
+    
+    signal want_ew_fifo_we : std_logic;
+    signal want_uart_fifo_we : std_logic;
         
 begin
 
@@ -109,21 +112,30 @@ begin
     rocfifo_empty(3) <= lane3_empty;
     
     ---- data ready whenever not empty
-    data_ready  <= not rocfifo_empty(current_lane);
+    --data_ready  <= not rocfifo_empty(current_lane);
     
     outfifo_full<= uart_fifo_full when use_uart = '1' else ew_fifo_full;
 
     -- use OUTFIFO_WE to enable output data write: must skip first header word, wait until data is available (not empty) and output fifo is not full
     -- outfifo_we  <= '1' when want_we = '1' and data_ready = '1' and outfifo_full = '0' else '0';
-    outfifo_we  <= '1' when want_we = '1' and data_ready = '1' and outfifo_full = '0' else '0';
+    --outfifo_we  <= '1' when want_we = '1' and data_ready = '1' and outfifo_full = '0' else '0';
 
     -- read whenever we writing (to make sure next one is new)
     --  Use WANT_RE to force one extra read of the first DIGI header word (containing EWTAG number plus number of hits) 
     --  which is passed to the DigiReaderFIFO but not to the DDR 
-    lane0_re    <= '1' when ((outfifo_we = '1' and current_lane = 0) or want_re(0) = '1') and rocfifo_empty(0) = '0' else '0';
-    lane1_re    <= '1' when ((outfifo_we = '1' and current_lane = 1) or want_re(1) = '1') and rocfifo_empty(1) = '0' else '0';
-    lane2_re    <= '1' when ((outfifo_we = '1' and current_lane = 2) or want_re(2) = '1') and rocfifo_empty(2) = '0' else '0';
-    lane3_re    <= '1' when ((outfifo_we = '1' and current_lane = 3) or want_re(3) = '1') and rocfifo_empty(3) = '0' else '0';
+    --lane0_re    <= '1' when ((outfifo_we = '1' and current_lane = 0) or want_re(0) = '1') and rocfifo_empty(0) = '0' else '0';
+    --lane1_re    <= '1' when ((outfifo_we = '1' and current_lane = 1) or want_re(1) = '1') and rocfifo_empty(1) = '0' else '0';
+    --lane2_re    <= '1' when ((outfifo_we = '1' and current_lane = 2) or want_re(2) = '1') and rocfifo_empty(2) = '0' else '0';
+    --lane3_re    <= '1' when ((outfifo_we = '1' and current_lane = 3) or want_re(3) = '1') and rocfifo_empty(3) = '0' else '0';
+    lane0_re <= want_re(0);-- when (rocfifo_empty(0) = '0' and outfifo_full = '0') else '0';
+    lane1_re <= want_re(1);-- when (rocfifo_empty(1) = '0' and outfifo_full = '0') else '0';
+    lane2_re <= want_re(2);-- when (rocfifo_empty(2) = '0' and outfifo_full = '0') else '0';
+    lane3_re <= want_re(3);-- when (rocfifo_empty(3) = '0' and outfifo_full = '0') else '0';
+    
+    --data_ready <= rocfifo_empty(current_lane) = '0' and outfifo_full = '0');
+    
+    uart_fifo_we <= want_uart_fifo_we;-- when (rocfifo_empty(current_lane) = '0' and uart_fifo_full = '0') else '0';
+    ew_fifo_we <= want_ew_fifo_we;-- when (rocfifo_empty(current_lane) = '0' and ew_fifo_full = '0') else '0';
 
     
     with current_lane select
@@ -157,8 +169,8 @@ begin
         
         want_we     <= '0';
         want_re <= (others => '0');
-        ew_fifo_we  <= '0';
-        uart_fifo_we<= '0';
+        want_ew_fifo_we  <= '0';
+        want_uart_fifo_we <= '0';
         uart_fifo_data <= (others => '0');
         ew_fifo_data <= (others => '0');
         
@@ -167,9 +179,9 @@ begin
         
     elsif rising_edge(clk) then
     
-        want_re <= (others => '0');
-        ew_fifo_we  <= '0';
-        uart_fifo_we<= '0';
+        want_re               <= (others => '0');
+        want_ew_fifo_we       <= '0';
+        want_uart_fifo_we     <= '0';
         
         -- set FIRST enabled lane
         if ( use_lane(0) = '1') then
@@ -209,9 +221,17 @@ begin
                 ew_done <= '0';
                 
                 if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
+                    want_re(current_lane) <= '1';
+                    state <= START2;
+                end if;
                 
-                    -- force ROCFIFOs read 
-                     want_re(current_lane) <= '1';
+            when START2 =>
+                state <= START1;
+                
+            when START1 =>
+                
+                if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
+            
                     
                     -- set EW_TAG for first enabled lane. Set an error if other enabled lanes don't agree
                     if current_lane = first_used_lane   then
@@ -229,7 +249,7 @@ begin
                     
                     -- write header word to DigiReaderFIFO (but not to DDR)
                     if (use_uart = '1' and unsigned(current_data(30 downto 20)) /= 0) then
-                        uart_fifo_we    <= '1';
+                        want_uart_fifo_we    <= '1';
                         uart_fifo_data 	<= current_data;
                     end if;
                     
@@ -248,43 +268,114 @@ begin
                 end if;
                 
                 if lane_size > 0 then
-                    want_we <= '1';     -- enable OUTFIFO_WE: its logic requires ROCFIFO's not empty anyway
-                    state <= COUNT;
+                    --want_we <= '1';     -- enable OUTFIFO_WE: its logic requires ROCFIFO's not empty anyway
+                    state <= COUNT0;
                 else
                     state <= UPDATE;  -- no need to write any payload. Go and check the next lane
                 end if;
                 
-            when COUNT =>
-                state_count <= X"05";
+            when COUNT0 =>
+                if  rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
+                    want_re(current_lane) <= '1';
+                    state <= COUNT3;
+                end if;
                 
-                if outfifo_we = '1' then
+            when COUNT3 =>
+                state <= COUNT1;
+            
+            when COUNT1 =>
+                if  rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
                     
-                    -- use WR_CNT (in units of 32-bits) to decide when the event has reached the maximum allowed size 
                     wr_cnt <= wr_cnt + 1;
+                    rd_cnt <= rd_cnt + 1;
+                    
                     if use_uart = '1' then
-                        uart_fifo_we    <= '1';
+                        want_uart_fifo_we    <= '1';
                         uart_fifo_data 	<= current_data;
                     else
-                        if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
-                            ew_fifo_we      <= '1';
-                            ew_fifo_data    <= current_data;
+                        if  wr_cnt <= (2*unsigned(ew_size) - 1) then
+                                want_ew_fifo_we      <= '1';
+                                ew_fifo_data    <= current_data;
                         else
                             ew_ovfl <= '1';
                         end if;
                     end if;
                     
-                    -- use RD_CNT (in units of 32-bits) to decide when the lane is done 
-                    rd_cnt <= rd_cnt + 1;
-                    if rd_cnt = (lane_size - 1) then
-                        want_we <= '0'; -- disable OUTFIFO_WE             
-                        state <= UPDATE;
-                    end if;
+                    state <= COUNT2;
                 end if;
+                
+            when COUNT2 =>
+                -- use RD_CNT (in units of 32-bits) to decide when the lane is done 
+                if rd_cnt = lane_size then     
+                    state <= UPDATE;
+                else
+                    state <= COUNT0;
+                end if;
+                
+            --when COUNT =>
+                --want_re(current_lane)  <= '0';
+                --want_uart_fifo_we <= '0';
+                --want_ew_fifo_we <= '0';
+                --if  rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
+                    --want_re(current_lane) <= '1';
+                    --
+                    --wr_cnt <= wr_cnt + 1;
+                    --
+                    --if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
+                        --if use_uart then
+                            --want_uart_fifo_we    <= '1';
+                            --uart_fifo_data 	<= current_data;
+                        --else
+                            --want_ew_fifo_we      <= '1';
+                            --ew_fifo_data    <= current_data;
+                        --end if;
+                    --else
+                        --ew_ovfl <= '1';
+                    --end if;
+                    --
+                    ---- use RD_CNT (in units of 32-bits) to decide when the lane is done 
+                    --rd_cnt <= rd_cnt + 1;
+                    --if rd_cnt = lane_size then     
+                        --state <= UPDATE;
+                    --end if;
+                --end if;
+                    
+                
+            --when COUNT =>
+                --state_count <= X"05";
+                --
+                --if outfifo_we = '1' then
+                    --
+                    ---- use WR_CNT (in units of 32-bits) to decide when the event has reached the maximum allowed size 
+                    --wr_cnt <= wr_cnt + 1;
+                    --
+                    --if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
+                        --if use_uart then
+                            --uart_fifo_we    <= '1';
+                            --uart_fifo_data 	<= current_data;
+                        --else
+                            --ew_fifo_we      <= '1';
+                            --ew_fifo_data    <= current_data;
+                        --end if;
+                    --else
+                        --ew_ovfl <= '1';
+                    --end if;
+                    --
+                    ---- use RD_CNT (in units of 32-bits) to decide when the lane is done 
+                    --rd_cnt <= rd_cnt + 1;
+                    --if rd_cnt = (lane_size - 1) then
+                        --want_we <= '0'; -- disable OUTFIFO_WE             
+                        --state <= UPDATE;
+                    --end if;
+                --end if;
                 
                 
             when UPDATE =>                
                 state_count <= X"06";
                 rd_cnt <= (others => '0');
+                want_re(current_lane)  <= '0';
+                want_uart_fifo_we <= '0';
+                want_ew_fifo_we <= '0';
                 if current_lane < NROCFIFO-1 then
                     current_lane <= current_lane + 1;
                     -- used for ILA
