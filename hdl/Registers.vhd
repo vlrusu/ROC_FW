@@ -35,13 +35,7 @@ entity Registers is
       
     DDRSERIALSET  : out  std_logic;
     DDRPTTREN     : out std_logic;
---    DDRCFOEN      : out  std_logic;
---    DDRCFOSTART   : out  std_logic;
---    DDRPREFETCHEN : out  std_logic;
     DDRERROR      : in  std_logic_vector(3 downto 0);
---    DDRERRREQ     : out std_logic_vector(1 downto 0);
---    DDRERRSEEN    : in  std_logic_vector(63 downto 0);
---    DDRERREXPC    : in  std_logic_vector(63 downto 0);
     DDRSIZEWR     : in  std_logic_vector(31 downto 0);
     DDRSIZERD     : in  std_logic_vector(31 downto 0);
     DDRHBCNT      : in  std_logic_vector(31 downto 0);
@@ -59,20 +53,8 @@ entity Registers is
     DDRDREQTAG    : in  std_logic_vector(31 downto 0);
     DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
     DDRCFOOFFSET  : out std_logic_vector(31 downto 0);
---    DDRCFODELTAHB : out std_logic_vector(31 downto 0);
---    DDRCFONUMBERHB: out std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
---    DTCSIMSTART   : out std_logic;
---    DTCSIMBLKEN   : out std_logic;
---    DTCSIMPARAM   : out std_logic_vector(31 downto 0);
---    DTCSIMADDR    : out std_logic_vector(31 downto 0);
---    DTCSIMDATA    : out std_logic_vector(31 downto 0);
---    DTCSIMSPILLDATA: out std_logic_vector(31 downto 0);
---    DTCSIMBLKDATA : out std_logic_vector(15 downto 0);
---    DTCSIMBLKADDR : out std_logic_vector(6 downto 0);
---    DTCDATAREAD   : in std_logic_vector(31 downto 0);
-    
     hvscl   : out std_logic;
     calscl  : out std_logic;
 
@@ -173,8 +155,15 @@ entity Registers is
   
     dcs_ewm_enable_50mhz    : in std_logic;
     dcs_use_lane            : in std_logic_vector(3 downto 0);
-    dcs_force_full          : in std_logic
+    dcs_force_full          : in std_logic;
 
+    PRBS_LOCK		: in  std_logic;
+    PRBS_ON		    : in  std_logic;
+    PRBS_ERRORCNT   : in  std_logic_vector(31 downto 0);
+    PRBS_EN         : out std_logic;
+    PRBS_ERROROUT   : out std_logic;
+    PRBS_ERRORCLR   : out std_logic
+    
     --cal_ss_n : out std_logic;
     --cal_sclk : out std_logic;
     --cal_mosi : out std_logic;
@@ -208,11 +197,11 @@ architecture synth of Registers is
 -------------------------------------------------------------------------------
    constant CRDDRPTTREN: 	std_logic_vector(7 downto 0):= x"20";  -- drive PATTERN to be used
    constant CRDDRERROR:	   std_logic_vector(7 downto 0):= x"21";  -- error seen: [0] event_error, [1] header1_error, [2] header2_error, [3] data_error seen
-   constant CRDDRERRREQ:	std_logic_vector(7 downto 0):= x"22";  -- error requested: [0] event_error, [1] header1_error, [2] header2_error, [3] data_error seen
-   constant CRDDRERRSEENL: std_logic_vector(7 downto 0):= x"23";  -- 32 LBS of word read when first requested error seen
-   constant CRDDRERRSEENH: std_logic_vector(7 downto 0):= x"24";  -- 32 MSB of word read when first requested error seen
-   constant CRDDRERREXPCL: std_logic_vector(7 downto 0):= x"25";  -- 32 LBS of expected word when first requested error seen 
-   constant CRDDRERREXPCH: std_logic_vector(7 downto 0):= x"26";  -- 32 MBS of expected word when first requested error seen 
+   --constant CRDDRERRREQ:	std_logic_vector(7 downto 0):= x"22";  -- error requested: [0] event_error, [1] header1_error, [2] header2_error, [3] data_error seen
+   --constant CRDDRERRSEENL: std_logic_vector(7 downto 0):= x"23";  -- 32 LBS of word read when first requested error seen
+   --constant CRDDRERRSEENH: std_logic_vector(7 downto 0):= x"24";  -- 32 MSB of word read when first requested error seen
+   --constant CRDDRERREXPCL: std_logic_vector(7 downto 0):= x"25";  -- 32 LBS of expected word when first requested error seen 
+   --constant CRDDRERREXPCH: std_logic_vector(7 downto 0):= x"26";  -- 32 MBS of expected word when first requested error seen 
    constant CRDDRSPILLCNT  :  std_logic_vector(7 downto 0):= x"27";  -- no. of HB from start of SPILL
    constant CRDDRNULLHBCNT :  std_logic_vector(7 downto 0):= x"28";  -- no. of null HBs from start of SPILL
    constant CRDDRHBCNT:    std_logic_vector(7 downto 0):= x"29";  -- no. of HB seen
@@ -266,18 +255,18 @@ architecture synth of Registers is
 -- -DTC SIMULATION signals: Monica added 08/22/2020 
 ------------------------------------------------------------------------------ 
    --constant CRDTCSIMEN 	  : std_logic_vector(7 downto 0) := x"50";  -- send DTC packets/marker to DTCInterface
-   constant CRDTCSIMSTART : std_logic_vector(7 downto 0) := x"51";  -- send DTC packets/marker to DTCInterface
-   constant CRDTCSIMPARAM : std_logic_vector(7 downto 0) := x"52";  -- simulation parameters: [28] = DTC_SIMEN, [24] = DTC_SEL, [21:16] = OP_CODE,
-                                                                    --    [11:8] = RETR_SEQ_NUM, [7:4] = MARKER_TYPE, [3:0] = PACKET_TYPE
-   constant CRDTCSIMADDR  : std_logic_vector(7 downto 0) := x"53";  -- simulation packet address:  [23:16] = MODULE_ID, [15:0] = operation ADDRESS
-   constant CRDTCSIMDATA  : std_logic_vector(7 downto 0) := x"54";  -- simulation packet data:     [31:16] = BLK_CNT,   [15:0] = operation DATA
-   constant CRDTCSIMSPILLDT: std_logic_vector(7 downto 0) := x"55";  -- simulated data packet parameters: [31] = ON_SPILL, [30:24] = RF_MARKER
-                                                                    --    [23:16] =  EVT_MODE[7:0],  [15:0] = WINDOW_MARKER[15:0]
-   constant CRDTCSIMBLKEN : std_logic_vector(7 downto 0) := x"56";  -- enable write of DTC BLK data to RAM
-   constant CRDTCSIMBLKDT : std_logic_vector(7 downto 0) := x"57";  -- DTC BLK_RAM data
-   constant CRDTCSIMBLKAD : std_logic_vector(7 downto 0) := x"58";  -- DTC BLK_RAM address
+   --constant CRDTCSIMSTART : std_logic_vector(7 downto 0) := x"51";  -- send DTC packets/marker to DTCInterface
+   --constant CRDTCSIMPARAM : std_logic_vector(7 downto 0) := x"52";  -- simulation parameters: [28] = DTC_SIMEN, [24] = DTC_SEL, [21:16] = OP_CODE,
+                                                                    ----    [11:8] = RETR_SEQ_NUM, [7:4] = MARKER_TYPE, [3:0] = PACKET_TYPE
+   --constant CRDTCSIMADDR  : std_logic_vector(7 downto 0) := x"53";  -- simulation packet address:  [23:16] = MODULE_ID, [15:0] = operation ADDRESS
+   --constant CRDTCSIMDATA  : std_logic_vector(7 downto 0) := x"54";  -- simulation packet data:     [31:16] = BLK_CNT,   [15:0] = operation DATA
+   --constant CRDTCSIMSPILLDT: std_logic_vector(7 downto 0) := x"55";  -- simulated data packet parameters: [31] = ON_SPILL, [30:24] = RF_MARKER
+                                                                    ----    [23:16] =  EVT_MODE[7:0],  [15:0] = WINDOW_MARKER[15:0]
+   --constant CRDTCSIMBLKEN : std_logic_vector(7 downto 0) := x"56";  -- enable write of DTC BLK data to RAM
+   --constant CRDTCSIMBLKDT : std_logic_vector(7 downto 0) := x"57";  -- DTC BLK_RAM data
+   --constant CRDTCSIMBLKAD : std_logic_vector(7 downto 0) := x"58";  -- DTC BLK_RAM address
 
-   constant CRDTCDATAREAD : std_logic_vector(7 downto 0) := x"59";  -- last DTC reply [31:16] = addr, [15:0] = data 
+   --constant CRDTCDATAREAD : std_logic_vector(7 downto 0) := x"59";  -- last DTC reply [31:16] = addr, [15:0] = data 
 
 -------------------------------------------------------------------------------
 -- -CAL DIGI SPI
@@ -335,9 +324,20 @@ architecture synth of Registers is
 	constant CR_CAL_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B8";
 	constant CR_HV_SERDES_ERRORS 		: std_logic_vector(7 downto 0) := x"B9";
 
-    constant CR_ERROR_ADDRESS		    : std_logic_vector(7 downto 0) := x"E0";
-    constant CR_ERROR_COUNTER		    : std_logic_vector(7 downto 0) := x"E1";
--- other register implicitely used
+------------------------------------------------------------------------------    
+---- PRBS & DDR MEMORY TEST SIGNALS
+------------------------------------------------------------------------------ 
+   constant	CRPRBS_EN	    : std_logic_vector(7 downto 0) := x"D0";    -- level HIGH for duration of PRBS pattern test
+   constant	CRPRBS_ERROROUT : std_logic_vector(7 downto 0) := x"D2";    -- inject ERROR into PRBS
+   constant	CRPRBS_ERRORCLR	: std_logic_vector(7 downto 0) := x"D3";	-- clear PRBS errors
+   constant	CRPRBS_ERRORCNT	: std_logic_vector(7 downto 0) := x"D9";	-- PRBS ERROR CNT 
+   constant	CRPRBS_ON	    : std_logic_vector(7 downto 0) := x"DA";	-- PRBS ON
+   constant	CRPRBS_LOCK		: std_logic_vector(7 downto 0) := x"DB";	-- PRBS fiber locked
+
+   constant CR_ERROR_ADDRESS: std_logic_vector(7 downto 0) := x"E0";
+   constant CR_ERROR_COUNTER: std_logic_vector(7 downto 0) := x"E1";
+--
+   -- other register implicitely used
 --      0xED to drive   cal_serdes_reset_n , hv_serdes_reset_n , dtc_serdes_reset_n 
 --      0xEE to drive   align_roc_to_digi
 --      0xEF to drive   serial_force_full
@@ -529,16 +529,15 @@ begin
         when CRTIMERCOUNTER =>
             DataOut(31 downto 0) <= TIMERCOUNTER;
             
+        when CRPRBS_LOCK =>
+          DataOut(0)            <= PRBS_LOCK;
+        when CRPRBS_ON =>
+          DataOut(0)            <= PRBS_ON;
+        when CRPRBS_ERRORCNT =>
+          DataOut(31 downto 0)  <= PRBS_ERRORCNT;
+            
         when CRDDRERROR =>
           DataOut(3 downto 0) <= DDRERROR;
---        when CRDDRERRSEENL =>
---          DataOut(31 downto 0) <= DDRERRSEEN(31 downto 0);
---        when CRDDRERRSEENH =>
---          DataOut(31 downto 0) <= DDRERRSEEN(63 downto 32);
---        when CRDDRERREXPCL =>
---          DataOut(31 downto 0) <= DDRERREXPC(31 downto 0);
---        when CRDDRERREXPCH =>
---          DataOut(31 downto 0) <= DDRERREXPC(63 downto 32);
         when CRDDRSIZEWR =>
           DataOut(31 downto 0) <= DDRSIZEWR;
         when CRDDRSIZERD =>
@@ -572,8 +571,6 @@ begin
         when CRDDROFFSETTAG =>
           DataOut(31 downto 0) <= DDROFFSETTAG;
 
---        when CRDTCDATAREAD =>
---          DataOut(31 downto 0) <= DTCDATAREAD;
         when CRDDRCTRLREADY =>
           DataOut(0) <= DDRCTRLREADY;
           
@@ -684,25 +681,13 @@ begin
         TVS_RESETN		    <=	'1';
 		
         INVERTCALSPICLCK  <= '0';
+		PRBS_EN	 	      <= '0';
+		PRBS_ERROROUT 	  <= '0';
+		PRBS_ERRORCLR	  <= '0';
         
         DDRSERIALSET      <= '0';
         DDRPTTREN         <= '0';
---        DDRCFOEN          <= '0';
---        DDRCFOSTART       <= '0';
---        DDRPREFETCHEN     <= '0';
---        DDRERRREQ         <= b"00";
         DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
---        DDRCFODELTAHB     <= x"0000_00FF";     -- default is 255*6.7 ns = 1.7 us
---        DDRCFONUMBERHB    <= x"0000_0001";   
-		
---        DTCSIMSTART    <= '0';
---        DTCSIMBLKEN    <= '0';
---        DTCSIMPARAM    <= x"0000_0000";
---        DTCSIMADDR     <= x"0000_0000";
---        DTCSIMDATA     <= x"0000_0000";
---        DTCSIMSPILLDATA<= x"0000_0000";
---        DTCSIMBLKDATA  <= x"0000";
---        DTCSIMBLKADDR  <= b"0000000";
 
         SERDES_RE   <= '0';
         serdes_re0  <= '0';
@@ -769,10 +754,9 @@ begin
         serial_hv_init <= '0';
         
         -- this are meant to be pulses 
---        DTCSIMSTART    <= '0';
---        DTCSIMBLKEN    <= '0';
---        DDRCFOSTART    <= '0';
-      
+		PRBS_ERROROUT	<= '0';
+		PRBS_ERRORCLR	<= '0';
+        
         if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
 			
@@ -790,42 +774,20 @@ begin
 				
             when CRTIMERENABLE =>
                 TIMERENABLE <= PWDATA(0);
-            
+                            
+			when CRPRBS_EN =>
+                PRBS_EN <= PWDATA(0);
+			when CRPRBS_ERROROUT =>
+                PRBS_ERROROUT   <= '1';
+			when CRPRBS_ERRORCLR =>
+                PRBS_ERRORCLR<= '1';
+                
             when CRDDRSERIALSET =>
                 DDRSERIALSET <= PWDATA(0);
             when CRDDRPTTREN =>
                 DDRPTTREN <= PWDATA(0);
---            when CRDDRERRREQ =>
---                DDRERRREQ <= PWDATA(1 downto 0);
---            when CRDDRCFOEN =>
---                DDRCFOEN <= PWDATA(0);
---            when CRDDRPREFEN =>
---                DDRPREFETCHEN <= PWDATA(0);
---            when CRDDRCFOSTART =>
---                DDRCFOSTART <= '1';
             when CRDDRCFOOFFSET =>
                 DDRCFOOFFSET <= PWDATA(31 downto 0);
---            when CRDDRCFODELTAHB =>
---                DDRCFODELTAHB  <= PWDATA(31 downto 0);
---            when CRDDRCFONOHB  =>
---                DDRCFONUMBERHB <= PWDATA(31 downto 0);
-
---            when CRDTCSIMSTART =>
---                DTCSIMSTART <= '1';
---            when CRDTCSIMBLKEN =>
---                DTCSIMBLKEN <= '1';
---            when CRDTCSIMPARAM =>
---                DTCSIMPARAM <= PWDATA(31 downto 0);
---            when CRDTCSIMADDR =>
---                DTCSIMADDR <= PWDATA(31 downto 0);
---            when CRDTCSIMDATA =>
---                DTCSIMDATA <= PWDATA(31 downto 0);
---            when CRDTCSIMSPILLDT =>
---                DTCSIMSPILLDATA <= PWDATA(31 downto 0);
---            when CRDTCSIMBLKDT =>
---                DTCSIMBLKDATA <= PWDATA(15 downto 0);
---            when CRDTCSIMBLKAD =>
---                DTCSIMBLKADDR <= PWDATA(6 downto 0);
             when CRSERDESRE =>
                 SERDES_RE <= '1';
    

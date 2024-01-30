@@ -38,7 +38,7 @@ module ewtag_cntrl(
 	input	dreqclk,                // 80 MHz DREQ clock                            
 	input	resetn_dreqclk,
     input   resetn_fifo,            // straigth from EXR_RST_N
-        
+    
     // exchanged with TOP SERDES on XCVR CLK
     input   hb_valid,               // pulse on XCVR CLK when HB has been decoded
     input   hb_null_valid,          // pulse on XCVR CLK when null HB has been decoded
@@ -152,25 +152,25 @@ wire    busy;
 
 always@(posedge xcvrclk, negedge resetn_xcvrclk)
 begin
-   if(resetn_xcvrclk == 1'b0) 
-   begin
-      req <= 0;
-      hb_cnt        <= 0;
-      hb_null_cnt   <= 0;
-      pref_seen_cnt <= 0;
-   end
-   else
-   begin
-      ack_req	<= req_sync;
-      ack_sync	<=	ack_req;
-	 
-      if (hb_valid && !busy)	req <= 1'b1;
-      else if (ack_sync)		req <= 1'b0;
-      
-      if (hb_valid)     hb_cnt          <= hb_cnt + 1;
-      if (hb_null_valid)hb_null_cnt     <= hb_null_cnt + 1;
-      if (pref_valid)   pref_seen_cnt   <= pref_seen_cnt + 1;
-   end
+    if(resetn_xcvrclk == 1'b0) 
+    begin
+        req <= 0;
+        hb_cnt        <= 0;
+        hb_null_cnt   <= 0;
+        pref_seen_cnt <= 0;
+    end
+    else
+    begin
+        ack_req	<= req_sync;
+        ack_sync	<=	ack_req;
+            
+        if (hb_valid && !busy)	req <= 1'b1;
+        else if (ack_sync)		req <= 1'b0;
+            
+        if (hb_valid)     hb_cnt          <= hb_cnt + 1;
+        if (hb_null_valid)hb_null_cnt     <= hb_null_cnt + 1;
+        if (pref_valid)   pref_seen_cnt   <= pref_seen_cnt + 1;
+    end
 end	
 
 assign 	busy = req || ack_sync;
@@ -178,13 +178,16 @@ assign 	busy = req || ack_sync;
 // synchronize the request on slow clock
 always@(posedge serdesclk, negedge resetn_serdesclk)
 begin
-   if(resetn_serdesclk == 1'b0) hb_on_serdesclk	<= 0;
+    if(resetn_serdesclk == 1'b0) 
+    begin   
+        hb_on_serdesclk	<= 0;
+    end
 	else
 	begin
-		hb_on_serdesclk <=	req_latch && !req_sync;
+        hb_on_serdesclk <=	req_latch && !req_sync;
 			
-		req_latch   <=  req;
-		req_sync    <=  req_latch;
+        req_latch   <=  req;
+        req_sync    <=  req_latch;
 	end
 end
 

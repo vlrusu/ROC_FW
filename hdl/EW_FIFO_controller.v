@@ -11,6 +11,7 @@
 //                         EW_SIZE and derived variables are [EVENT_SIZE_BITS-1:0], ie in units of beats
 //      v6.0: <July,2023>: added NEWSPILL rising edge on appropriate clock to clear all signals used in bouncing between EW_FIFOs  and ET_FIFOs 
 //
+//
 // Description: 
 //
 //   Based on EW_DONE and EW_SIZE (on Serdes Clock domain):
@@ -43,6 +44,7 @@ module EW_FIFO_controller #(
     input   newspill_on_dreqclk,// rising edge of NEWSPILL
     input   serdesclk,  	    // on 150 MHz clock
     input	resetn_serdesclk,
+    
 // signals exchanged with ROC_FIFO_CNTRL on SERDESCLK time domain 
     input   curr_ewfifo_wr,    // when 0/1, current EW_FIFO to write is EW_FIFO0/1
     input   ew_done,           // Event Window Tag has been processed and loaded into DIGIFIFO
@@ -271,7 +273,7 @@ reg [2:0]  raddr_state;
 reg [2:0]  rdata_state;
 //AXI write burst,transaction counters
 reg [7:0]  wburst_cnt;
-reg [7:0]  wdburst_cnt;
+//reg [7:0]  wdburst_cnt;  -- unused
 reg [7:0]  wdata_cnt;
 //registers for AXI write data
 wire [63:0] wdata_int; 
@@ -385,17 +387,17 @@ begin
     end
     else
     begin
-        ack_req2	<=  req_sync2;
-        ack_sync2 <=  ack_req2;
+        ack_req2    <=  req_sync2;
+        ack_sync2   <=  ack_req2;
          
         if (ew_we_store && !busy2)	req2 <= 1'b1;
         else if (ack_sync2)			req2 <= 1'b0;
       
         ack_req2W	<=  req_sync2W;
-        ack_sync2W<=	ack_req2W;
+        ack_sync2W  <=	ack_req2W;
       
-        if ((wlast_o && ew_size_to_store==0) && !busy2W)  req2W <= 1'b1;
-        else if (ack_sync2W)								req2W <= 1'b0;
+        if ((wlast_o && ew_size_to_store==0) && !busy2W)    req2W <= 1'b1;
+        else if (ack_sync2W)							    req2W <= 1'b0;
     end
 end	
 
@@ -449,15 +451,15 @@ begin
         ack_reqE0	<= reqE0_sync;
         ack_syncE0  <=	ack_reqE0;
       
-        if (ew_fifo0_empty_pulse && !busyE0)    reqE0 <= 1'b1;
-        else if (ack_syncE0)			        reqE0 <= 1'b0;
+        if (ew_fifo0_empty_pulse && !busyE0)reqE0 <= 1'b1;
+        else if (ack_syncE0)                reqE0 <= 1'b0;
       
         ack_reqE1	<= reqE1_sync;
         ack_syncE1  <=	ack_reqE1;
       
-        if (ew_fifo1_empty_pulse && !busyE1)    reqE1 <= 1'b1;
-        else if (ack_syncE1)			        reqE1 <= 1'b0;
-    end
+        if (ew_fifo1_empty_pulse && !busyE1)reqE1 <= 1'b1;
+        else if (ack_syncE1)                reqE1 <= 1'b0;
+    end    
 end	
 
 assign 	busyE0 = reqE0 || ack_syncE0;
@@ -473,15 +475,15 @@ begin
 	end	
 	else
 	begin
-		reqE0_latch	<= reqE0;
-		reqE0_sync	<=	reqE0_latch;
-		reqE0_reg	<= reqE0_sync;
+		reqE0_latch	<=  reqE0;
+		reqE0_sync	<=  reqE0_latch;
+		reqE0_reg	<=  reqE0_sync;
 		
 		ew_fifo0_empty_pulse_on_serdesclk   <= reqE0_sync && !reqE0_reg;
 			
-		reqE1_latch	<= reqE1;
-		reqE1_sync	<=	reqE1_latch;
-		reqE1_reg	<= reqE1_sync;
+		reqE1_latch	<=  reqE1;
+		reqE1_sync	<=  reqE1_latch;
+		reqE1_reg	<=  reqE1_sync;
 		
 		ew_fifo1_empty_pulse_on_serdesclk   <= reqE1_sync && !reqE1_reg;
 	end
@@ -940,7 +942,7 @@ begin
         wvalid_o    <=	1'b0;
         wdata_o		<=  0;
         wdata_cnt	<=  0;
-        wdburst_cnt	<=  0;
+        //wdburst_cnt	<=  0;
         wdata_state <=	IDLE;
     end
     else
@@ -961,7 +963,7 @@ begin
             wvalid_o	<=	1'b0;
             wdata_o		<= 0;
             wdata_cnt	<= 0;
-            wdburst_cnt	<= 0;
+            //wdburst_cnt	<= 0;
             
             if(awvalid_o && awready_i) wdata_state <=   VALID;
         end
@@ -969,7 +971,7 @@ begin
         //perform AXI burst write
         VALID:
         begin
-            wvalid_o	<=	1'b1;            
+            wvalid_o	<=	1'b1;
             if(wready_i)
             begin
                 wdata_cnt	<=	wdata_cnt + 1'b1;
@@ -985,7 +987,7 @@ begin
                 if(wdata_cnt == wr_burst_length)
                 begin
                     wlast_o			<=	1'b1;
-                    wdburst_cnt		<=	wdburst_cnt + 1'b1;
+                    //wdburst_cnt		<=	wdburst_cnt + 1'b1;
                     wdata_state		<=	DONE;
                 end
             end
@@ -994,12 +996,13 @@ begin
         //generate memory initialization complete
         DONE:
         begin 
+                
             if(wready_i)
             begin				
-                wvalid_o		<=	1'b0;
-                wlast_o			<=	1'b0;
-                wdata_cnt		<=	1'b0;   
-                wdata_o			<=	wdata_o;
+                wvalid_o	<=	1'b0;
+                wlast_o		<=	1'b0;
+                wdata_cnt	<=	0;   
+                wdata_o    <=	wdata_o;
                 if(wburst_cnt == ew_blk_to_store)   wdata_state	<=	IDLE;			
                 else						        wdata_state	<=	NEXT;
             end
@@ -1015,8 +1018,8 @@ begin
         begin
             wlast_o			<=	1'b0;
             wvalid_o		<=	1'b0;
-            wdata_o			<= 1'b0;
-            wdata_cnt		<= 1'b0;
+            wdata_o			<=  0;
+            wdata_cnt		<=  0;
             wdata_state		<=	IDLE;
         end
       

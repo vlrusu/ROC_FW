@@ -52,17 +52,17 @@ module pattern_switch(
 );
 
 //<statements>
-   assign curr_ewfifo_wr   = (pattern_en==1'b1) ?  PATTRN_curr_ewfifo_wr   : DIGI_curr_ewfifo_wr;
-   assign ew_done          = (pattern_en==1'b1) ?  PATTRN_ew_done          : DIGI_ew_done;
-   assign ew_ovfl          = (pattern_en==1'b1) ?  PATTRN_ew_ovfl          : DIGI_ew_ovfl;
-   assign ew_fifo_we       = (pattern_en==1'b1) ?  PATTRN_ew_fifo_we       : DIGI_ew_fifo_we;
-   assign ew_fifo_data     = (pattern_en==1'b1) ?  PATTRN_ew_fifo_data     : DIGI_ew_fifo_data;
-   assign ew_size          = (pattern_en==1'b1) ?  PATTRN_ew_size          : DIGI_ew_size;
-//   assign ew_tag           = (pattern_en==1'b1) ?  PATTRN_ew_tag           : DIGI_ew_tag;
-   assign ew_tag           = (pattern_en==1'b1) ?  PATTRN_ew_tag           : (DIGI_ew_tag+1);
+   assign curr_ewfifo_wr   = (pattern_en) ?  PATTRN_curr_ewfifo_wr   : DIGI_curr_ewfifo_wr;
+   assign ew_done          = (pattern_en) ?  PATTRN_ew_done          : DIGI_ew_done;
+   assign ew_ovfl          = (pattern_en) ?  PATTRN_ew_ovfl          : DIGI_ew_ovfl;
+   assign ew_fifo_we       = (pattern_en) ?  PATTRN_ew_fifo_we       : DIGI_ew_fifo_we;
+   assign ew_fifo_data     = (pattern_en) ?  PATTRN_ew_fifo_data     : DIGI_ew_fifo_data;
+   assign ew_size          = (pattern_en) ?  PATTRN_ew_size          : DIGI_ew_size;
+//   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : DIGI_ew_tag;
+   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : (DIGI_ew_tag+1);
    
-   assign DIGI_axi_start_on_serdesclk     =  axi_start_on_serdesclk && ~pattern_en;
-   assign PATTRN_axi_start_on_serdesclk   =  axi_start_on_serdesclk &&  pattern_en;
+   assign DIGI_axi_start_on_serdesclk     =  axi_start_on_serdesclk & ~pattern_en;
+   assign PATTRN_axi_start_on_serdesclk   =  axi_start_on_serdesclk &  pattern_en;
 
 endmodule
 
