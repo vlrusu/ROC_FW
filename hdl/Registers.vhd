@@ -33,7 +33,6 @@ entity Registers is
     DTCALIGN_RESETN 	: out std_logic;
     TVS_RESETN 		: out std_logic;
       
-    DDRSERIALSET  : out  std_logic;
     DDRPTTREN     : out std_logic;
     DDRERROR      : in  std_logic_vector(3 downto 0);
     DDRSIZEWR     : in  std_logic_vector(31 downto 0);
@@ -52,7 +51,6 @@ entity Registers is
     DDRFETCHTAG   : in  std_logic_vector(31 downto 0);
     DDRDREQTAG    : in  std_logic_vector(31 downto 0);
     DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
-    DDRCFOOFFSET  : out std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
     hvscl   : out std_logic;
@@ -685,9 +683,7 @@ begin
 		PRBS_ERROROUT 	  <= '0';
 		PRBS_ERRORCLR	  <= '0';
         
-        DDRSERIALSET      <= '0';
         DDRPTTREN         <= '0';
-        DDRCFOOFFSET      <= (others => '0');  -- default TAG offset is zero
 
         SERDES_RE   <= '0';
         serdes_re0  <= '0';
@@ -782,12 +778,8 @@ begin
 			when CRPRBS_ERRORCLR =>
                 PRBS_ERRORCLR<= '1';
                 
-            when CRDDRSERIALSET =>
-                DDRSERIALSET <= PWDATA(0);
             when CRDDRPTTREN =>
                 DDRPTTREN <= PWDATA(0);
-            when CRDDRCFOOFFSET =>
-                DDRCFOOFFSET <= PWDATA(31 downto 0);
             when CRSERDESRE =>
                 SERDES_RE <= '1';
    

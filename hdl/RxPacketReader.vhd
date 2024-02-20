@@ -8,7 +8,7 @@
 --		<v3>: <08/2022>: Add DCS Block Write to DTC Packet definition
 --      <v4>: <07/2023>: have first null HB to reset is_firstHB=1
 --      <v5>: <09/2023>: add logic to drive loopback marker back to fiber via RxMarkerFifo
---      <Revision number>: <Date>: <Comments>
+--      <v6>: <02/2024>: add SPILLTIMEOUT logic to drive NEWSPILL
 --
 -- Description: 
 --
@@ -107,6 +107,7 @@ architecture architecture_RxPacketReader of RxPacketReader is
 	signal counter 		    : unsigned(2 downto 0);
 	signal nullHB_counter   : unsigned(7 downto 0);
 	signal word_count 	    : integer range 0 to 31;
+    signal spillTimeout		: unsigned(15 downto 0);
 	 
 	signal seq_num 			: unsigned(2 downto 0);
 	signal seq_num_expected	: unsigned(2 downto 0);
@@ -161,6 +162,7 @@ begin
         is_firstHB      <= '1';
         is_valid_EWM    <= '0';
         is_non_null_HB  <= '0';
+        spillTimeout    <= (others=> '1');
         
 		retr_seq			<= (others=> '0');
 		retr_seq_save	    <= (others=> '0');
@@ -208,6 +210,14 @@ begin
      
 	elsif rising_edge(clk) then
 	 
+        -- new logic to generate NEWSPILL if null HB are not used: wait for a long time ( 65535 x 25-ns clocks) in between HBs 
+        if (is_firstHB  = '0') then     spillTimeout <= spillTimeout - 1;       end if;
+        if (spillTimeout = 0)  then
+            NEWSPILL        <= '0';    
+            is_firstHB      <= '1';   -- re-establish condition for NEWSPILL to be issued on next DREQ w/o reset
+            is_non_null_HB  <= '0';
+        end if;
+        
 		HEARTBEAT_SEEN      <= '0';
 		NULL_HEARTBEAT_SEEN	<= '0';
 		PREFETCH_SEEN	    <= '0';
@@ -448,6 +458,8 @@ begin
                 
 				-- save EWTag and Event Mode for heartbeat packet or Prefecth packet
 				if (is_heartbeat = '1') then
+                    spillTimeout    <= (others=> '1');
+                            
 					if (word_count = 3) then 	HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
 					if (word_count = 4) then 	HEARTBEAT_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
 					if (word_count = 5) then 	HEARTBEAT_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
@@ -475,8 +487,6 @@ begin
                                 SPILL_EVENT_WINDOW_TAG	<= X"00001";
                                 is_firstHB  <= '0'; 
                                 nullHB_counter <= (others => '0'); 
-                            --else  
-                                --NEWSPILL <= '0';  
                             end if;
                         else  -- must be NULL HB!
                             if (is_non_null_HB = '1') then  -- start gate for last EWM after first null HB after  

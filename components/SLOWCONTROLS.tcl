@@ -55,7 +55,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_FULL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRPTTREN} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRSERIALSET} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDR_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIDEVICE_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DO} -port_direction {OUT} -port_is_pad {1}
@@ -183,7 +182,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_DIAG_DATA} -port_directio
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_Q} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRCFOOFFSET} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRDATA} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {SERDES_HOWMANY} -port_direction {OUT} -port_range {[12:0]}
@@ -493,7 +491,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:FULL" "DCS_TX_F
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:RE" "DCS_TX_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCTRLREADY" "Registers_0:DDRCTRLREADY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPTTREN" "Registers_0:DDRPTTREN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSERIALSET" "Registers_0:DDRSERIALSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_RESETN" "Registers_0:DDR_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DI" "PF_SPI_0:DI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIDEVICE_RESETN" "Registers_0:DIGIDEVICE_RESETN" }
@@ -592,7 +589,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_BUFFER_0:WRCNT" "DCS_RX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCFOOFFSET" "Registers_0:DDRCFOOFFSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQCNT" "Registers_0:DDRDREQCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQNULL" "Registers_0:DDRDREQNULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQREAD" "Registers_0:DDRDREQREAD" }

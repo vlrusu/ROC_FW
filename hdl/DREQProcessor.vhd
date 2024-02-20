@@ -1,4 +1,5 @@
 --------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 -- Company: <Name>
 --
 -- File: DREQProcessor.vhd
@@ -6,6 +7,7 @@
 --      <v1>: <2021>: Decode Data Request only and generate Data Reply packet
 --      <v2>: <02/2022>: Add Prefetch decoding and drive new FETCH/FETCH_EVENT_WINDOW_TAG outputs, with logic to give priority to Prefetch data over Data Request packet, if present
 --      <v3>: <07/2023>: Add FORMAT_VRS to data header for Packet Format Version and drive with DRACRegister address 29
+--      <v4>: <02/2024>: MT Add timeout for automatic State Machine reset when garbage data comes in during DTC Flashing or DTC Reset
 --
 -- Description: 
 --
@@ -28,6 +30,8 @@ entity DREQProcessor is
 port (
     reset_n : in std_logic;
     clk  : in std_logic;
+
+    reset_dreq_logic : out std_logic;
     
     dreq_rdcnt : in std_logic_vector(10 downto 0);
     dreq_fifo_in : in std_logic_vector(15 downto 0);
@@ -45,7 +49,7 @@ port (
     FETCH_EVENT_WINDOW_TAG  : OUT STD_LOGIC_VECTOR(EVENT_WINDOW_TAG_SIZE-1 downto 0);	-- EWT for event to FETCH 
       
     -- Data Request	 (Request Side)		
-    DATAREQ_START_EVENT		: OUT STD_LOGIC;  														--gimme Event Window Flag	
+    DATAREQ_START_EVENT		: OUT STD_LOGIC;  												    --gimme Event Window Flag	
     DATAREQ_EVENT_WINDOW_TAG	: OUT STD_LOGIC_VECTOR(EVENT_WINDOW_TAG_SIZE-1 downto 0);		--TAG 1 
 		
     --Data Request (Reply Side) 	
@@ -55,10 +59,10 @@ port (
     DATAREQ_STATUS			: IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_DATA			: IN  STD_LOGIC_VECTOR(DATAREQ_DWIDTH-1 downto 0);		   	--Data Reply
     DATAREQ_PACKETS_IN_EVT  : IN  STD_LOGIC_VECTOR(EVENT_SIZE_BITS-1 DOWNTO 0);
+    DATAREQ_PACKETS_OVFL    : IN  STD_LOGIC;
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
     
     -- debug signals
-    leftTimeout			: out std_logic_vector(10 downto 0);
     dreq_timeout_count  : out std_logic_vector(15 downto 0);
     dreq_state_count    : out std_logic_vector(7 downto 0);
     dreq_error_count    : out std_logic_vector(15 downto 0);
@@ -72,7 +76,6 @@ architecture architecture_DREQProcessor of DREQProcessor is
 
     type dreq_state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, DREQ, DBGDATA, DREQHDR, SENDHEADER, READDATA, SENDDATA, DONE, CALCULATECRC, WRITECRC, FLUSHFIFO);
     signal dreq_state      : dreq_state_type;
-    signal counter : integer range 0 to 5;
     
     type   packet   is array (9 downto 0) of std_logic_vector(15 downto 0);
     signal inbuffer : packet;
@@ -82,6 +85,7 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal shRxReg_dataReq2	: shRxReg_t(3 downto 0);	
 		
     signal word_count 		: integer range 0 to 31;
+    signal counter          : integer range 0 to 5;
     signal calculated_crc 	: std_logic_vector(15 downto 0);
     signal sequence_num 	: std_logic_vector(2 downto 0);
     signal read_crc 		: std_logic_vector(15 downto 0);
@@ -90,24 +94,28 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal reqType : unsigned(3 downto 0);
     signal reqEventWindowTag: unsigned(6*8-1 downto 0);		--6 byte    --		* NOTE: assume "timestamp" tag does not wrap around
      
-    signal dgbDreq			: 	std_logic;
-    signal dbgDataPacketCnt : 	unsigned(10 downto 0);	
-    signal dbgDataType		: 	unsigned(3 downto 0);	
+    -- DEBUG PACKET is now driven by EVT_MODE
+    --signal dgbDreq			: 	std_logic;
+    --signal dbgDataPacketCnt : 	unsigned(10 downto 0);	
+    --signal dbgDataType		: 	unsigned(3 downto 0);	
 	 
     signal dataReq_FIFOReadyState	: unsigned(1 downto 0);
     signal dataReq_dataReady		: std_logic;
     signal dataReqDataReadCnt		: unsigned(15 downto 0);
-    signal readTimeout				: unsigned(10 downto 0);
+    signal dataReqStatus            : std_logic_vector(7 downto 0);                 -- hold status to pass to DATA HEADER packet
+    signal dataReqPktCnt            : std_logic_vector(EVENT_SIZE_BITS-2 DOWNTO 0); -- hold packet count to pass to DATA HEADER packet
+    signal dataReqPktOvfl           : std_logic;
     signal firstDone				: std_logic; 
     
-    signal DREQ_WINDOW_TAG_BAD      : std_logic; 
-    signal DREQ_WINDOW_TAG_ERROR    : std_logic; 
-    signal DREQ_WINDOW_TAG_UNKNOWN  : std_logic; 
-    signal DREQ_TIMEOUT     : std_logic; 
-    signal enableTimeout    : std_logic;
+    -- debug signals for ILA
+    signal mark_dreq_pkt_long       : std_logic;
+    signal mark_dreq_pkt_error      : std_logic;
+    signal mark_window_tag_error    : std_logic; 
+    signal mark_window_tag_unknown  : std_logic;
+    signal mark_dreq_timeout        : std_logic;  
 
-    signal dreq_read_error  : std_logic;
-    signal dreq_end_error   : std_logic;
+    signal dreqTimeout  : unsigned(13 downto 0);        -- allow a 16383 x 12.5 ns = 205 us timeout
+    signal readTimeout	: unsigned(13 downto 0);
     
 begin
 
@@ -115,14 +123,12 @@ begin
     reqType 			<= unsigned(inbuffer(2)(7 downto 4));
     link_id 			<= inbuffer(2)(10 downto 8);
     reqEventWindowTag 	<= unsigned(inbuffer(5)) & unsigned(inbuffer(4)) & unsigned(inbuffer(3));
-    dgbDreq				<= inbuffer(7)(0);					-- debug data mask: if 1, ROC sends data for debugging purposes
-    dbgDataType			<= unsigned(inbuffer(7)(7 downto 4));  -- 0x0 special sequence; 0x1 External serial data; 0x2 Same as 0x1 WITH initial FIFO reset
-    dbgDataPacketCnt	<= unsigned(inbuffer(8)(10 downto 0)); -- number of Debug Data packets
+    --dgbDreq				<= inbuffer(7)(0);					-- debug data mask: if 1, ROC sends data for debugging purposes
+    --dbgDataType			<= unsigned(inbuffer(7)(7 downto 4));  -- 0x0 special sequence; 0x1 External serial data; 0x2 Same as 0x1 WITH initial FIFO reset
+    --dbgDataPacketCnt	<= unsigned(inbuffer(8)(10 downto 0)); -- number of Debug Data packets
     read_crc 			<= inbuffer(9);
 	 
-    sequence_num			<= "000";
-    
-    leftTimeout         <= std_logic_vector(readTimeout);
+    sequence_num		<= "000";
     
     process(reset_n, clk)
     begin
@@ -152,25 +158,28 @@ begin
         
         FETCH_START             <= '0';
         FETCH_EVENT_WINDOW_TAG 	<= (others => '0');
-		  
+        
+        dataReqStatus       <= (others => '0'); 
+        dataReqPktCnt       <= (others => '0'); 
+        dataReqDataReadCnt  <= (others => '0'); 
+        dataReqPktOvfl      <= '0';
+        
         dataReq_dataReady 		<= '0';
-        readTimeout				<= (others => '0');
         firstDone 				<= '0';
-			
         word_count <= 0;
         dreq_timeout_count  <= (others => '0');
         dreq_error_count    <= (others => '0');
         dreq_state_count    <= (others => '0');
         
-        DREQ_TIMEOUT <= '0';
-        enableTimeout <= '0';
+        mark_dreq_pkt_long  <= '0';
+        mark_dreq_pkt_error <= '0';
+        mark_window_tag_error   <= '0';
+        mark_window_tag_unknown <= '0';
+        mark_dreq_timeout   <= '0';
         
-        dreq_read_error <= '0';
-        dreq_end_error  <= '0';
-        
-        DREQ_WINDOW_TAG_ERROR <= '0';
-        DREQ_WINDOW_TAG_BAD <= '0';
-        DREQ_WINDOW_TAG_UNKNOWN <= '0';
+        readTimeout		<= (others => '1');
+        dreqTimeout     <= (others => '1');
+        reset_dreq_logic<= '0';
         
     elsif rising_edge(clk) then
         crc_en <= '0';
@@ -179,18 +188,28 @@ begin
         dreq_fifo_we <= '0';
         FETCH_START  <= '0';
             
-        DREQ_WINDOW_TAG_ERROR <= '0';
-        DREQ_WINDOW_TAG_BAD <= '0';
-        DREQ_WINDOW_TAG_UNKNOWN <= '0';
 				
         if  unsigned(dreq_rdcnt) > 10 then
-            dreq_read_error <= '1';
+            mark_dreq_pkt_long  <= '1';
         end if;
         
         case dreq_state is 
             when IDLE =>
                 dreq_state_count <= X"01";
+                
+                mark_window_tag_unknown <= '0';
+                mark_window_tag_error   <= '0';
+                mark_dreq_timeout       <= '0';
+                readTimeout		        <= (others => '1');
+                
+                dataReqStatus   <= DATAREQ_STATUS;
+                if unsigned(dreq_rdcnt) > 0 then
+                    dreqTimeout	<= dreqTimeout - 1;  
+                    if      dreqTimeout =  1     then    reset_dreq_logic <= '1'; 
+                    elsif   dreqTimeout =  0     then    reset_dreq_logic <= '0';  end if;
+                end if;
                 if unsigned(dreq_rdcnt) > 9 then
+                    dreqTimeout	<= (others => '1');
                     dreq_fifo_re <= '1';
                     dreq_state <= FIRSTREAD;
                 end if;
@@ -226,84 +245,93 @@ begin
                 dreq_state_count <= X"04";
                 word_count <= 0;
                 
-                if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG))  then  DREQ_WINDOW_TAG_ERROR <= '1';  end if;
-                if  (reqEventWindowTag(47 downto 31) > X"0000")  then  DREQ_WINDOW_TAG_BAD <= '1';  end if;
-                if  unsigned(dreq_rdcnt) > 0 then
-                    dreq_end_error <= '1';
-                end if;
+                -- signals for ILA triggering
+                if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG))  then   mark_window_tag_error <= '1';  end if;
                 
-                -- DO THIS ONLY AFTER CRC ERROR DETECTION
+                if  unsigned(dreq_rdcnt) > 0 then   mark_dreq_pkt_error <= '1';  end if;
+                
                 ---- drive FETCH signals to DDRInterface/EW_SIZE_STORE_AND_FETCH_CONTROLLER
                 ---- Recognize PREFETCH and skip following DATA REQUEST                
-                --if (reqType = X"03" or (reqType = X"02" and reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG) ) ) then
-                    --FETCH_START <= '1';
-                    --FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
-                --end if;  
-                
+                -- DO THIS ONLY AFTER CRC ERROR DETECTION
                 calculated_crc <= crc_data_in;
                 if (crc_data_in /= read_crc) then
                     dreq_error_count <= std_logic_vector(unsigned(dreq_error_count) + 1);
                     dreq_state <= FLUSHFIFO;
-                    --dreq_state <= IDLE;
-                elsif (reqType = X"03") then
-                    FETCH_START <= '1';
-                    FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
-                    dreq_state <= IDLE;
-                elsif (reqType = X"02" and reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG) ) then
-                    FETCH_START <= '1';
-                    FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
-                    dreq_state <= DREQ;
                 else
-                    DREQ_WINDOW_TAG_UNKNOWN <= '1';
+                    if (reqType = X"03") then
+                        FETCH_START <= '1';
+                        FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
+                        dreq_state <= IDLE;
+                    elsif (reqType = X"02" and (reqEventWindowTag = X"000000000000" or reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG)) ) then
+                        FETCH_START <= '1';
+                        FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
+                        dreq_state <= DREQ;
+                    else -- catch-all condition for "unusual" EW Timestamps: send back a data packet header with Status bit(7) 
+                        reqType_debug   <= std_logic_vector(reqType);
+                        reqEventWindowTag_debug <= std_logic_vector(reqEventWindowTag);
+                        mark_window_tag_unknown <= '1';
+                        
+                        dataReqStatus(7)    <= '1';
+                        dataReqDataReadCnt  <= (others => '0');
+                        dataReqPktCnt       <= (others => '0');
+                        dreq_state <= SENDHEADER;
+                    end if;
                 end if;
                 
             when DREQ =>
                 dreq_state_count <= X"05";
                 dataReq_dataReady<= '0';
-                readTimeout		<= (others => '1');
-                
-                reqType_debug           <= std_logic_vector(reqType);
-                reqEventWindowTag_debug <= std_logic_vector(reqEventWindowTag);
-                
-                if dgbDreq = '1' then
-                    dreq_state <= DBGDATA;   -- undefined Payload for now
-                else
-                    DATAREQ_START_EVENT		<= '1';			
-                    DATAREQ_EVENT_WINDOW_TAG <= std_logic_vector(reqEventWindowTag); 
-                    dreq_state <= DREQHDR;
-                end if;
+                    
+                DATAREQ_START_EVENT		<= '1';			
+                DATAREQ_EVENT_WINDOW_TAG <= std_logic_vector(reqEventWindowTag); 
+                dreq_state <= DREQHDR;
                 
             when DREQHDR =>
                 -- start building Data Header Packet in reply to DataRequest 
                 dreq_state_count <= X"06";
+                
+                readTimeout		<= readTimeout - 1;
                 DATAREQ_START_EVENT		<= '0';	  
-                dataReq_FIFOReadyState	<= (others => '0');		
+                dataReq_FIFOReadyState	<= (others => '0');	
 						
                 if (dataReq_dataReady = '0') then  	--  Wait for DATA Ready: if timeout, drain!...To be defined
 							
                     if (DATAREQ_DATA_READY = '1') then
                         dataReq_dataReady	<= '1';	
-                        DREQ_TIMEOUT        <= '0';
-                    else
-                        -- skip first event while testing the short timeout
-                        if (enableTimeout = '1' and readTimeout = 0) then  
-                            --ch_state	<= S_Drain;	 
-                            --ch_errors(ERROR_ReadTimeout)	<= '1';
-                            DREQ_TIMEOUT <= '1';
-                            dreq_timeout_count <= std_logic_vector(unsigned(dreq_timeout_count) + 1);
+                    else -- send back a data packet header with Status bit(3) 
+                        if (readTimeout = 0) then  
+                            mark_dreq_timeout   <= '1';
+                            dreq_timeout_count  <= std_logic_vector(unsigned(dreq_timeout_count) + 1);
+                            
+                            dataReqStatus(3)    <= '1';
+                            dataReqDataReadCnt  <= (others => '0');
+                            dataReqPktCnt       <= (others => '0');
+                            dreq_state <= SENDHEADER;
                         end if;
                     end if;
                     
-                    readTimeout		<= readTimeout - 1;
                 else
-                    dreq_state <= SENDHEADER;
+                    dataReqPktOvfl      <= DATAREQ_PACKETS_OVFL;
+                    dataReqDataReadCnt  <= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
+                    dataReqPktCnt       <= DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
+                    dreq_state          <= SENDHEADER;
                 end if;
 					
             when SENDHEADER =>
                 dreq_state_count <= X"0A";
                 word_count <= word_count + 1;
                 dreq_fifo_we <= '1';
-                enableTimeout <= '1';   -- first event has seen DATAREQ_DATA_READY
+                
+                if  (dataReqDataReadCnt = 0) then
+                    dataReqStatus(0) <= '0';  
+                else
+                    dataReqStatus(0) <= '1';
+                end if;
+                if  (dataReqPktOvfl = '1') then
+                    dataReqStatus(4) <= '1';  
+                end if;
+                
+                
                 if word_count = 0 then
                     dreq_fifo_out <= "10" & X"1C" & sequence_num & "0" & X"5";  -- k28.0 & D4.y
                     crc_rst <= '0';
@@ -320,9 +348,8 @@ begin
                     crc_en <= '1';
                 elsif word_count = 3 then
                     -- this is all in units of DTC packets 
-                    dataReqDataReadCnt	<= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
-                    dreq_fifo_out <= "00" & b"0000000" & DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1); 
-                    crc_data_out <= b"0000000" & DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);
+                    dreq_fifo_out <= "00" & b"0000000" & dataReqPktCnt; 
+                    crc_data_out <= b"0000000" & dataReqPktCnt;
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 4 then 		
@@ -341,8 +368,8 @@ begin
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 7 then
-                    dreq_fifo_out <= "00" & DATAREQ_FORMAT_VRS & DATAREQ_STATUS;  -- Data Packer Format Version (15:8) | Status (7:0)	
-                    crc_data_out <= DATAREQ_FORMAT_VRS & DATAREQ_STATUS;
+                    dreq_fifo_out <= "00" & DATAREQ_FORMAT_VRS & dataReqStatus;  -- Data Packer Format Version (15:8) | Status (7:0)	
+                    crc_data_out <= DATAREQ_FORMAT_VRS & dataReqStatus;
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 8 then

@@ -3,7 +3,7 @@
 --
 -- File: DRACRegisters.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      <v1>: <Feb. 17,2024>: Reset register 8 enables ONLY on POWER ON reset (HRESETN) and not on EXT_RST_N
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -31,7 +31,8 @@ port (
 	READ_REG			: IN  std_logic;				
 	WRITE_REG			: IN  std_logic;				
     READY_REG 			: OUT  std_logic;					-- signal that requested data is on DATA_OUT
-    RESET_N 			: IN  std_logic;				--
+    EXT_RST_N 			: IN  std_logic;				--
+    HRESETN 	        : IN  std_logic;				--
     ADDR_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_OUT			: OUT  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
@@ -97,8 +98,8 @@ port (
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
     DCS_PATTERN_EN  : OUT std_logic;						-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[4])
-    DCS_ERROR_EN    : OUT std_logic;						-- enable ErrorCounter reading via DCS (addr=8, bit[5])
-    DCS_FREE_EVM    : OUT std_logic;						-- switch to free EVM (vs EVMs with DREQ) to DIGIs (addr=8, bit[6])
+    DCS_ERROR_EN    : OUT std_logic;						-- enable ErrorCounter reading via DCS (addr=8, bit[6])
+    DCS_FREE_EVM    : OUT std_logic;						-- switch to free EVM (vs EVMs with DREQ) to DIGIs (addr=8, bit[5])
     DCS_INT_EVM_EN  : OUT std_logic;						-- enable internal EVM to DIGIs(addr=8, bit[7])
     DCS_ENABLE_CLOCK: OUT std_logic;						-- enable fiber clock to DIGIs(addr=8, bit[8])
     DCS_ENABLE_MARKER: OUT std_logic;						-- enable fiber marker to DIGIs(addr=8, bit[9])
@@ -114,8 +115,7 @@ port (
     dcs_hv_init     : out std_logic;                        -- generate HV_INIT via DCS reg 26: must toggle 0->1->0 after DATA abd ADDR have been set
     dcs_hv_data     : out std_logic_vector(15 downto 0);    -- write HV_DATA_IN via DCS reg 27
     dcs_hv_addr     : out std_logic_vector(8 downto 0);     -- write HV_ADDRESS_IN via DCS reg 28,
-    dcs_format_vrs  : out std_logic_vector(7 downto 0);     -- pass Packer Format Version to Data Packer Header
-    dcs_status_sel  : out std_logic_vector(2 downto 0)      -- write which info to send to Data header STATUS BITS via DCS reg 30
+    dcs_format_vrs  : out std_logic_vector(7 downto 0)      -- pass Packer Format Version to Data Packer Header
                                                             -- 0 (def) is selected bits like DREQ EMPTY and FULL;  for others, see DataStatusProcessor
 );
 end DRACRegisters;
@@ -153,18 +153,27 @@ architecture architecture_DRACRegisters of DRACRegisters is
    
 begin	
 		
-   -- architecture body
-   drac_read	<= READ_REG;
-   drac_write	<= WRITE_REG;
-   drac_addrs 	<= ADDR_IN; 
-   drac_wdata 	<= DATA_IN;
-   
-	-------------------------------------------------------------------------------
+    -- architecture body
+    drac_read	<= READ_REG;
+    drac_write	<= WRITE_REG;
+    drac_addrs 	<= ADDR_IN; 
+    drac_wdata 	<= DATA_IN;
+
+    DCS_USE_LANE    <= use_lane_reg(3 downto 0);
+    DCS_PATTERN_EN  <= pattern_en_reg;
+    DCS_ERROR_EN    <= error_en_reg;
+    DCS_FREE_EVM    <= free_evm_en_reg;
+    DCS_INT_EVM_EN  <= enable_internal_ewm;
+    DCS_ENABLE_CLOCK    <= enable_clock_reg;
+    DCS_ENABLE_MARKER   <= enable_marker_reg;
+    DCS_FORCE_FULL  <= force_full_reg; 
+    
+   -------------------------------------------------------------------------------
    -- Process Read/Write Commands
    -------------------------------------------------------------------------------
-	process(RESET_N, DCS_CLK)
+	process(HRESETN, EXT_RST_N, DCS_CLK)
 	begin
-	if RESET_N = '0' then
+	if HRESETN = '0' then
 			
 		--ALGO_RESET 	<= '1';	
 		writeCounter 	<= (others => '0');  
@@ -173,22 +182,24 @@ begin
 		DCS_RESETFIFO   <= '0';
         DCS_ERROR_ADDR  <= (others => '0'); 
         IS_DRAC_REGISTER<= '0';
-
-		pattern_en_reg	<= '0';	
-		free_evm_en_reg	<= '0';	
-        error_en_reg    <= '0';
-		use_lane_reg    <= (others => '0');
+            
         err_req_reg     <= (others => '0');
-
+            
+        offset_reg_15_0   <= (others => '0');
+        offset_reg_31_16  <= (others => '0');
+        offset_reg_47_32  <= (others => '0');
+        
+        -- DO NOT RESET THESE REGISTERS ON DCS_RESET!!!
+		use_lane_reg    <= (others => '0');
+		pattern_en_reg	<= '0';	
+        error_en_reg    <= '0';
+		free_evm_en_reg	<= '0';	
         enable_internal_ewm <= '0';
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
         force_full_reg      <= '0';
-      
-        offset_reg_15_0   <= (others => '0');
-        offset_reg_31_16  <= (others => '0');
-        offset_reg_47_32  <= (others => '0');
-      
+        dcs_format_vrs  <= (others => '0');
+        
         expc_reg_15_0   <= (others => '0');      
         expc_reg_31_16  <= (others => '0');      
         expc_reg_47_32  <= (others => '0');      
@@ -197,17 +208,31 @@ begin
         seen_reg_31_16  <= (others => '0');      
         seen_reg_47_32  <= (others => '0');      
         seen_reg_63_48  <= (others => '0');
-        
+                
         dcs_cal_init    <= '0';
         dcs_cal_data    <= (others => '0');
         dcs_cal_addr    <= (others => '0');
         dcs_hv_init     <= '0';
         dcs_hv_data     <= (others => '0');
         dcs_hv_addr     <= (others => '0');
-        dcs_format_vrs  <= (others => '0');
-        dcs_status_sel  <= (others => '0');
+        
+	elsif EXT_RST_N = '0' then
+			
+		--ALGO_RESET 	<= '1';	
+		writeCounter 	<= (others => '0');  
+		readCounter 	<= (others => '0'); 
+			
+		DCS_RESETFIFO   <= '0';
+        DCS_ERROR_ADDR  <= (others => '0'); 
+        IS_DRAC_REGISTER<= '0';
+            
+        err_req_reg     <= (others => '0');
+         
+        offset_reg_15_0   <= (others => '0');
+        offset_reg_31_16  <= (others => '0');
+        offset_reg_47_32  <= (others => '0');
       
-   elsif rising_edge(DCS_CLK) then
+    elsif rising_edge(DCS_CLK) then
 			
 		READY_REG		<= '0'; 
 			
@@ -221,18 +246,10 @@ begin
 		SEL_RST			<= '0';
 				
 		DCS_DDRRESET    <= '0';
-		DCS_USE_LANE    <= use_lane_reg(3 downto 0);
-		DCS_PATTERN_EN  <= pattern_en_reg;
-        DCS_ERROR_EN    <= error_en_reg;
-        DCS_FREE_EVM    <= free_evm_en_reg;
-        DCS_INT_EVM_EN  <= enable_internal_ewm;
-        DCS_ENABLE_CLOCK    <= enable_clock_reg;
-        DCS_ENABLE_MARKER   <= enable_marker_reg;
-        DCS_FORCE_FULL  <= force_full_reg;  
-        
+            
         DCS_ERR_REQ     <= err_req_reg(1 downto 0);
         DCS_TAG_OFFSET  <= offset_reg_47_32 & offset_reg_31_16 & offset_reg_15_0;
-    
+            
         expc_reg_15_0   <= DCS_ERR_EXPC(15 downto 0);      
         expc_reg_31_16  <= DCS_ERR_EXPC(31 downto 16);      
         expc_reg_47_32  <= DCS_ERR_EXPC(47 downto 32);      
@@ -241,7 +258,7 @@ begin
         seen_reg_31_16  <= DCS_ERR_SEEN(31 downto 16);      
         seen_reg_47_32  <= DCS_ERR_SEEN(47 downto 32);      
         seen_reg_63_48  <= DCS_ERR_SEEN(63 downto 48);      
-		
+            
 		----------------------------------			
 		-- DCS REGISTER WRITE
 		----------------------------------	
@@ -285,32 +302,30 @@ begin
 			elsif (drac_addrs = 14) then
 				DCS_DDRRESET		<= '1';	 -- self clearing
    -- addr 9 to 17 were used in older DDRInterface
-         elsif (drac_addrs = 17) then
+            elsif (drac_addrs = 17) then
 				DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);
-         elsif (drac_addrs = 18) then
+            elsif (drac_addrs = 18) then
 				err_req_reg    <= drac_wdata(1 downto 0);
-         elsif (drac_addrs = 19) then
+            elsif (drac_addrs = 19) then
 				offset_reg_15_0   <= drac_wdata(15 downto 0);
-         elsif (drac_addrs = 20) then
+            elsif (drac_addrs = 20) then
 				offset_reg_31_16  <= drac_wdata(15 downto 0);
-         elsif (drac_addrs = 21) then
+            elsif (drac_addrs = 21) then
 				offset_reg_47_32  <= drac_wdata(15 downto 0);
-         elsif (drac_addrs = 23) then
+            elsif (drac_addrs = 23) then
                 dcs_cal_init <= drac_wdata(0);
-         elsif (drac_addrs = 24) then
+            elsif (drac_addrs = 24) then
                 dcs_cal_data <= drac_wdata(15 downto 0);
-         elsif (drac_addrs = 25) then
+            elsif (drac_addrs = 25) then
                 dcs_cal_addr <= drac_wdata(8 downto 0);
-         elsif (drac_addrs = 26) then
+            elsif (drac_addrs = 26) then
                 dcs_hv_init <= drac_wdata(0);
-         elsif (drac_addrs = 27) then
+            elsif (drac_addrs = 27) then
                 dcs_hv_data <= drac_wdata(15 downto 0);
-         elsif (drac_addrs = 28) then
+            elsif (drac_addrs = 28) then
                 dcs_hv_addr <= drac_wdata(8 downto 0);
-         elsif (drac_addrs = 29) then   -- 0x13
+            elsif (drac_addrs = 29) then   -- 0x13
                 dcs_format_vrs <= drac_wdata(7 downto 0);
-         elsif (drac_addrs = 30) then   -- 0x14
-                dcs_status_sel <= drac_wdata(2 downto 0);
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -326,7 +341,7 @@ begin
 		elsif (drac_read = '1') then  
 				
 			READY_REG		<= '1';
-            IS_DRAC_REGISTER<= '1';               -- default is high. Overwritten is unrecognized address
+            IS_DRAC_REGISTER<= '1';               -- default is high. Overwritten if unrecognized address
 			read_latch		<= drac_read;
 			if (drac_read = '1' and read_latch = '0') then 	             
 				readCounter 	<= readCounter + 1;  
@@ -353,10 +368,15 @@ begin
 					
    -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then		 	 
+				--DATA_OUT <= B"0000" &
+                            --"0" & force_full_reg & enable_marker_reg & enable_clock_reg &
+                            --enable_internal_ewm & free_evm_en_reg & error_en_reg & pattern_en_reg & 
+                            --use_lane_reg(3 downto 0);
 				DATA_OUT <= B"0000" &
-                            "0" & force_full_reg & enable_marker_reg & enable_clock_reg &
-                            enable_internal_ewm & free_evm_en_reg & error_en_reg & pattern_en_reg & 
-                            use_lane_reg(3 downto 0);	
+                            "0" & DCS_FORCE_FULL & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
+                            DCS_INT_EVM_EN & DCS_FREE_EVM & DCS_ERROR_EN & DCS_PATTERN_EN & 
+                            DCS_USE_LANE;
+                            
    -- addresses 9 to 17 used in old DDRINterface
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);

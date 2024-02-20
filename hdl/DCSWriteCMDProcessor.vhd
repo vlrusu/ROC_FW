@@ -6,6 +6,7 @@
 --      <v1>: <07/18/22>: services single DCS Write commands to uProc
 --      <v2>: <08/10/22>: services single and block DCS Write commands to uProc
 --      <v3>: <08/03/23>:  remove address space check to start SM (done in DCSProcessor now)
+--      <v4>: <02/17/2024>: changed name of STATE and STATE_COUNT
 --
 -- Description: 
 --
@@ -48,7 +49,7 @@ port (
     CMD_IN_WE       : OUT   std_logic;
     CMD_IN_DATA	    : OUT   std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);
  -- to ErrorCounter   
-    state_count	    : OUT   std_logic_vector(7 DOWNTO 0)
+    dcswr_state_count	    : OUT   std_logic_vector(7 DOWNTO 0)
 
 );
 end DCSWriteCMDProcessor;
@@ -56,8 +57,7 @@ end DCSWriteCMDProcessor;
 architecture architecture_DCSWriteCMDProcessor of DCSWriteCMDProcessor is
 
    type state_type is (IDLE, START, WRITECMD, WRITESIZE, DATAWAIT, DATAACK, DONE);
-   signal state             : state_type;
---   signal state_count	    : std_logic_vector(7 DOWNTO 0); 
+   signal dcswr_state             : state_type;
 
    -- signal, component etc. declarations
    signal command_length    : std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
@@ -75,8 +75,8 @@ begin
 	begin
         if RESET_N = '0' then
          
-            state       <= IDLE;
-            state_count <= (others => '0');
+            dcswr_state         <= IDLE;
+            dcswr_state_count   <= (others => '0');
             command_addr    <= (others => '0');
             command_data    <= (others => '0');
             command_length  <= (others => '0');
@@ -92,11 +92,11 @@ begin
 		-- DCS WRITE TO PROCESSOR
 		----------------------------------	
             -- wait for register dedicated to processor commands and latch all relevant info
-            case state is
+            case dcswr_state is
             
             when IDLE => 
-                state_count <= X"01";
-                cnt_length <= (others => '0');
+                dcswr_state_count   <= X"01";
+                cnt_length          <= (others => '0');
                 if  WRITE_CMD = '1'     then  
                     command_addr    <= ADDR_IN;
                     command_data    <= DATA_IN;
@@ -104,39 +104,39 @@ begin
                     if (BLOCK_CMD = '1') then
                         command_length  <= std_logic_vector(unsigned(BLOCK_SIZE));
                     end if;
-                    state <= START;
+                    dcswr_state <= START;
                 end if;
             
             --start writing of DCS_INPUT_BUFFER
             when START =>
-                state_count <= X"02";
+                dcswr_state_count <= X"02";
                 CMD_IN_WE   <= '1';
                 CMD_IN_DATA <= CMDHEADER; 
-                state <= WRITESIZE;
+                dcswr_state <= WRITESIZE;
             
             --write command size
             when WRITESIZE =>
-                state_count <= X"03";
+                dcswr_state_count <= X"03";
                 CMD_IN_WE   <= '1';
                 CMD_IN_DATA <=  command_length;
-                state <= WRITECMD;
+                dcswr_state <= WRITECMD;
             
             --write command type
             when WRITECMD =>
-                state_count <= X"04";
+                dcswr_state_count <= X"04";
                 CMD_IN_WE   <= '1';
                 CMD_IN_DATA <= X"C" & command_addr(11 downto 0); --  microprocess commands always have [15:12]=0xC 
                 cnt_length <= std_logic_vector(unsigned(cnt_length) + 1);
                 if  unsigned(command_length) = X"0"  then
-                    state <= DONE;
+                    dcswr_state <= DONE;
                 else
-                    state <= DATAWAIT;
+                    dcswr_state <= DATAWAIT;
                 end if;
              
             -- write as many data as needed
             when DATAWAIT =>
-                state_count <= X"05";
-                command_data<= DATA_IN;
+                dcswr_state_count <= X"05";
+                command_data    <= DATA_IN;
                 
                 -- if bad command lenght, write error word
                 if ( unsigned(command_length) > unsigned(MAX_CMD_LENGHT)) then
@@ -148,38 +148,38 @@ begin
                         NEXT_WRITE_ACK  <= '1';
                         CMD_IN_WE   <= '1';
                         CMD_IN_DATA <= command_data;
-                        state <= DATAACK;
+                        dcswr_state <= DATAACK;
                     end if;
                 else
                     CMD_IN_WE   <= '1';
                     CMD_IN_DATA <= command_data;
-                    state <= DONE;
+                    dcswr_state <= DONE;
                 end if;
             
             when DATAACK =>
-                state_count <= X"06";
+                dcswr_state_count <= X"06";
                 NEXT_WRITE_ACK  <= '0';
                 cnt_length      <= std_logic_vector(unsigned(cnt_length) + 1);
                 
                 -- force early termination if commands lenght is bad
                 if  unsigned(command_length) > unsigned(MAX_CMD_LENGHT)   then
-                    state <= DONE;
+                    dcswr_state <= DONE;
                 end if;
                 
                 if (cnt_length = command_length) then
-                    state <= DONE;
+                    dcswr_state <= DONE;
                 else
-                    state <= DATAWAIT;
+                    dcswr_state <= DATAWAIT;
                 end if;
             
             when DONE =>
-                state_count <= X"07";
+                dcswr_state_count <= X"07";
                 CMD_IN_WE   <= '1';
                 CMD_IN_DATA <= CMDTRAILER; 
-                state <= IDLE;
+                dcswr_state <= IDLE;
             
             when others =>
-                state_count <= X"FF";
+                dcswr_state_count <= X"FF";
             
          end case;   
       end if;

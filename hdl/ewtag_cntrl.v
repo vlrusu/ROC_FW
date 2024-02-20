@@ -10,6 +10,7 @@
 //      02/03/2022 : add SM to control DATAREQ protocol after introducing PREFETCH on-demand
 //                    (add input EVENT_START driven by DATAREQ_START_EVENT)
 //      07/19/2023 : use START_SPILL to change handling of EWTAG_OFFSET on NEWSPILL 
+//      17/02/2024 : removed SERIAL OFFSET input
 //
 // Description: 
 //
@@ -62,10 +63,6 @@ module ewtag_cntrl(
 	output reg	data_ready,     // level for the length of DREQ readout
 	output reg	last_word,      // signals last packet send (unused in TOP_SERDES)
 	 
-    // exchanged with SLOWCONTROLS
-    input   serial_en,                  // select SERIAL driven Event Window offset via DDRSERIALSET
-	input   [31:0]    serial_offset,    // serial Event Window offset via DDRCFOOFFSET) 
-        
     // exchanged with EW_FIFO_CONTROLLER
 	input    tag_sent,			//	REQTAG has been sent to EVT_FIFOs
 	input    tag_null,			//	REQTAG had no hits to send to EVT_FIFOs
@@ -321,9 +318,6 @@ begin
 end
 
 
-wire    [`EVENT_TAG_BITS-1:0]   ewtag_offset;
-assign  ewtag_offset = (serial_en) ? {16'b0, serial_offset}: (hb_event_window-1);
-
 always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
     if(resetn_dreqclk == 1'b0)
@@ -364,7 +358,7 @@ begin
         if (start_spill) 
         begin
             is_first_spill    <= 1'b1;
-            ewtag_offset_in   <= ewtag_offset;
+            ewtag_offset_in   <= (hb_event_window-1);
         end
         // wait for EWTAG_OFFSET to settle: used as latch for EWTAG_OFFSET in EW_FIFO_CNTRL
         ewtag_offset_valid   <= start_spill;  

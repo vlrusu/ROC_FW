@@ -7,6 +7,7 @@
 --      <v1>: <08/05/22>: joined READSPI and TESTDCSBLK in a single State machine
 --      <v2>: <07/22/2023>: major cleanup and reorganization of state machines
 --      <v3>: <08/21/2023>: rewrite GETCMID state, replacing check on ADDR_HOLD with check on BLOCK_START
+--      <v4>: <02/17/2024>: changed name of STATE and STATE_COUNT
 --                                                         
 --
 -- Description: 
@@ -52,7 +53,7 @@ port (
     DCS_TX_DATA	    : IN    std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);
 
 -- to ErrorCounter   
-    state_count     : OUT   std_logic_vector(7 DOWNTO 0) 
+    dcsrd_state_count     : OUT   std_logic_vector(7 DOWNTO 0) 
 
 );
 end DCSReadCMDProcessor;
@@ -65,8 +66,8 @@ architecture architecture_DCSReadCMDProcessor of DCSReadCMDProcessor is
    type state_type is ( IDLE, WAITADDR, CHECKHEADER, GETSIZE, GETCMDID, 
                         GETDATA, READDATA, GETTRAILER, WAITDONE, READERROR,
                         STARTDATA, SENDREADY, WAITREQ, HOLD, WAITTRAILER, CHECKTRAILER);
-    signal state        : state_type;
---    signal state_count  : std_logic_vector(7 DOWNTO 0); 
+    signal dcsrd_state          : state_type;
+--    signal dcsrd_state_count  : std_logic_vector(7 DOWNTO 0); 
 
     
     signal word_dcspkt_cnt  : std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);
@@ -86,8 +87,8 @@ begin
 	begin
         if RESET_N = '0' then
          
-            state       <= IDLE;
-            state_count <= (others => '0');
+            dcsrd_state       <= IDLE;
+            dcsrd_state_count <= (others => '0');
             
             word_dcspkt_cnt <= (others => '0');
             word_dcspkt_max <= (others => '0');
@@ -104,46 +105,46 @@ begin
             DCS_TX_RE   <= '0';
             READY_REG   <= '0'; 
                         
-            case state is
+            case dcsrd_state is
                 
             when IDLE => 
-                state_count     <= X"01";
+                dcsrd_state_count     <= X"01";
                 IS_CMD_REG      <= '0';  
                 payload_in_cnt  <= (others => '0');
                 payload_out_cnt <= (others => '0');
                 -- DCS_TX_BUFFER has reported data: 
                 if  unsigned(DCS_TX_WRCNT) > X"0004"    then  
-                    state <= WAITADDR;
+                    dcsrd_state <= WAITADDR;
                 end if;
                 
             --  wait for address to read
             when WAITADDR => 
-                state_count     <= X"02";
+                dcsrd_state_count     <= X"02";
                 if  READ_CMD = '1'  then
                     DCS_TX_RE   <= '1';
-                    state       <= CHECKHEADER;
+                    dcsrd_state <= CHECKHEADER;
                 end if;
                 
             --check for header word
             when CHECKHEADER =>
-                state_count <= X"03";
+                dcsrd_state_count <= X"03";
                 if  DCS_TX_DATA = CMDHEADER   then
                     DCS_TX_RE   <= '1';
-                    state       <= GETSIZE;
+                    dcsrd_state <= GETSIZE;
                 end if;
                 
             -- get payload size
             when GETSIZE =>
-                state_count <= X"04";
+                dcsrd_state_count <= X"04";
                 if  DCS_TX_DATA /= CMDHEADER   then -- next word has come in...must be number of blocks
                     payload_size<= DCS_TX_DATA;     -- PAYLOAD SIZE contain number of words for the block read
                     DCS_TX_RE   <= '1';
-                    state <= GETCMDID;
+                    dcsrd_state <= GETCMDID;
                 end if;
                 
             -- get payload size and start decoding DCS packet type using BLOCK_START
             when GETCMDID =>
-                state_count <= X"05";
+                dcsrd_state_count <= X"05";
                 if  DCS_TX_DATA(15 downto 12) = X"C"   then
                 
                     IS_CMD_REG  <= '1';    -- default is high. Overwritten if unrecognized address
@@ -152,12 +153,12 @@ begin
                     DCS_TX_RE   <= '1';
                     
                     if  unsigned(payload_size) = X"000" or unsigned(payload_size) > 1023   then 
-                        state       <= READERROR;
+                        dcsrd_state       <= READERROR;
                     else
                         if  BLOCK_START = '1'  then  
-                            state   <= STARTDATA;
+                            dcsrd_state   <= STARTDATA;
                         else
-                            state   <= GETDATA;
+                            dcsrd_state   <= GETDATA;
                         end if;
                     end  if;
                     
@@ -165,47 +166,46 @@ begin
                 
             -- get payload for single data read
             when GETDATA =>
-                state_count <= X"06";
+                dcsrd_state_count <= X"06";
                 DCS_TX_RE   <= '1';
-                state       <= READDATA;
+                dcsrd_state <= READDATA;
                     
             -- read payload for single data read
             when READDATA =>
-                state_count <= X"07";
+                dcsrd_state_count <= X"07";
                 DCS_TX_RE   <= '1';
                 DATA_OUT    <= DCS_TX_DATA;
                 READY_REG   <= '1'; 
-                state       <= GETTRAILER;
+                dcsrd_state <= GETTRAILER;
 
                 -- check for header word
             when GETTRAILER =>
-                state_count <= X"08";
+                dcsrd_state_count <= X"08";
                 READY_REG   <= '0'; 
                 if  DCS_TX_DATA = CMDTRAILER   then
-                    state <= WAITDONE;
+                    dcsrd_state <= WAITDONE;
                 end if;
                     
             -- send last words and wait here until DCSProcessor is done dealing with this request
             when WAITDONE =>
-                state_count <= X"09";
-                READY_REG   <= '0'; 
+                dcsrd_state_count   <= X"09";
+                READY_REG       <= '0'; 
                 if  DCS_DONE='1' then
-                    --dcs_done_seen <= '1';
-                    state   <= IDLE;
+                    dcsrd_state <= IDLE;
                 end if;
                 
             -- pass error word, skip trailer check and go to wait for DCS_DONE
             -- to be tested!!
             when READERROR =>
-                state_count <= X"0A";
+                dcsrd_state_count <= X"0A";
                 DATA_OUT    <= ERROR_WRD;
                 READY_REG   <= '1'; 
-                state       <= WAITDONE;
+                dcsrd_state <= WAITDONE;
                 
             -- start first data read: needed to generate READY so the DCSProcessor state machine can get going 
             -- use WORD_DCSPKT_CNT as the local counter of words in the packet (to be compared to WORD_DCSPKT_MAX)
             when STARTDATA =>
-                state_count <= X"16";
+                dcsrd_state_count <= X"16";
                 if  BLOCK_START = '1'  then  
                     word_dcspkt_cnt <= std_logic_vector(unsigned(word_dcspkt_cnt) + 1); -- counter of payload words in DCS packet
                     
@@ -221,7 +221,7 @@ begin
                         word_dcspkt_max <= X"0008";
                     end if;
                     
-                    state <= SENDREADY;
+                    dcsrd_state <= SENDREADY;
                 end if;
                 
             -- start passing data to DCSProcessor using SENDREADY <-> WAITREQ handshake:
@@ -234,7 +234,7 @@ begin
             --
             -- use PAYLOAD_OUT_CNT to keep track of data words sent to DCSPROCESSOR
             when SENDREADY =>
-                state_count <= X"17";
+                dcsrd_state_count <= X"17";
                 READY_REG   <= '1';
                 if  payload_out_cnt < std_logic_vector(unsigned(payload_size))    then
                     DATA_OUT<= DCS_TX_DATA; 
@@ -244,55 +244,55 @@ begin
                 end if;
                         
                 if  word_dcspkt_cnt = std_logic_vector(unsigned(word_dcspkt_max))    then
-                    state   <= HOLD;
+                    dcsrd_state   <= HOLD;
                 else
-                    state   <= WAITREQ;
+                    dcsrd_state   <= WAITREQ;
                 end if;
                         
             -- more data to come. Clear READY and go back in the SENDREADY loop        
             when WAITREQ =>
-                state_count <= X"18";
+                dcsrd_state_count <= X"18";
                 READY_REG   <= '0';
                 if  BLK_READ_REQ = '1'  then
-                    word_dcspkt_cnt    <= std_logic_vector(unsigned(word_dcspkt_cnt) + 1);
+                    word_dcspkt_cnt     <= std_logic_vector(unsigned(word_dcspkt_cnt) + 1);
                     if  payload_in_cnt < std_logic_vector(unsigned(payload_size))    then 
-                        DCS_TX_RE   <= '1';
-                        payload_in_cnt <= std_logic_vector(unsigned(payload_in_cnt) + 1);
+                        DCS_TX_RE       <= '1';
+                        payload_in_cnt  <= std_logic_vector(unsigned(payload_in_cnt) + 1);
                     end if;
-                    state       <= SENDREADY;
+                    dcsrd_state <= SENDREADY;
                 end if;
                     
             -- wait here until DCSProcessor is done dealing with this request
             -- When DONE, empty DCS_TX_BUFFER of TRAILER word 
             when HOLD =>
-                state_count <= X"19";
+                dcsrd_state_count <= X"19";
                 READY_REG   <= '0';
                 word_dcspkt_cnt    <= (others => '0');
                 if  PKT_DONE = '1'  then        -- DCSProcessor requests another BLOCK RD packet 
-                    state <= STARTDATA;
+                    dcsrd_state <= STARTDATA;
                 elsif   DCS_DONE = '1'  then    -- DCSProcessor thinks BLOCK RD is done
                                                 -- check if we have exhausted payload words and empty DCS_TX_BUFFER
                     if  payload_in_cnt = std_logic_vector(unsigned(payload_size))  then
                         DCS_TX_RE   <= '1';
-                        state <= WAITTRAILER;
+                        dcsrd_state <= WAITTRAILER;
                     end if;
                 end if;
                 
             -- wait for remaining DCS_TX_BUFFER word to arrive
             when WAITTRAILER =>
-                state_count <= X"1A";
-                state   <= CHECKTRAILER;
+                dcsrd_state_count <= X"1A";
+                dcsrd_state   <= CHECKTRAILER;
                 
             -- check for trailer word 
             when CHECKTRAILER =>
-                state_count <= X"1B";
+                dcsrd_state_count <= X"1B";
                 if  DCS_TX_DATA = CMDTRAILER   then
                     --dcs_done_seen <= '1';
-                    state   <= IDLE;
+                    dcsrd_state   <= IDLE;
                 end if;
                 
             when others =>
-                state_count <= X"FF";
+                dcsrd_state_count <= X"FF";
             end case;
             
         end if;

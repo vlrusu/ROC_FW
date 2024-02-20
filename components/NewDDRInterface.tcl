@@ -30,7 +30,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hb_valid} -port_direction 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pref_valid} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {set_serial_offset} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {start_fetch} -port_direction {IN}
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ACT_N} -port_direction {OUT} -port_is_pad {1}
@@ -55,6 +54,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -p
 sd_create_scalar_port -sd_name ${sd_name} -port_name {data_error} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {data_ready} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_full} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {et_pckts_ovfl} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {event_error} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_DDR_wrap} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_full} -port_direction {OUT}
@@ -69,7 +69,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DIGI_ew_size} -port_direction
 sd_create_bus_port -sd_name ${sd_name} -port_name {DIGI_ew_tag} -port_direction {IN} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_fetch} -port_direction {IN} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_event_window} -port_direction {IN} -port_range {[47:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {serial_offset} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {spill_hbtag_in} -port_direction {IN} -port_range {[19:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[13:0]} -port_is_pad {1}
@@ -248,6 +247,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ddr_done_o
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_emptied" "ewtag_cntrl_0:tag_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_full" "et_fifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_re" "et_fifo_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_pckts_ovfl" "et_pckts_ovfl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:event_error" "event_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_DDRwrap_to_store" "ew_DDR_wrap" "ew_size_store_and_fetch_controller_0:store_event_wraparound" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_done" "pattern_switch_0:ew_done" }
@@ -287,7 +287,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_null_valid" "h
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_valid" "hb_valid" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:pattern_init" "pattern_FIFO_filler_0:pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:pref_valid" "pref_valid" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:serial_en" "set_serial_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:start_fetch" "start_fetch" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:axi_start_on_serdesclk" "pattern_switch_0:PATTRN_axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:curr_ewfifo_wr" "pattern_switch_0:PATTRN_curr_ewfifo_wr" }
@@ -345,7 +344,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_empty_overlap_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_event_window" "hb_event_window" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_null_cnt" "hb_null_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:pref_seen_cnt" "pref_seen_cnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:serial_offset" "serial_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_ewtag_out" "pattern_FIFO_filler_0:ewtag_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_hbtag_in" "spill_hbtag_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:start_tag_cnt" "start_tag_cnt" }

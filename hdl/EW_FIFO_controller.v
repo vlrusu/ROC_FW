@@ -10,6 +10,7 @@
 //      v5.0: <Mar. 2022>: clear up difference between 64-bit (AXI) beat units and 128-bit (DTC) packet units: 
 //                         EW_SIZE and derived variables are [EVENT_SIZE_BITS-1:0], ie in units of beats
 //      v6.0: <July,2023>: added NEWSPILL rising edge on appropriate clock to clear all signals used in bouncing between EW_FIFOs  and ET_FIFOs 
+//      v7.0: <Feb.,2024>: added ET_PKTS_OVFL output to be used in data header status 
 //
 //
 // Description: 
@@ -76,6 +77,7 @@ module EW_FIFO_controller #(
     input   last_word,                         // DATAREQ_LAST_WORD 
 	output  [`AXI_BITS-1:0]            et_fifo_rdata,	// DATAREQ_DATA (1/2 DTC packet per line)
 	output  reg [`EVENT_SIZE_BITS-1:0] et_pckts,        // DATAREQ_PACKETS_IN_EVENT (in units of 128-bit DTC packets)
+    output  reg     et_pckts_ovfl,                      // event with over max number of packets 
 	output  reg     tag_sent,                   // DDR read is done
 	output  reg	    tag_null,                   // DDR read is done for event with no hits
 	output  reg     et_fifo_emptied,            // pulse on EVT_FIFO becoming available: used to clear DATA_READY and generate LAST_WORD
@@ -197,6 +199,7 @@ reg	    [`EVENT_TAG_BITS-1:0] 	et_evt;
 
 reg	    et_ovfl0, et_ovfl1, et_ovfl;
 reg	    save_et_ovfl, ovfl_detected;
+reg     et_ovfl_to_we, et_ovfl_hold;
 reg 	[7:0]   et_blk0, et_blk1, et_blk;
 reg	    [7:0]   et_pckt_to_do;      // max value is 127
 reg     [`EVENT_SIZE_BITS-1:0] 	et_left_to_do;
@@ -680,6 +683,7 @@ begin
     begin
         curr_etfifo_rd  <= 1;
         
+        et_pckts_ovfl   <= 0;
 		et_pckts        <= 0;
         tag_sent        <= 0;
         tag_null        <= 0;
@@ -697,6 +701,7 @@ begin
         begin
             curr_etfifo_rd  <= ~curr_etfifo_rd;
 			et_pckts 		<= et_packets_sync[`EVENT_SIZE_BITS-1:0];
+			et_pckts_ovfl	<= et_packets_sync[`EVENT_SIZE_BITS];
             
             if (et_packets_sync == 0) tag_null <= 1'b1;
         end
@@ -732,6 +737,8 @@ begin
         axi_read_to_we <= 1'b0;
         et_packets_hold   <= 0;
         et_packets_to_we  <= 0;
+        et_ovfl_hold   <= 0;
+        et_ovfl_to_we  <= 0;
       
         axi_read_done_cnt <= 0;
         axi_read_we_cnt <= 0;
@@ -768,20 +775,23 @@ begin
             begin
                 axi_read_sem      <= 1'b1;
                 et_packets_hold   <= et_packets;
+                et_ovfl_hold      <= save_et_ovfl;
             end
             else
             begin
-                axi_read_to_we <= 1'b1;
-                et_packets_to_we  <= et_packets;
+                axi_read_to_we  <= 1'b1;
+                et_packets_to_we<= et_packets;
+                et_ovfl_to_we   <= save_et_ovfl;
             end
         end
       
         // release AXI_READ_DONE on clearing of previous ET_FIFO_TODTC
         if (axi_read_sem && (et_fifo0_toDTC ^ et_fifo1_toDTC))
         begin
-            axi_read_sem <= 1'b0; 
-            axi_read_to_we <= 1'b1;
-            et_packets_to_we  <= et_packets_hold;
+            axi_read_sem    <= 1'b0; 
+            axi_read_to_we  <= 1'b1;
+            et_packets_to_we<= et_packets_hold;
+            et_ovfl_to_we   <= et_ovfl_hold;
         end      
       
         if (axi_read_done)  axi_read_done_cnt <= axi_read_done_cnt + 1'b1; 
@@ -1534,15 +1544,15 @@ end
 SIZE_FIFO   size_fifo2 (
 	.WCLOCK	(sysclk),
 	.WRESET_N(resetn_fifo),
-	.DATA		({2'b0, et_packets_to_we}),
+	.DATA   ({1'b0, et_ovfl_to_we, et_packets_to_we}),
 	.WE		(axi_read_to_we),
 	.RCLOCK	(dreqclk),
 	.RRESET_N(resetn_fifo),
 	.RE		(et_pckt_empty_pulse),
 	// Outputs
 	.EMPTY	(et_pckt_empty),
-	.FULL		(),
-	.Q			(et_packets_sync)	
+	.FULL	(),
+	.Q		(et_packets_sync)	
 );
 
 // logic to clean spurious ET_PCKT_EMPTY at reset

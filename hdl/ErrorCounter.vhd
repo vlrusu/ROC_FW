@@ -3,7 +3,7 @@
 --
 -- File: ErrorCounter.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      <v1>: <Feb. 17,2024>: Register fast signals to easy timing
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -38,14 +38,14 @@ port (
     dreq_crc_error : in std_logic_vector(15 downto 0);
     seq_error_counter : in std_logic_vector(15 downto 0);
     marker_error : in std_logic_vector(15 downto 0);
-    event_marker_counter : in std_logic_vector(15 downto 0);   -- any event marker
+    event_marker_counter : in std_logic_vector(15 downto 0);    -- any event marker
     evm_for_dreq_counter : in std_logic_vector(15 downto 0);    -- markers with a non-null heartbeat PLUS 1
     clock_marker_counter : in std_logic_vector(15 downto 0);
     loop_marker_counter : in std_logic_vector(15 downto 0);
     other_marker_counter : in std_logic_vector(15 downto 0);
     retr_marker_counter : in std_logic_vector(15 downto 0);
-    ewm_out_counter : in std_logic_vector(15 downto 0);       --  markers sent to the DIGIs
-    hb_counter : in std_logic_vector(15 downto 0);          -- HB counter
+    ewm_out_counter : in std_logic_vector(15 downto 0);         --  markers sent to the DIGIs
+    hb_counter : in std_logic_vector(15 downto 0);              -- HB counter
     
     dreq_timeout_counter : in std_logic_vector(15 downto 0);
     hb_empty_overlap_counter : in std_logic_vector(15 downto 0);
@@ -84,6 +84,15 @@ architecture architecture_ErrorCounter of ErrorCounter is
     signal dcs_address_latch: std_logic_vector(7 downto 0);
     signal dcs_error_reg    : std_logic;
     signal dcs_error_latch  : std_logic;
+
+    signal rx_val_reg   : std_logic;
+    signal aligned_reg  : std_logic;
+    signal rx_err_reg   : std_logic;
+    signal b_cerr_reg   : std_logic_vector(1 downto 0);
+    signal invalid_k_reg: std_logic_vector(1 downto 0);
+    signal code_errn_reg: std_logic_vector(1 downto 0);
+    signal rd_err_reg   : std_logic_vector(1 downto 0);
+    signal ewm_reg      : std_logic;
     
     signal clk_counter  : unsigned(15 downto 0);
     signal rx_val_counter   : unsigned(15 downto 0);
@@ -113,7 +122,18 @@ begin
         clk_counter     <= (others => '0');
         counter_out     <= (others => '0');
         event_window_seen   <= (others => '0');
+        
+        rx_val_reg  <= '0';
+        aligned_reg <= '0';
+        rx_err_reg  <= '0';
+        b_cerr_reg      <= (others => '0');
+        invalid_k_reg   <= (others => '0');
+        code_errn_reg   <= (others => '0');
+        rd_err_reg      <= (others => '0');
+        ewm_reg     <= '0';
+
     elsif rising_edge(clk) then
+    
         if address = X"00" then
             counter_out <= std_logic_vector(rx_val_counter);
         elsif address = X"01" then
@@ -213,29 +233,46 @@ begin
         
         -- internally generated counters
         clk_counter <= clk_counter + 1;
-        if rx_val = '0' then
+        
+        -- count when NOT valid
+        rx_val_reg  <= rx_val;
+        if rx_val_reg = '0' then
             rx_val_counter <= rx_val_counter + 1;
         end if;
-        if aligned = '0' then
+        
+        -- count when NOT aligned
+        aligned_reg <= aligned;
+        if aligned_reg = '0' then
             aligned_counter <= aligned_counter + 1;
         end if;
-        if rx_err = '1' then
+        
+        rx_err_reg  <= rx_err;
+        if rx_err_reg = '1' then
             rx_err_counter <= rx_err_counter + 1;
         end if;
-        if b_cerr /= "00" then
+        
+        b_cerr_reg  <= b_cerr;
+        if b_cerr_reg /= "00" then
             b_cerr_counter <= b_cerr_counter + 1;
         end if;
+        
+        invalid_k_reg   <= invalid_k;
         if invalid_k /= "00" then
             invalid_k_counter <= invalid_k_counter + 1;
         end if;
-        if code_err_n /= "11" then
+        
+        code_errn_reg   <= code_err_n;
+        if code_errn_reg /= "11" then
             code_err_n_counter <= code_err_n_counter + 1;
         end if;
-        if rd_err /= "00" then
+        
+        rd_err_reg  <= rd_err;
+        if rd_err_reg /= "00" then
             rd_err_counter <= rd_err_counter + 1;
         end if;
         
-        if ewm = '1' then
+        ewm_reg <= ewm;
+        if ewm_reg = '1' then
             event_window_seen <= event_window_seen + 1;
         end if;
         
@@ -243,7 +280,7 @@ begin
         dcs_error_reg   <= dcs_error_en;
         dcs_error_latch <= dcs_error_reg;
         -- latch DCS_ADDRESS so we can reuse same register to read back the content
-        if  (dcs_error_en = '1' and dcs_error_latch = '0')then
+        if  (dcs_error_reg = '1' and dcs_error_latch = '0')then
             dcs_address_latch <= dcs_address;
         end if;
         

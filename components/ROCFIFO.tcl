@@ -12,7 +12,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -compon
 "ECC:0"  \
 "ESTOP:true"  \
 "FSTOP:true"  \
-"FWFT:true"  \
+"FWFT:false"  \
 "NUM_STAGES:2"  \
 "OVERFLOW_EN:false"  \
 "PIPE:1"  \
