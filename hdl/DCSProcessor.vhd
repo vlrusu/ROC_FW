@@ -14,6 +14,7 @@
 --                             from processing future commands.
 --      <v8>: <07/22/2023>: MT generate separate READ and WRITE commands depending on request address: XX_REG if 0-0xFF range, XX_PROC if 0x100-0x1FF range
 --      <v9>: <02/07/2024>: MT Add timeout for automatic State Machine when garbage data comes in during DTC Flashing or DTC Reset
+--      <v10>: <02/28/2024>: MT Added ROC_ID output for LOOPBACK REPLY MARKER
 --
 -- Description: 
 --      Module decoding DCS operations. DCS Single RD, DCS Single WR (with ACK), DCS Block RD and DCS Block WRITE supported so far.
@@ -91,6 +92,8 @@ port (
     is_cmd_reg	:	in  std_logic;
     pckt_done   :   out   std_logic;  -- used in block request, if more packets are needed
     dcs_done    :   out   std_logic;  -- used in block request, to release processor
+    
+    roc_id      :   out std_logic_vector(3 downto 0);
 
     dcs_state_count : out std_logic_vector(7 downto 0);
     dcs_error_count : out std_logic_vector(15 downto 0)
@@ -142,6 +145,7 @@ architecture architecture_DCSProcessor of DCSProcessor is
     signal blkreadTimeout   : unsigned(6 downto 0);
 
     signal dcsTimeout       : unsigned(15 downto 0);  -- allow for a 65535 x 5 ns = 328 us timeout
+    signal first_dcs_seen   : std_logic;
     
 begin
 
@@ -232,6 +236,9 @@ begin
         dcsTimeout	    <= (others => '1');
         reset_dcs_logic <= '0';
         
+        first_dcs_seen  <= '1';
+        roc_id          <= (others => '1');
+        
     elsif rising_edge(clk) then
         
         crc_en  <= '0';
@@ -317,7 +324,12 @@ begin
                 if crc_data_in /= read_crc then
                     dcs_error_count <= std_logic_vector(unsigned(dcs_error_count) + 1);
                     dcs_state <= IDLE;
-                else    
+                else
+                    if  first_dcs_seen = '1' then
+                        first_dcs_seen  <= '0';
+                        roc_id          <= '0' & link_id;
+                    end if;
+                    
                     if  first_pckt = '1' then
                         -- clear FIRST_PCKT only if more packets are expected  
                         if  unsigned(add_wr_pckt) > X"0" then     first_pckt <= '0';    end if;

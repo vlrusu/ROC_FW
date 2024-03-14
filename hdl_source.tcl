@@ -24,7 +24,8 @@ import_files -library work -hdl_source hdl/DRACRegisters.vhd
 import_files -library work -hdl_source hdl/DREQProcessor.vhd
 import_files -library work -hdl_source hdl/DataStatusProcessor.vhd
 import_files -library work -hdl_source hdl/ErrorCounter.vhd
-import_files -library work -hdl_source hdl/MARKERProcessor.vhd
+import_files -library work -hdl_source hdl/evm_delay_fifo_driver.vhd
+import_files -library work -hdl_source hdl/pulse_time_crossing.v
 import_files -library work -hdl_source hdl/PBRS_checker.v
 import_files -library work -hdl_source hdl/PRBS_generator.v
 import_files -library work -hdl_source hdl/RxPacketReader.vhd

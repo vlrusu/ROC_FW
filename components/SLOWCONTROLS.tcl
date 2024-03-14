@@ -123,23 +123,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hvsda} -port_direction {IN
 
 # Create top level Bus Ports
 sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQCNT} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQNULL} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQREAD} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQSENT} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRDREQTAG} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRERROR} -port_direction {IN} -port_range {[3:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRFETCHTAG} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRHBCNT} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRHBONHOLD} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRHBTAG} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRNULLHBCNT} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDROFFSETTAG} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRPREFCNT} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRPRETAG} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSIZERD} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSIZEWR} -port_direction {IN} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDRSPILLCNT} -port_direction {IN} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PADDR} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_ERRORCNT} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PWDATA} -port_direction {IN} -port_range {[31:0]}
@@ -589,23 +575,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_BUFFER_0:WRCNT" "DCS_RX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQCNT" "Registers_0:DDRDREQCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQNULL" "Registers_0:DDRDREQNULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQREAD" "Registers_0:DDRDREQREAD" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQSENT" "Registers_0:DDRDREQSENT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRDREQTAG" "Registers_0:DDRDREQTAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRERROR" "Registers_0:DDRERROR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRFETCHTAG" "Registers_0:DDRFETCHTAG" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRHBCNT" "Registers_0:DDRHBCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRHBONHOLD" "Registers_0:DDRHBONHOLD" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRHBTAG" "Registers_0:DDRHBTAG" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRNULLHBCNT" "Registers_0:DDRNULLHBCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDROFFSETTAG" "Registers_0:DDROFFSETTAG" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPREFCNT" "Registers_0:DDRPREFCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRPRETAG" "Registers_0:DDRPRETAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSIZERD" "Registers_0:DDRSIZERD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSIZEWR" "Registers_0:DDRSIZEWR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRSPILLCNT" "Registers_0:DDRSPILLCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_ERRORCNT" "Registers_0:PRBS_ERRORCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }

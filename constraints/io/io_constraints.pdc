@@ -183,29 +183,32 @@ set_io -port_name ROCtoHV_SERDES_CLK0_N  \
     -pin_name U20                        \
     -DIRECTION INPUT
 
-
-set_io -port_name TCK  \
-    -pin_name F8       \
-    -DIRECTION INPUT
-
-
-set_io -port_name TDI  \
-    -pin_name G8       \
-    -DIRECTION INPUT
-
-
-set_io -port_name TDO  \
-    -pin_name F6       \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name TMS  \
-    -pin_name F7       \
-    -DIRECTION INPUT
-
-
-set_io -port_name TRSTB  \
-    -pin_name G7         \
-    -DIRECTION INPUT
+# 03/13/2024 Monica commented because to go over new sudden reported error during Place and Route
+#     Error: [19137989]:  PDCPF-01: Port name doesn't exist in the netlist or is not connected to an IoCell macro. 
+#       [set_io -port_name TCK -pin_name F8 -DIRECTION INPUT][[C:\Users\tecchio\Desktop\ROC_FW\ROC\constraint\io\io_constraints.pdc][187]]
+#
+#set_io -port_name TCK  \
+#    -pin_name F8       \
+#    -DIRECTION INPUT
+#
+#
+#set_io -port_name TDI  \
+#    -pin_name G8       \
+#    -DIRECTION INPUT
+#
+#
+#set_io -port_name TDO  \
+#    -pin_name F6       \
+#    -DIRECTION OUTPUT
+#
+#
+#set_io -port_name TMS  \
+#    -pin_name F7       \
+#    -DIRECTION INPUT
+#
+#
+#set_io -port_name TRSTB  \
+#    -pin_name G7         \
+#    -DIRECTION INPUT
 
 

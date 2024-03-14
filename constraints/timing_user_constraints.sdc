@@ -21,12 +21,19 @@ set_clock_groups -name {HVLane1Ref} -asynchronous \
     -group [ get_clocks { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R } ] \
     -group [ get_clocks { ROCtoCAL_SERDES_CLK0_P } ]
     
+set_clock_groups -name {MemRef} -asynchronous \
+    -group [ get_clocks { PF_CCC_111_0/PF_CCC_111_0/pll_inst_0/OUT1 } ] \
+    -group [ get_clocks { NewDDRInterface_0/DDR4_Cntrl_0/CCC_0/pll_inst_0/OUT1 } ]
+
 set_clock_groups -name {asyn2} -asynchronous \
     -group [ get_clocks { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT0 } ] \
     -group [ get_clocks { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT1 } ] \
     -group [ get_clocks { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT2 } ] \
     -group [ get_clocks { PF_CCC_C0_0/PF_CCC_C0_0/pll_inst_0/OUT3 } ] \
     -group [ get_clocks { PF_CCC_C1_0/PF_CCC_C1_0/pll_inst_0/OUT0 } ] \
+    -group [ get_clocks { PF_CCC_111_0/PF_CCC_111_0/pll_inst_0/OUT0 } ] \
+    -group [ get_clocks { PF_CCC_111_0/PF_CCC_111_0/pll_inst_0/OUT1 } ] \
+    -group [ get_clocks { PF_CCC_111_0/PF_CCC_111_0/pll_inst_0/OUT2 } ] \
     -group [ get_clocks { NewDDRInterface_0/DDR4_Cntrl_0/CCC_0/pll_inst_0/OUT1 } ] \
     -group [ get_clocks { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/RX_CLK_R } ] \
     -group [ get_clocks { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R } ]  \

@@ -29,6 +29,7 @@ source components/DREQ_FIFO.tcl
 source components/CNT_FIFO.tcl 
 source components/EVT_FIFO.tcl 
 source components/EWTAG_FIFO.tcl 
+source components/LARGE_TAG_FIFO.tcl 
 source components/EW_FIFO.tcl 
 source components/SIZE_FIFO.tcl 
 source components/SPILLTAG_FIFO.tcl 
@@ -59,7 +60,7 @@ source components/TVS_Interface.tcl
 source components/UARTapb.tcl 
 source components/pwm.tcl 
 source components/SLOWCONTROLS.tcl 
-source components/RxMkarkerFIFO.tcl 
+source components/EVM_DELAY_FIFO.tcl 
 source components/RxPacketFIFO.tcl 
 source components/CorePCS_C0.tcl 
 source components/PF_XCVR_ERM_C0.tcl 

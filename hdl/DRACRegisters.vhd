@@ -74,7 +74,7 @@ port (
     DCS_DREQ_FIFO_EMPTY:IN  std_logic;                -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
     DCS_FETCH_POS   : IN  std_logic_vector(1 DOWNTO 0);     -- number of sizes fetched from a partially read FIFO entry (0 to 2)
     DCS_FETCH_CNT   : IN  std_logic_vector(19 DOWNTO 0);    -- number of fully read DREQ FIFO read entries
-    DCS_EVMCNT      : IN  std_logic_vector(31 DOWNTO 0);    -- number of Event Markers with non-null HB plus first null HB seen
+    DCS_EVMCNT      : IN  std_logic_vector(31 DOWNTO 0);    -- number of full windows (between two EVMs) with a non-hull HB
     DCS_HBCNT       : IN  std_logic_vector(31 DOWNTO 0);    -- number of HB seen
     DCS_NULLHBCNT   : IN  std_logic_vector(31 DOWNTO 0);    -- number of null HB seen
     DCS_HBONHOLD    : IN  std_logic_vector(31 DOWNTO 0);    -- number of HB not processed
@@ -103,10 +103,25 @@ port (
     DCS_INT_EVM_EN  : OUT std_logic;						-- enable internal EVM to DIGIs(addr=8, bit[7])
     DCS_ENABLE_CLOCK: OUT std_logic;						-- enable fiber clock to DIGIs(addr=8, bit[8])
     DCS_ENABLE_MARKER: OUT std_logic;						-- enable fiber marker to DIGIs(addr=8, bit[9])
+    DCS_DIGI_SIM_EN : OUT std_logic;						-- enable DIGI simulation of fixed-size events (addr=8, bit[10])
     DCS_FORCE_FULL  : OUT std_logic;						-- enable FORCE_FULL to DIGIs(addr=8, bit[10])
+
+    DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(10 downto 0);		-- coarse Event Window Marker delay
+    DCS_SIM_HIT     : OUT std_logic_vector(9 downto 0);		-- number of simulated hit per lane 
 
     DCS_ERROR_DATA  : IN  std_logic_vector(15 DOWNTO 0);    -- read error counter content for address DCS_ERROR_ADDRESS
     DCS_ERROR_ADDR  : OUT std_logic_vector(7 DOWNTO 0);     -- set address of ErrorCounter to be read
+
+    hb_tag_err_cnt  : IN std_logic_vector(7 DOWNTO 0);    
+    hb_dreq_err_cnt : IN std_logic_vector(7 DOWNTO 0);    
+    hb_lost_cnt     : IN std_logic_vector(7 DOWNTO 0);    
+    evm_lost_cnt    : IN std_logic_vector(7 DOWNTO 0);    
+
+    HB_CNT              : IN std_logic_vector(31 DOWNTO 0);
+    EVENT_MARKER_CNT    : IN std_logic_vector(31 DOWNTO 0);  
+    IS_SKIPPED_DREQ_CNT : IN std_logic_vector(15 DOWNTO 0);  
+    BAD_MARKER_CNT      : IN std_logic_vector(15 DOWNTO 0);       
+    LOSS_OF_LOCK_CNT    : IN std_logic_vector(15 DOWNTO 0);
     
    -- added signals for DIGIRW via DCS: drive signals for TWIController inside SLOWCONTROLS/Registers module
     dcs_cal_init    : out std_logic;                        -- generate CAL_INIT via DCS reg 23: must toggle 0->1->0 after DATA abd ADDR have been set
@@ -144,6 +159,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
     signal enable_internal_ewm  : std_logic;
     signal enable_clock_reg     : std_logic;
     signal enable_marker_reg    : std_logic;
+    signal enable_sim_digi_reg  : std_logic;
     signal force_full_reg   : std_logic;
 
     signal err_req_reg		: std_logic_vector(1 downto 0);
@@ -166,6 +182,7 @@ begin
     DCS_INT_EVM_EN  <= enable_internal_ewm;
     DCS_ENABLE_CLOCK    <= enable_clock_reg;
     DCS_ENABLE_MARKER   <= enable_marker_reg;
+    DCS_DIGI_SIM_EN <= enable_sim_digi_reg;
     DCS_FORCE_FULL  <= force_full_reg; 
     
    -------------------------------------------------------------------------------
@@ -216,7 +233,10 @@ begin
         dcs_hv_data     <= (others => '0');
         dcs_hv_addr     <= (others => '0');
         
-	elsif EXT_RST_N = '0' then
+        DCS_LOOPBACK_COARSE_DELAY <= B"000_0000_0000";   -- default delay is zero 5 ns clock
+        DCS_SIM_HIT     <= B"00_0000_0010";
+        
+    elsif EXT_RST_N = '0' then
 			
 		--ALGO_RESET 	<= '1';	
 		writeCounter 	<= (others => '0');  
@@ -279,6 +299,8 @@ begin
 				--algo_addr_sig <= drac_wdata;
 			--elsif (drac_addrs = 3) then			 -- reserved to drive ALGO_WDATA in module write/read
 				--algo_wdata_sig <= drac_wdata;
+            elsif (drac_addrs = 4) then  -- 2
+                DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(10 downto 0);
 			--elsif (drac_addrs = 4) then
 				--DCS_ALIGNMENT_REQ <= '1';   		-- self clearing	  
 			--elsif (drac_addrs = 5) then
@@ -326,6 +348,8 @@ begin
                 dcs_hv_addr <= drac_wdata(8 downto 0);
             elsif (drac_addrs = 29) then   -- 0x13
                 dcs_format_vrs <= drac_wdata(7 downto 0);
+            elsif (drac_addrs = 31) then   -- 0x1F
+                DCS_SIM_HIT <= drac_wdata(9 downto 0);
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -357,31 +381,41 @@ begin
 				DATA_OUT 	<=  writeCounter ;	-- useful counters
 			elsif (drac_addrs = 3) then	 
 				DATA_OUT 	<=  readCounter; 	
+			elsif (drac_addrs = 4) then	 
+				DATA_OUT 	<=  B"0_0000" & DCS_LOOPBACK_COARSE_DELAY; 	
 			--elsif (drac_addrs = 4) then		 	 
 				--DATA_OUT <=   "00" &  RX_K_CHAR & 
 									--"00" & ALIGNED & TX_CLK_STABLE & 
 									--INVALID_K & RD_ERR & B_CERR & CODE_ERR_N;
 			--elsif (drac_addrs = 5) then		 	 
 				--DATA_OUT 	<= XCVR_LOSS_COUNTER;			
-			--elsif (drac_addrs = 6) then		 	 
-				--DATA_OUT 	<= TIMESTAMP_IN;			
+			elsif (drac_addrs = 6) then		 	 
+				DATA_OUT 	<= BAD_MARKER_CNT;			
+			elsif (drac_addrs = 7) then		 	 
+				DATA_OUT 	<= LOSS_OF_LOCK_CNT;			
 					
    -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then		 	 
-				--DATA_OUT <= B"0000" &
-                            --"0" & force_full_reg & enable_marker_reg & enable_clock_reg &
-                            --enable_internal_ewm & free_evm_en_reg & error_en_reg & pattern_en_reg & 
-                            --use_lane_reg(3 downto 0);
-				DATA_OUT <= B"0000" &
-                            "0" & DCS_FORCE_FULL & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
+				DATA_OUT <= DCS_FORCE_FULL & B"000" &
+                            "0" & DCS_DIGI_SIM_EN & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
                             DCS_INT_EVM_EN & DCS_FREE_EVM & DCS_ERROR_EN & DCS_PATTERN_EN & 
                             DCS_USE_LANE;
                             
-   -- addresses 9 to 17 used in old DDRINterface
+			elsif (drac_addrs = 9) then		 	 
+				DATA_OUT 	<= HB_CNT(15 downto 0);			
+			elsif (drac_addrs = 10) then		 	 
+				DATA_OUT 	<= HB_CNT(31 downto 16);			
+			elsif (drac_addrs = 11) then		 	 
+				DATA_OUT 	<= EVENT_MARKER_CNT(15 downto 0);			
+			elsif (drac_addrs = 12) then		 	 
+				DATA_OUT 	<= EVENT_MARKER_CNT(31 downto 16);			
+			elsif (drac_addrs = 13) then		 	 
+				DATA_OUT 	<= IS_SKIPPED_DREQ_CNT;			
+                            
+                            
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
- 			elsif (drac_addrs = 18) then		 	 
-				DATA_OUT <= B"00" & err_req_reg & 
+ 				DATA_OUT <= B"00" & err_req_reg & 
                             DCS_HV_LANE1_EMPTY & DCS_HV_LANE0_EMPTY & DCS_CAL_LANE1_EMPTY & DCS_CAL_LANE0_EMPTY & 
                             DCS_HV_LANE1_FULL  & DCS_HV_LANE0_FULL  & DCS_CAL_LANE1_FULL  & DCS_CAL_LANE0_FULL  & 
                             DCS_DATA_ERR & DCS_HDR2_ERR & DCS_HDR1_ERR & DCS_EVT_ERR;	
@@ -499,6 +533,15 @@ begin
 				DATA_OUT <= DCS_TAG_LOST(31 downto 16);
 			elsif (drac_addrs = 71) then		 	 
 				DATA_OUT <= DCS_TAG_LOST(47 downto 32);
+			elsif (drac_addrs = 72) then		 	 
+				DATA_OUT <= X"00" & hb_tag_err_cnt;
+			elsif (drac_addrs = 73) then		 	 
+				DATA_OUT <= X"00" & hb_dreq_err_cnt;
+			elsif (drac_addrs = 74) then		 	 
+				DATA_OUT <= X"00" & hb_lost_cnt;
+			elsif (drac_addrs = 75) then		 	 
+				DATA_OUT <= X"00" & evm_lost_cnt;
+            -- CALO uses 77 to 126                
             -- DCS CMD Registers
 			elsif (drac_addrs = 128) then		-- 0x80 	 
 				DATA_OUT <= DCS_CMD_STATUS;

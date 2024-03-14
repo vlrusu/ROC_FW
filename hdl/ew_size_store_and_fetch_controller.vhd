@@ -6,6 +6,7 @@
 --    FETCH signals: on dreqclk after PREFETCH packet: used to access event size from SIZE_FIFO and decode info to pass to DDR READ
 --
 --  v1 July 20, 2023: use STORE_NEWSPILL and FETCH_NEWSPILL to reset internal logic befor restarting from run PAUSE/HALT state
+--  v2 Feb 28, 2024: add diagnostic for MISSED_FETCH_TAG
 --------------------------------------------------------------
 library IEEE;			
 use IEEE.STD_LOGIC_1164.all;            
@@ -52,6 +53,7 @@ entity ew_size_store_and_fetch_controller is
         fetch_cnt           : OUT std_logic_vector (19 downto 0);  -- number of words fetched from DREQ FIFO (each fetched word correspond to 3 DREQs)
         fetch_pos_cnt       : OUT std_logic_vector (1 downto 0);   -- number of DREQ not yet fetched from DREQ FIFO
         fetch_state_cnt     : OUT std_logic_vector (1 downto 0);   -- current FETCH SM position
+        missed_fetch_cnt	: OUT std_logic_vector(15 downto 0);  	
         next_read_event_tag : OUT std_logic_vector (EVENT_TAG_BITS-1 downto 0)
 		); 
 end entity;
@@ -70,7 +72,6 @@ architecture arch of ew_size_store_and_fetch_controller is
 	
 	---- signals on slow RCLK	----
 	--signal fetch_re 		: std_logic;
-    signal fetch_runover 	: std_logic; 
     signal fetch_first      : std_logic;
 	signal fetch_word 		: std_logic_vector (FIFO_DATA_SIZE-1 downto 0);	
 	signal fetch_pos 			: unsigned(1 downto 0);  		
@@ -82,6 +83,12 @@ architecture arch of ew_size_store_and_fetch_controller is
 	signal next_ddr_address	: unsigned(DDR_ADDRESS_BITS-1 downto 0);
 --	signal next_read_event_tag : std_logic_vector (EVENT_TAG_BITS-1 downto 0); 
     signal cnt_fetch        : unsigned(19 downto 0);
+    
+    signal fetch_runover 	: std_logic; 
+    signal fetch_runover_cnt: unsigned(7 downto 0);
+
+	signal missed_fetch_tag : std_logic;
+--	signal missed_fetch_cnt	: unsigned(7 downto 0);  	
 	
 	-- signals for time domain crossing
  	signal req, ack_req, ack_sync : std_logic;
@@ -263,6 +270,10 @@ begin
 				fetch_missing_error <= '0';
                 fetch_first         <= '1'; -- drives loading of event tag offset
                 fetch_runover       <= '0';
+                fetch_runover_cnt   <= (others => '0'); 
+                
+                missed_fetch_tag    <= '0';
+                missed_fetch_cnt    <= (others => '0'); 
                 
             -- reset everything on NEWSPILL
             elsif (fetch_newspill = '1') then
@@ -285,11 +296,12 @@ begin
 				fetch_timeout_error <= '0';	  
 				fetch_missing_error <= '0';
                 fetch_first         <= '1'; -- drives loading of event tag offset
+                                
+			else  -- else not reset	or NEWSPILL 
+                
                 fetch_runover       <= '0';
+                missed_fetch_tag    <= '0';
                 
-                
-			else  -- else not reset	or NEWSPILL  
-			
                 if (fetch_re) then   
                     cnt_fetch <= cnt_fetch + '1'; 
                 end if;
@@ -328,7 +340,8 @@ begin
 						end if;
 
                         if ( unsigned(next_read_event_tag) > (unsigned(fetch_event_tag) + 1) ) then
-                            fetch_runover <= '1';
+                            fetch_runover       <= '1';
+                            fetch_runover_cnt   <= fetch_runover_cnt + 1;
                         end if;
 						
 							
@@ -417,6 +430,7 @@ begin
                         -- extra diagnostics
                         if ( unsigned(next_read_event_tag) > (unsigned(fetch_event_tag) + 1) ) then
                             fetch_runover <= '1';
+                            fetch_runover_cnt   <= fetch_runover_cnt + 1;
                         end if;
 						
 						-- increment fetch_pos and wrap around  for 3 positions					   
@@ -434,6 +448,10 @@ begin
                             
                             fetch_ddr_address   <= std_logic_vector(next_ddr_address);
                             fetch_tag		    <= next_read_event_tag;
+                        else
+                            missed_fetch_tag    <= '1';
+                            --missed_fetch_cnt    <= missed_fetch_cnt + 1;	
+                            missed_fetch_cnt    <= std_logic_vector(unsigned(missed_fetch_cnt) + 1);	
 						end if;
 						
 						--- no matter what, return to init state

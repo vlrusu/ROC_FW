@@ -46,6 +46,7 @@ port (
     retr_marker_counter : in std_logic_vector(15 downto 0);
     ewm_out_counter : in std_logic_vector(15 downto 0);         --  markers sent to the DIGIs
     hb_counter : in std_logic_vector(15 downto 0);              -- HB counter
+    start_fetch_counter : in std_logic_vector(15 downto 0);     -- PREFETCH or DREQ
     
     dreq_timeout_counter : in std_logic_vector(15 downto 0);
     hb_empty_overlap_counter : in std_logic_vector(15 downto 0);
@@ -53,6 +54,8 @@ port (
     tag_valid_counter : in std_logic_vector(15 downto 0);
     tag_error_counter : in std_logic_vector(15 downto 0);
     comma_error_counter : in std_logic_vector(15 downto 0);
+    is_skipped_dreq_cnt : in std_logic_vector(15 downto 0);
+    bad_marker_cnt      : in std_logic_vector(15 downto 0);
     
     dreq_state      : in std_logic_vector(7 downto 0);
     rocfifocntrl_state : in std_logic_vector(7 downto 0);
@@ -62,9 +65,10 @@ port (
     dcs_rx_state    : in std_logic_vector(7 downto 0);
     dcs_tx_state    : in std_logic_vector(7 downto 0);
     
-    fetch_state : in std_logic_vector(1 downto 0);
+    fetch_state     : in std_logic_vector(1 downto 0);
     fetch_event_tag : in std_logic_vector(15 downto 0);
     next_read_event_tag : in std_logic_vector(15 downto 0);
+    missed_fetch_cnt    : in std_logic_vector(15 downto 0);
     
     reqType_debug : in std_logic_vector(3 downto 0);
     reqEventWindowTag_debug : in std_logic_vector(47 downto 0);
@@ -225,8 +229,16 @@ begin
         elsif address = X"29" then      -- 41
             counter_out(7 downto 0) <= dcs_tx_state(7 downto 0);
             counter_out(15 downto 8) <= (others => '0');
+        elsif address = X"30" then        -- 48
+            counter_out <= start_fetch_counter;
         elsif address = X"31" then        -- 49
             counter_out <= hb_counter;
+        elsif address = X"32" then        -- 50
+            counter_out <= missed_fetch_cnt;
+        elsif address = X"33" then        -- 51
+            counter_out <= is_skipped_dreq_cnt;
+        elsif address = X"34" then        -- 52
+            counter_out <= bad_marker_cnt;
         else
             counter_out <= (others => '0');
         end if;

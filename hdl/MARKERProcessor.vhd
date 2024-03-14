@@ -4,7 +4,7 @@
 -- File: MARKERProcessor.vhd
 -- File history:
 --      <v1>: <08/30/2023>: MT  First version
---      <Revision number>: <Date>: <Comments>
+--      <v2>: <02/28/2024>: MT  Revised after loopback marker definition
 --      <Revision number>: <Date>: <Comments>
 --
 -- Description: 
@@ -51,6 +51,7 @@ begin
         marker_re         <= '0';
         marker_data_en    <= '0';
         marker_data_out   <= (others => '0');
+        state             <= IDLE;
         
     elsif rising_edge(clk) then
 
@@ -60,36 +61,39 @@ begin
         when IDLE =>
             marker_data_en    <= '0';
             marker_data_out   <= (others => '0');
-            if unsigned(marker_rdcnt) > 1 then
-                marker_re <= '1';
-                state   <= WAITDATA;
+--            if unsigned(marker_rdcnt) > 1 then
+            if unsigned(marker_rdcnt) > 0 then
+                marker_re   <= '1';
+                state       <= WAITDATA;
             end if;
             
         -- read second marker and wait fro data to exit the FIFO    
         when WAITDATA =>
-            marker_re         <= '1';
+            marker_re         <= '0';
             marker_data_en    <= '0';
             marker_data_out   <= (others => '0');
-            state           <= FIRSTDATA;
+            state             <= FIRSTDATA;
          
         -- first word is in    
         when FIRSTDATA =>
             marker_re         <= '0';
             marker_data_en    <= '1';
             marker_data_out   <= marker_data_in;
-            state           <= SECONDDATA;
+--            state             <= SECONDDATA;
+            state             <= IDLE;
             
         -- second word is in   
         when SECONDDATA =>
             marker_re         <= '0';
             marker_data_en    <= '1';
-            marker_data_out   <= marker_data_in;
-            state           <= IDLE;
+            marker_data_out   <= B"00" & marker_data_in(15 downto 0);
+            state             <= IDLE;
             
         when others =>
             marker_re         <= '0';
             marker_data_en    <= '0';
             marker_data_out   <= (others => '0');
+            state             <= IDLE;
             
         end case;
     end if;

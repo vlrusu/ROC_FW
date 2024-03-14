@@ -38,6 +38,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_KCHAR} -port_direction {
 sd_create_bus_port -sd_name ${sd_name} -port_name {TX_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {TX_K_CHAR} -port_direction {IN} -port_range {[1:0]}
 
+sd_create_bus_port -sd_name ${sd_name} -port_name {ALIGNMENT_LOSS_COUNTER} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {B_CERR} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {CODE_ERR_N} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {INVALID_K} -port_direction {OUT} -port_range {[1:0]}
@@ -53,7 +54,6 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 # Add ClockAligner_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ClockAligner} -hdl_file {hdl\ClockAligner.vhd} -instance_name {ClockAligner_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {ClockAligner_0:ALIGNMENT_LOSS_COUNTER}
 
 
 
@@ -135,6 +135,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_CLK_0:REF_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK" "XCVR_IF_0:LANE0_CDR_REF_CLK_0" "XCVR_PLL_0:REF_CLK" }
 
 # Add bus net connections
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGNMENT_LOSS_COUNTER" "ClockAligner_0:ALIGNMENT_LOSS_COUNTER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"B_CERR" "Core_PCS_0:B_CERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CODE_ERR_N" "Core_PCS_0:CODE_ERR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_DATA" "Core_PCS_0:EPCS_RxDATA" "XCVR_IF_0:LANE0_RX_DATA" }

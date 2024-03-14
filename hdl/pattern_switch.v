@@ -3,7 +3,7 @@
 //
 // File: pattern_switch.v
 // File history:
-//      <Revision number>: <Date>: <Comments>
+//      <v1>: <02/03/24> Remove DIGI_EW_TAG correction after fixing PATTERN_INIT logic
 //      <Revision number>: <Date>: <Comments>
 //      <Revision number>: <Date>: <Comments>
 //
@@ -58,8 +58,8 @@ module pattern_switch(
    assign ew_fifo_we       = (pattern_en) ?  PATTRN_ew_fifo_we       : DIGI_ew_fifo_we;
    assign ew_fifo_data     = (pattern_en) ?  PATTRN_ew_fifo_data     : DIGI_ew_fifo_data;
    assign ew_size          = (pattern_en) ?  PATTRN_ew_size          : DIGI_ew_size;
-//   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : DIGI_ew_tag;
-   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : (DIGI_ew_tag+1);
+   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : DIGI_ew_tag;
+//   assign ew_tag           = (pattern_en) ?  PATTRN_ew_tag           : (DIGI_ew_tag+1);
    
    assign DIGI_axi_start_on_serdesclk     =  axi_start_on_serdesclk & ~pattern_en;
    assign PATTRN_axi_start_on_serdesclk   =  axi_start_on_serdesclk &  pattern_en;

@@ -35,7 +35,7 @@ port (
         
         ENABLE_ALIGNMENT : in std_logic;
         CLOCK_ALIGNED : out std_logic;
-        ALIGNMENT_LOSS_COUNTER : out std_logic_vector(7 downto 0);
+        ALIGNMENT_LOSS_COUNTER : out std_logic_vector(15 downto 0);
         ALIGNMENT_RESET_N : out std_logic
 );
 end ClockAligner;
@@ -84,7 +84,7 @@ begin
         rx_val_2Q <= rx_val_1Q;
         
         clock_aligned_1Q <= clock_aligned;
-        if clock_aligned_1Q = '0' and clock_aligned = '1' then
+        if clock_aligned_1Q = '1' and clock_aligned = '0' then
             alignment_loss_counter <= std_logic_vector(unsigned(alignment_loss_counter) + 1);
         end if;
         

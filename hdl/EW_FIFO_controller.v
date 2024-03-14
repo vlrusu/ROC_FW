@@ -11,6 +11,7 @@
 //                         EW_SIZE and derived variables are [EVENT_SIZE_BITS-1:0], ie in units of beats
 //      v6.0: <July,2023>: added NEWSPILL rising edge on appropriate clock to clear all signals used in bouncing between EW_FIFOs  and ET_FIFOs 
 //      v7.0: <Feb.,2024>: added ET_PKTS_OVFL output to be used in data header status 
+//      v8.0: <Feb.,2024>: added HB_TAG_IN to and DREQ_TAG_IN to second DDR header word 
 //
 //
 // Description: 
@@ -45,6 +46,11 @@ module EW_FIFO_controller #(
     input   newspill_on_dreqclk,// rising edge of NEWSPILL
     input   serdesclk,  	    // on 150 MHz clock
     input	resetn_serdesclk,
+    
+ // signals on SYSCLK exchanged with EWTAG_CNTRL   
+    input   [`EVENT_TAG_BITS-1:0]   hb_tag_in,
+    input   [`EVENT_TAG_BITS-1:0]   dreq_tag_in,
+    output  reg start_read_pulse,
     
 // signals exchanged with ROC_FIFO_CNTRL on SERDESCLK time domain 
     input   curr_ewfifo_wr,    // when 0/1, current EW_FIFO to write is EW_FIFO0/1
@@ -88,7 +94,11 @@ module EW_FIFO_controller #(
 	output  reg  [`AXI_BITS-1:0]  hdr1_expc,  hdr1_seen,												   
 	output  reg  [`AXI_BITS-1:0]  hdr2_expc,  hdr2_seen,												   
 	output  reg  [`AXI_BITS-1:0]  evt_expc,   evt_seen,												   
-	output  reg  [`AXI_BITS-1:0]  data_expc,  data_seen,												   
+	output  reg  [`AXI_BITS-1:0]  data_expc,  data_seen,	
+
+    output  reg  [7:0]   hb_dreq_error_cnt,
+    output  reg  [7:0]   hb_tag_err_cnt,
+    
 
 //AXI Master IF - on DDR SYS CLK
 // Write Address Channel 
@@ -163,6 +173,9 @@ wire	et_fifo0_full, et_fifo1_full;   // EVT_FIFO full (ie 511 hits in event)
 reg     [`AXI_BITS-1:0] et_fifo_wdata;
 wire    [`AXI_BITS-1:0] et_fifo0_wdata, et_fifo1_wdata;	    // data to EVT_FIFOs
 
+reg     hb_dreq_error, hb_tag_err;
+//reg     [7:0] hb_dreq_error_cnt, hb_tag_err_cnt;
+
 // EVTFIFOs signals on DREQCLK time domain     
 reg     curr_etfifo_rd;                 // when 0/1, when EVT_fifo0/1 is being read
 wire	et_fifo0_re, et_fifo1_re;	    // EVT_FFO read enable
@@ -185,7 +198,7 @@ reg	    [7:0]   ew_pckt_to_do;      // max value is 127
 reg	    [`EVENT_SIZE_BITS-1:0] 	ew_left_to_do;
 reg	    [`DDR_ADDRESS_BITS-1:0]	next_write_addr;
 
-reg	    first_axi_read, start_read;
+reg	    first_axi_read, start_read, start_read_reg;
 reg	    wait_for_read;
 reg     axi_read_done;
 reg	    et_fifo0_fromDDR, et_fifo1_fromDDR, DDR_to_read;
@@ -243,9 +256,9 @@ wire	[11:0] 	et_packets_sync;
 reg     et_pckt_empty_reg, et_pckt_empty_latch, et_pckt_empty_sync; 
 
 // signals for SIZE_FIFO1 and CNT_FIFO1 (time domain crossing FIFO for buses from PATTERN_FIFO_FILLER)
-wire    ew_size_empty;
+wire    ew_size_empty, ew_size_full;
 wire    [`EVENT_SIZE_BITS+1:0]  ew_size_sync;   // contains ew_size[9:0] + ew_ovfl[10] + bit(11) becasue of size of SIZE_FIFOs
-wire    ew_tag_empty;
+wire    ew_tag_empty, ew_tag_full;
 wire 	[`SPILL_TAG_BITS-1:0]   ewtag_sync;
 reg     ew_empty_all, ew_empty_reg, ew_empty_latch;
 reg     ew_empty_ren, ew_empty_pulse;
@@ -253,6 +266,7 @@ reg     ew_empty_ren, ew_empty_pulse;
 
 // signals for SIZE_FIFO0, CNT_FIFO0 and EWTAG_FIFO0 (time domain crossing FIFOs for buses from EW_SIZE_STORE_AND_FETCH_CONTROLLER)
 wire    tag_size_empty, tag_cnt_empty, tag_evt_empty;
+wire    tag_size_full, tag_cnt_full, tag_evt_full;
 wire    [`EVENT_SIZE_BITS+1:0]   tag_size_sync;  // contains tag_size[9:0] + tag_ovfl[10] + bit(11) becasue of size of SIZE_FIFOs 
 wire	[`DDR_ADDRESS_BITS-1:0]  tag_cnt_sync;
 wire 	[`EVENT_TAG_BITS-1:0]    tag_evt_sync;
@@ -822,6 +836,9 @@ begin
 		first_wr_hdr	<= 0;
 		second_wr_hdr	<= 0;
         waddr_state 	<=	IDLE;
+        
+        hb_tag_err      <= 0;
+        hb_tag_err_cnt  <= 0;
     end
         
     else
@@ -832,6 +849,7 @@ begin
         ew_fifo0_clr	<=	0;
         ew_fifo1_clr	<=	0;
         ddr_write_done	<= 0;
+        hb_tag_err      <= 0;
         
         if (newspill_on_sysclk)   DDR_to_write    <= 0;
         
@@ -892,7 +910,13 @@ begin
         VALID:
         begin            
             first_wr_hdr	<=  {ew_ovfl_to_store, 5'b0, ew_size_to_store, ew_tag_to_store};
-            second_wr_hdr	<=	{16'b0, 8'b0, ew_pckt_to_do,	8'b0,	ew_blk_to_store, 8'b0, (wburst_cnt + 1'b1)}; 
+//            second_wr_hdr	<=	{16'b0, 8'b0, ew_pckt_to_do,	8'b0,	ew_blk_to_store, 8'b0, (wburst_cnt + 1'b1)}; 
+            second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, (wburst_cnt + 1'b1), hb_tag_in[39:0]}; 
+            
+            if ( ew_tag_to_store != hb_tag_in ) begin
+                hb_tag_err <= 1;
+                hb_tag_err_cnt <= hb_tag_err_cnt + 1;
+            end
             
             awvalid_o		<=	1'b1;
             if(awready_i)
@@ -1061,6 +1085,7 @@ begin
 		et_left_to_do	<= 0;
 		et_pckt_to_do	<= 0;
 		start_read		<= 0;		// semaphore for read data state machine
+        start_read_reg  <= 0;
         raddr_state		<=	IDLE;
     end
     else
@@ -1073,6 +1098,8 @@ begin
             DDR_to_read     <= 0;
         end
         
+        start_read_reg  <= start_read;
+        start_read_pulse<= start_read && !start_read_reg;
         
         case(raddr_state)
         
@@ -1206,6 +1233,9 @@ begin
         evt_seen       <= 0;
         data_expc      <= 0;
         data_seen      <= 0;
+        
+        hb_dreq_error  <= 1'b0;
+        hb_dreq_error_cnt   <= 0;
       
         rdata_state		<=	IDLE;
     end
@@ -1214,6 +1244,7 @@ begin
 
         et_fifo_we		<=	1'b0; 
         axi_read_done	<= 1'b0;	
+        hb_dreq_error   <= 1'b0;      
         
         case(rdata_state)
         
@@ -1295,12 +1326,19 @@ begin
                         if  (   header1_error == 0 && 
                                 (first_rd_hdr[63] != et_ovfl ||	first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
                                 header1_error  <= 1;
-                                hdr1_expc      <= {et_ovfl, 5'b0, et_size, 48'b0};
-                                hdr1_seen      <= {first_rd_hdr[`AXI_BITS-1:48], 48'b0};
+                                //hdr1_expc      <= {et_ovfl, 5'b0, et_size, 48'b0};
+                                //hdr1_seen      <= {first_rd_hdr[`AXI_BITS-1:48], 48'b0};
+                                hdr1_expc      <= {et_ovfl, 5'b0, et_size, first_rd_hdr[`EVENT_SIZE_BITS-1:0]};
+                                hdr1_seen      <= first_rd_hdr;
                         end
                     end
                     
                     if (hdr_cnt == 2) begin
+                        
+                        if ( second_rd_hdr[39:0] != dreq_tag_in[39:0] ) begin
+                            hb_dreq_error   <= 1'b1;
+                            hb_dreq_error_cnt <= hb_dreq_error_cnt + 1;
+                        end;
                         
                         //if  (   second_rd_hdr[39:32] != et_pckt_to_do   ||  
                                 //second_rd_hdr[23:16] != et_blk          || 
@@ -1312,11 +1350,15 @@ begin
                             //end
                         //end
                         if  (   header2_error == 0 && 
-                                (second_rd_hdr[39:32] != et_pckt_to_do   ||  
-                                 second_rd_hdr[23:16] != et_blk          || 
-                                 second_rd_hdr[7:0] != (rdburst_cnt+1)) ) begin
+                                //(second_rd_hdr[39:32] != et_pckt_to_do   ||  
+                                 //second_rd_hdr[23:16] != et_blk          || 
+                                 //second_rd_hdr[7:0] != (rdburst_cnt+1)) ) begin
+                                (second_rd_hdr[63:56] != et_pckt_to_do   ||  
+                                 second_rd_hdr[55:48] != et_blk          || 
+                                 second_rd_hdr[47:40] != (rdburst_cnt+1)) ) begin
                             header2_error  <= 1;
-                            hdr2_expc      <= {24'b0, et_pckt_to_do, 8'b0, et_blk, 8'b0, rdburst_cnt+1};
+                            //hdr2_expc      <= {24'b0, et_pckt_to_do, 8'b0, et_blk, 8'b0, rdburst_cnt+1};
+                            hdr2_expc      <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
                             hdr2_seen      <= second_rd_hdr;
                         end
                     end
@@ -1593,7 +1635,7 @@ SIZE_FIFO   size_fifo1 (
 	.RE		    (ew_empty_ren),
 	// Outputs
 	.EMPTY	    (ew_size_empty),
-	.FULL		(),
+	.FULL		(ew_size_full),
 	.Q			(ew_size_sync)	
 );
 
@@ -1609,7 +1651,7 @@ CNT_FIFO	cnt_fifo1 (
 	.RE		    (ew_empty_ren),
 	// Outputs
 	.EMPTY	    (ew_tag_empty),
-	.FULL		(),
+	.FULL		(ew_tag_full),
 	.Q			(ewtag_sync)	
 );
 
@@ -1655,7 +1697,7 @@ SIZE_FIFO   size_fifo0 (
 	.RE		    (tag_empty_ren),
 	// Outputs
 	.EMPTY	    (tag_size_empty),
-	.FULL		(),
+	.FULL		(tag_size_full),
 	.Q			(tag_size_sync)	
 );
 
@@ -1670,7 +1712,7 @@ CNT_FIFO   cnt_fifo0 (
 	.RE		    (tag_empty_ren),
 	// Outputs
 	.EMPTY	    (tag_cnt_empty),
-	.FULL		(),
+	.FULL		(tag_cnt_full),
 	.Q			(tag_cnt_sync)	
 );
 
@@ -1685,7 +1727,7 @@ EWTAG_FIFO	ewtag_fifo0 (
 	.RE		    (tag_empty_ren),
 	// Outputs
 	.EMPTY	    (tag_evt_empty),
-	.FULL		(),
+	.FULL		(tag_evt_full),
 	.Q			(tag_evt_sync)	
 );
 

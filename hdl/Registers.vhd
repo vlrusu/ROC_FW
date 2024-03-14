@@ -37,20 +37,20 @@ entity Registers is
     DDRERROR      : in  std_logic_vector(3 downto 0);
     DDRSIZEWR     : in  std_logic_vector(31 downto 0);
     DDRSIZERD     : in  std_logic_vector(31 downto 0);
-    DDRHBCNT      : in  std_logic_vector(31 downto 0);
-    DDRNULLHBCNT  : in  std_logic_vector(31 downto 0);
-    DDRHBONHOLD   : in  std_logic_vector(31 downto 0);
-    DDRPREFCNT    : in  std_logic_vector(31 downto 0);
-    DDRDREQCNT    : in  std_logic_vector(31 downto 0);
-    DDRDREQREAD   : in  std_logic_vector(31 downto 0);
-    DDRDREQSENT   : in  std_logic_vector(31 downto 0);
-    DDRDREQNULL   : in  std_logic_vector(31 downto 0);
-    DDRSPILLCNT   : in  std_logic_vector(19 downto 0);
-    DDRHBTAG      : in  std_logic_vector(31 downto 0);
-    DDRPRETAG     : in  std_logic_vector(31 downto 0);
-    DDRFETCHTAG   : in  std_logic_vector(31 downto 0);
-    DDRDREQTAG    : in  std_logic_vector(31 downto 0);
-    DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
+    --DDRHBCNT      : in  std_logic_vector(31 downto 0);
+    --DDRNULLHBCNT  : in  std_logic_vector(31 downto 0);
+    --DDRHBONHOLD   : in  std_logic_vector(31 downto 0);
+    --DDRPREFCNT    : in  std_logic_vector(31 downto 0);
+    --DDRDREQCNT    : in  std_logic_vector(31 downto 0);
+    --DDRDREQREAD   : in  std_logic_vector(31 downto 0);
+    --DDRDREQSENT   : in  std_logic_vector(31 downto 0);
+    --DDRDREQNULL   : in  std_logic_vector(31 downto 0);
+    --DDRSPILLCNT   : in  std_logic_vector(19 downto 0);
+    --DDRHBTAG      : in  std_logic_vector(31 downto 0);
+    --DDRPRETAG     : in  std_logic_vector(31 downto 0);
+    --DDRFETCHTAG   : in  std_logic_vector(31 downto 0);
+    --DDRDREQTAG    : in  std_logic_vector(31 downto 0);
+    --DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
     hvscl   : out std_logic;
@@ -200,28 +200,28 @@ architecture synth of Registers is
    --constant CRDDRERRSEENH: std_logic_vector(7 downto 0):= x"24";  -- 32 MSB of word read when first requested error seen
    --constant CRDDRERREXPCL: std_logic_vector(7 downto 0):= x"25";  -- 32 LBS of expected word when first requested error seen 
    --constant CRDDRERREXPCH: std_logic_vector(7 downto 0):= x"26";  -- 32 MBS of expected word when first requested error seen 
-   constant CRDDRSPILLCNT  :  std_logic_vector(7 downto 0):= x"27";  -- no. of HB from start of SPILL
-   constant CRDDRNULLHBCNT :  std_logic_vector(7 downto 0):= x"28";  -- no. of null HBs from start of SPILL
-   constant CRDDRHBCNT:    std_logic_vector(7 downto 0):= x"29";  -- no. of HB seen
-   constant CRDDRHBONHOLD: std_logic_vector(7 downto 0):= x"2A";  -- no. of HB not processeduse 
-   constant CRDDRPREFCNT:  std_logic_vector(7 downto 0):= x"2B";  -- no. of PREFETCH seen 
-   constant CRDDRDREQCNT:  std_logic_vector(7 downto 0):= x"2C";  -- no. of DREQs received from DTC
-   constant CRDDRDREQREAD: std_logic_vector(7 downto 0):= x"2D";  -- no. of DREQs read from memory
-   constant CRDDRDREQSENT: std_logic_vector(7 downto 0):= x"2E";  -- no. of DREQs sent to DTC
-   constant CRDDRDREQNULL: std_logic_vector(7 downto 0):= x"2F";  -- no. of null size DREQs sent to DTC
+   --constant CRDDRSPILLCNT  :  std_logic_vector(7 downto 0):= x"27";  -- no. of HB from start of SPILL
+   --constant CRDDRNULLHBCNT :  std_logic_vector(7 downto 0):= x"28";  -- no. of null HBs from start of SPILL
+   --constant CRDDRHBCNT:    std_logic_vector(7 downto 0):= x"29";  -- no. of HB seen
+   --constant CRDDRHBONHOLD: std_logic_vector(7 downto 0):= x"2A";  -- no. of HB not processeduse 
+   --constant CRDDRPREFCNT:  std_logic_vector(7 downto 0):= x"2B";  -- no. of PREFETCH seen 
+   --constant CRDDRDREQCNT:  std_logic_vector(7 downto 0):= x"2C";  -- no. of DREQs received from DTC
+   --constant CRDDRDREQREAD: std_logic_vector(7 downto 0):= x"2D";  -- no. of DREQs read from memory
+   --constant CRDDRDREQSENT: std_logic_vector(7 downto 0):= x"2E";  -- no. of DREQs sent to DTC
+   --constant CRDDRDREQNULL: std_logic_vector(7 downto 0):= x"2F";  -- no. of null size DREQs sent to DTC
    
-   constant CRDDRSERIALSET:   std_logic_vector(7 downto 0):= x"30"; 	-- if 1, setup DDR tests via SERIAL, if 0 assumed setup via DCS
-   constant CRDDRHBTAG  : 	   std_logic_vector(7 downto 0):= x"31";  -- bit [31:0] of last DTC Heartbeat Tag
-   constant CRDDRPRETAG : 	   std_logic_vector(7 downto 0):= x"32";  -- bit [31:0] of last DTC Prefetch Tag
-   constant CRDDRFETCHTAG: 	std_logic_vector(7 downto 0):= x"33";  -- bit [31:0] of last Fetched Tag
-   constant CRDDRDREQTAG: 	   std_logic_vector(7 downto 0):= x"34";  -- bit [31:0] of last DTC Data Request tag
-   constant CRDDROFFSETTAG:   std_logic_vector(7 downto 0):= x"35";  -- bit [31:0] of offset tag in present SPILL
-   constant CRDDRCFOEN  : 	   std_logic_vector(7 downto 0):= x"36";  -- enable CFO emulator
-   constant CRDDRCFOSTART: 	std_logic_vector(7 downto 0):= x"37";  -- CFO emulator start
-   constant CRDDRCFOOFFSET: 	std_logic_vector(7 downto 0):= x"38";  -- set HB tag offset for CFO emulator
-   constant CRDDRCFODELTAHB: 	std_logic_vector(7 downto 0):= x"39";  -- set HB DeltaT for CFO emulator
-   constant CRDDRCFONOHB   : 	std_logic_vector(7 downto 0):= x"3A";  -- set Number of HBs for CFO emulator
-   constant CRDDRPREFEN    : 	std_logic_vector(7 downto 0):= x"3B";   -- enable PREFETCH in CFO emulator
+   --constant CRDDRSERIALSET:   std_logic_vector(7 downto 0):= x"30"; 	-- if 1, setup DDR tests via SERIAL, if 0 assumed setup via DCS
+   --constant CRDDRHBTAG  : 	   std_logic_vector(7 downto 0):= x"31";  -- bit [31:0] of last DTC Heartbeat Tag
+   --constant CRDDRPRETAG : 	   std_logic_vector(7 downto 0):= x"32";  -- bit [31:0] of last DTC Prefetch Tag
+   --constant CRDDRFETCHTAG: 	std_logic_vector(7 downto 0):= x"33";  -- bit [31:0] of last Fetched Tag
+   --constant CRDDRDREQTAG: 	   std_logic_vector(7 downto 0):= x"34";  -- bit [31:0] of last DTC Data Request tag
+   --constant CRDDROFFSETTAG:   std_logic_vector(7 downto 0):= x"35";  -- bit [31:0] of offset tag in present SPILL
+   --constant CRDDRCFOEN  : 	   std_logic_vector(7 downto 0):= x"36";  -- enable CFO emulator
+   --constant CRDDRCFOSTART: 	std_logic_vector(7 downto 0):= x"37";  -- CFO emulator start
+   --constant CRDDRCFOOFFSET: 	std_logic_vector(7 downto 0):= x"38";  -- set HB tag offset for CFO emulator
+   --constant CRDDRCFODELTAHB: 	std_logic_vector(7 downto 0):= x"39";  -- set HB DeltaT for CFO emulator
+   --constant CRDDRCFONOHB   : 	std_logic_vector(7 downto 0):= x"3A";  -- set Number of HBs for CFO emulator
+   --constant CRDDRPREFEN    : 	std_logic_vector(7 downto 0):= x"3B";   -- enable PREFETCH in CFO emulator
    constant CRDDRSIZEWR:   std_logic_vector(7 downto 0):= x"3C";  -- event size(*3) written to DREQ FIFO:  [31] = DREQ_FIFO FULL,  [16:0] DREQ_FIFO_WRCNT
    constant CRDDRSIZERD:   std_logic_vector(7 downto 0):= x"3D";  -- event size(*3) read from DREQ FIFO:[31] = DREQ_FIFO EMPTY, [16:0] DREQ_FIFO_RDCNT
    constant CRDDRCTRLREADY: std_logic_vector(7 downto 0) := x"3E";  -- DDR ctrl ready
@@ -538,36 +538,36 @@ begin
           DataOut(3 downto 0) <= DDRERROR;
         when CRDDRSIZEWR =>
           DataOut(31 downto 0) <= DDRSIZEWR;
-        when CRDDRSIZERD =>
-          DataOut(31 downto 0) <= DDRSIZERD;
-        when CRDDRHBCNT =>
-          DataOut(31 downto 0) <= DDRHBCNT;
-        when CRDDRHBONHOLD =>
-          DataOut(31 downto 0) <= DDRHBONHOLD;
-        when CRDDRPREFCNT =>
-          DataOut(31 downto 0) <= DDRPREFCNT;
-        when CRDDRDREQCNT =>
-          DataOut(31 downto 0) <= DDRDREQCNT;
-        when CRDDRDREQREAD =>
-          DataOut(31 downto 0) <= DDRDREQREAD;
-        when CRDDRDREQSENT =>
-          DataOut(31 downto 0) <= DDRDREQSENT;
-        when CRDDRDREQNULL =>
-          DataOut(31 downto 0) <= DDRDREQNULL;
-        when CRDDRSPILLCNT =>
-          DataOut(19 downto 0) <= DDRSPILLCNT;
-        when CRDDRNULLHBCNT =>
-          DataOut(31 downto 0) <= DDRNULLHBCNT;
-        when CRDDRHBTAG =>
-          DataOut(31 downto 0) <= DDRHBTAG;
-        when CRDDRPRETAG =>
-          DataOut(31 downto 0) <= DDRPRETAG;
-        when CRDDRFETCHTAG =>
-          DataOut(31 downto 0) <= DDRFETCHTAG;
-        when CRDDRDREQTAG =>
-          DataOut(31 downto 0) <= DDRDREQTAG;
-        when CRDDROFFSETTAG =>
-          DataOut(31 downto 0) <= DDROFFSETTAG;
+        --when CRDDRSIZERD =>
+          --DataOut(31 downto 0) <= DDRSIZERD;
+        --when CRDDRHBCNT =>
+          --DataOut(31 downto 0) <= DDRHBCNT;
+        --when CRDDRHBONHOLD =>
+          --DataOut(31 downto 0) <= DDRHBONHOLD;
+        --when CRDDRPREFCNT =>
+          --DataOut(31 downto 0) <= DDRPREFCNT;
+        --when CRDDRDREQCNT =>
+          --DataOut(31 downto 0) <= DDRDREQCNT;
+        --when CRDDRDREQREAD =>
+          --DataOut(31 downto 0) <= DDRDREQREAD;
+        --when CRDDRDREQSENT =>
+          --DataOut(31 downto 0) <= DDRDREQSENT;
+        --when CRDDRDREQNULL =>
+          --DataOut(31 downto 0) <= DDRDREQNULL;
+        --when CRDDRSPILLCNT =>
+          --DataOut(19 downto 0) <= DDRSPILLCNT;
+        --when CRDDRNULLHBCNT =>
+          --DataOut(31 downto 0) <= DDRNULLHBCNT;
+        --when CRDDRHBTAG =>
+          --DataOut(31 downto 0) <= DDRHBTAG;
+        --when CRDDRPRETAG =>
+          --DataOut(31 downto 0) <= DDRPRETAG;
+        --when CRDDRFETCHTAG =>
+          --DataOut(31 downto 0) <= DDRFETCHTAG;
+        --when CRDDRDREQTAG =>
+          --DataOut(31 downto 0) <= DDRDREQTAG;
+        --when CRDDROFFSETTAG =>
+          --DataOut(31 downto 0) <= DDROFFSETTAG;
 
         when CRDDRCTRLREADY =>
           DataOut(0) <= DDRCTRLREADY;
