@@ -4,7 +4,7 @@
 -- File: DRACRegisters.vhd
 -- File history:
 --      <v1>: <Feb. 17,2024>: Reset register 8 enables ONLY on POWER ON reset (HRESETN) and not on EXT_RST_N
---      <Revision number>: <Date>: <Comments>
+--      <v2>: <Mar. 30,2024>: with added I/O developed during the Mar. 24 Global Run
 --      <Revision number>: <Date>: <Comments>
 --
 -- Description: 
@@ -318,12 +318,14 @@ begin
                 enable_internal_ewm <= drac_wdata(7);
                 enable_clock_reg    <= drac_wdata(8);
                 enable_marker_reg   <= drac_wdata(9);
-                force_full_reg  <= drac_wdata(10);
+                enable_sim_digi_reg <= drac_wdata(10);
+                force_full_reg  <= drac_wdata(15);
 			elsif (drac_addrs = 13) then
 				DCS_RESETFIFO	<= drac_wdata(0);
 			elsif (drac_addrs = 14) then
 				DCS_DDRRESET		<= '1';	 -- self clearing
-   -- addr 9 to 17 were used in older DDRInterface
+            elsif (drac_addrs = 15) then   --
+                DCS_SIM_HIT <= drac_wdata(9 downto 0);
             elsif (drac_addrs = 17) then
 				DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);
             elsif (drac_addrs = 18) then
@@ -348,8 +350,6 @@ begin
                 dcs_hv_addr <= drac_wdata(8 downto 0);
             elsif (drac_addrs = 29) then   -- 0x13
                 dcs_format_vrs <= drac_wdata(7 downto 0);
-            elsif (drac_addrs = 31) then   -- 0x1F
-                DCS_SIM_HIT <= drac_wdata(9 downto 0);
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
 				--fifo_wdata <= drac_wdata(7 downto 0);
@@ -415,6 +415,7 @@ begin
                             
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
+ 			elsif (drac_addrs = 18) then		 	 
  				DATA_OUT <= B"00" & err_req_reg & 
                             DCS_HV_LANE1_EMPTY & DCS_HV_LANE0_EMPTY & DCS_CAL_LANE1_EMPTY & DCS_CAL_LANE0_EMPTY & 
                             DCS_HV_LANE1_FULL  & DCS_HV_LANE0_FULL  & DCS_CAL_LANE1_FULL  & DCS_CAL_LANE0_FULL  & 
