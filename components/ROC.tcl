@@ -47,6 +47,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALEVEN_N} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALEVEN_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALODD_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_CALODD_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_MARKER} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_CE0n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_CE1n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_MOSI} -port_direction {OUT}
@@ -66,6 +67,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DO} -port_direction {OUT} 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISCLKO} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISDO} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISS} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_MARKER} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE0n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
@@ -81,11 +83,15 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_ACCEL_CLK1_P} -port_di
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CAL_DEVRSTn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CAL_LVDS0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CAL_LVDS0_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CAL_LVDS1_N} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_CAL_LVDS1_P} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_DTC_SERDES_TXD0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_DTC_SERDES_TXD0_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_DEVRSTn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS0_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS1_N} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS1_P} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_LED0_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI0_ADC0_CEn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI0_ADC1_CEn} -port_direction {OUT}
@@ -99,7 +105,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI1_MOSI} -port_direc
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI1_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_CLK0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_CLK0_P} -port_direction {OUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_LVTTL0} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_LVTTL1} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_LVTTL3} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_SERDES_TXD0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_SERDES_TXD0_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_SERDES_TXD1_N} -port_direction {OUT} -port_is_pad {1}
@@ -107,6 +115,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_SERDES_TXD1_P} -p
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_CLK0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_CLK0_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_LVTTL0} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_LVTTL2} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_LVTTL3} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_SERDES_TXD0_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_SERDES_TXD0_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_SERDES_TXD1_N} -port_direction {OUT} -port_is_pad {1}
@@ -131,6 +141,12 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQS_N} -port_direction {
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQS_P} -port_direction {INOUT} -port_range {[3:0]} -port_is_pad {1}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQ} -port_direction {INOUT} -port_range {[31:0]} -port_is_pad {1}
 
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CAL_MARKER} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {HV_MARKER} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_CAL_LVDS1_P} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_HV_LVDS1_P} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_CAL_LVDS1_N} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_HV_LVDS1_N} -value {GND}
 # Add AND2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
@@ -189,6 +205,11 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {counter_16bit} -
 
 # Add DFN1_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {DFN1} -instance_name {DFN1_0}
+
+
+
+# Add DFN1_1 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {DFN1} -instance_name {DFN1_1}
 
 
 
@@ -308,18 +329,9 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_0
 
 
 
-# Add MX2_1 instance
-sd_instantiate_macro -sd_name ${sd_name} -macro_name {MX2} -instance_name {MX2_1}
-
-
-
 # Add NewDDRInterface_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {NewDDRInterface} -instance_name {NewDDRInterface_0}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {NewDDRInterface_0:ewtag_offset_out} -pin_slices {[31:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {NewDDRInterface_0:fetch_event_tag} -pin_slices {[15:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {NewDDRInterface_0:next_read_event_tag} -pin_slices {[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {NewDDRInterface_0:start_fetch_cnt} -pin_slices {[15:0]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {NewDDRInterface_0:ONSPILL} -value {GND}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {NewDDRInterface_0:et_fifo_full}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {NewDDRInterface_0:ew_DDR_wrap}
 
@@ -499,7 +511,8 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:FETCH_EVENT_WIN
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:HEARTBEAT_EVENT_WINDOW_TAG} -pin_slices {[31:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:PREFETCH_EVENT_WINDOW_TAG} -pin_slices {[31:0]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:CLOCK_ALIGNED}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:ONSPILL}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_DLYD_EVM_EN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_TAG_OFFSET}
 
 
@@ -568,9 +581,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_CLK0_P" "NewDDRInterface_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_CS0N" "NewDDRInterface_0:CS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_ODT0" "NewDDRInterface_0:ODT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_RESETn" "NewDDRInterface_0:RESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:CLK" "DigiClkReset_0:CLK" "DigiReset_0:CLK" "EWMaker_0:digi_clk" "OUTBUF_DIFF_1:D" "OUTBUF_DIFF_3:D" "PF_CCC_C1_0:OUT0_FABCLK_0" "counter_16bit_0:clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:CLK" "DFN1_1:CLK" "DigiClkReset_0:CLK" "DigiReset_0:CLK" "EWMaker_0:digi_clk" "OUTBUF_DIFF_1:D" "OUTBUF_DIFF_3:D" "PF_CCC_C1_0:OUT0_FABCLK_0" "counter_16bit_0:clk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:D" "MX2_0:Y" "counter_16bit_0:en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:Q" "OUTBUF_DIFF_0:D" "OUTBUF_DIFF_2:D" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_1:D" "TOP_SERDES_0:LAST_EWM" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_1:Q" "ROCtoCAL_LVTTL0" "ROCtoHV_LVTTL2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DI" "SLOWCONTROLS_0:DI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DO" "SLOWCONTROLS_0:DO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DReqClkReset:CLK" "NewDDRInterface_0:dreqclk" "PF_CCC_C0_0:OUT2_FABCLK_0" "TOP_SERDES_0:DREQ_CLK" }
@@ -579,15 +594,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiClkReset_0:FABRIC_RESET_N" 
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiClkReset_0:PLL_LOCK" "DigiReset_0:PLL_LOCK" "PF_CCC_C1_0:PLL_LOCK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiFIFOReset_0:CLK" "DigiInterface_0:fifo_rclk" "NewDDRInterface_0:serdesclk" "PF_CCC_C0_0:OUT1_FABCLK_0" "SerdesClkReset:CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiFIFOReset_0:FABRIC_RESET_N" "DigiInterface_0:fifo_resetn" "counter_16bit_0:rst_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CAL_lane0_empty" "TOP_SERDES_0:DCS_CAL_LANE0_EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CAL_lane0_full" "TOP_SERDES_0:DCS_CAL_LANE0_FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CAL_lane1_empty" "TOP_SERDES_0:DCS_CAL_LANE1_EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CAL_lane1_full" "TOP_SERDES_0:DCS_CAL_LANE1_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:CTRL_CLK" "PF_CLK_DIV_C0_0:CLK_OUT" "TOP_SERDES_0:CTRL_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:HV_lane0_empty" "TOP_SERDES_0:DCS_HV_LANE0_EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:HV_lane0_full" "TOP_SERDES_0:DCS_HV_LANE0_FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:HV_lane1_empty" "TOP_SERDES_0:DCS_HV_LANE1_EMPTY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:HV_lane1_full" "TOP_SERDES_0:DCS_HV_LANE1_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE0_PCS_ARST_N" "SLOWCONTROLS_0:cal_lane0_pcs_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE0_PCS_ARST_N_0" "SLOWCONTROLS_0:hv_lane0_pcs_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE0_PMA_ARST_N" "SLOWCONTROLS_0:cal_lane0_pma_reset_n" }
@@ -617,6 +624,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:axi_start_on_se
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_aligned" "SLOWCONTROLS_0:cal_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_aligned" "SLOWCONTROLS_0:cal_lane1_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:curr_ewfifo_wr" "NewDDRInterface_0:DIGI_curr_ewfifo_wr" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:en_digi_sim" "TOP_SERDES_0:DCS_DIGI_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_done" "NewDDRInterface_0:DIGI_ew_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_fifo_full" "NewDDRInterface_0:ew_fifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_fifo_we" "NewDDRInterface_0:DIGI_ew_fifo_we" }
@@ -625,6 +633,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:force_full" "SL
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane0_aligned" "SLOWCONTROLS_0:hv_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane1_aligned" "SLOWCONTROLS_0:hv_lane1_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:newspill" "NewDDRInterface_0:NEWSPILL" "TOP_SERDES_0:NEWSPILL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:pattern_init" "NewDDRInterface_0:pattern_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:pattern_type" "NewDDRInterface_0:pattern_type" "TOP_SERDES_0:DCS_PATTERN_TYPE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serdesclk_resetn" "NewDDRInterface_0:resetn_serdesclk" "SerdesClkReset:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_empty" "SLOWCONTROLS_0:SERDES_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_full" "SLOWCONTROLS_0:SERDES_FULL" }
@@ -660,16 +670,14 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO2" "SLOWCONTROLS_0:SPI2_M
 sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO3" "SLOWCONTROLS_0:SPI2_SCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO4" "SLOWCONTROLS_0:SPI2_MISO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"KEY_IO5" "SLOWCONTROLS_0:SPI2_ADC0_CEn" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "MX2_1:Y" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:B" "TOP_SERDES_0:EWM" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "SLOWCONTROLS_0:enable_fiber_marker" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_1:A" "TOP_SERDES_0:evm_for_dreq" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_1:B" "TOP_SERDES_0:EVM" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_1:S" "TOP_SERDES_0:DCS_FREE_EVM" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:CTRLR_READY" "SLOWCONTROLS_0:DDRCTRLREADY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:DCS_pattern_en" "TOP_SERDES_0:DCS_PATTERN_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:DREQ_FIFO_EMPTY" "SLOWCONTROLS_0:DDRSIZERD[28:28]" "TOP_SERDES_0:DCS_DREQ_FIFO_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:DREQ_FIFO_FULL" "SLOWCONTROLS_0:DDRSIZEWR[28:28]" "TOP_SERDES_0:DCS_DREQ_FIFO_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:MEM_CLK" "PF_CCC_111_0:OUT1_FABCLK_0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:ONSPILL" "ROCtoCAL_LVTTL3" "ROCtoHV_LVTTL3" "TOP_SERDES_0:ONSPILL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:RXCLK_RESETN" "TOP_SERDES_0:RXCLK_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:RX_CLK" "PF_NGMUX_C0_0:CLK1" "TOP_SERDES_0:LANE0_RX_CLK_R" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:SERIAL_pattern_en" "SLOWCONTROLS_0:DDRPTTREN" }
@@ -684,7 +692,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:et_pckts_ovfl
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:event_error" "SLOWCONTROLS_0:DDRERROR[0:0]" "TOP_SERDES_0:DCS_EVT_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:event_start" "TOP_SERDES_0:DATAREQ_START_EVENT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:evm_valid" "TOP_SERDES_0:END_EVM_SEEN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_valid" "TOP_SERDES_0:HEARTBEAT_SEEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:first_hb_seen" "TOP_SERDES_0:FIRST_HB_SEEN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_seen" "TOP_SERDES_0:HEARTBEAT_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:header1_error" "SLOWCONTROLS_0:DDRERROR[1:1]" "TOP_SERDES_0:DCS_HDR1_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:header2_error" "SLOWCONTROLS_0:DDRERROR[2:2]" "TOP_SERDES_0:DCS_HDR2_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:last_word" "TOP_SERDES_0:DATAREQ_LAST_WORD" }
@@ -743,11 +752,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_ERROROUT" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_LOCK" "TOP_SERDES_0:PRBS_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_ON" "TOP_SERDES_0:PRBS_ON" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SS" "SS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_busy" "TOP_SERDES_0:dcs_cal_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_init" "TOP_SERDES_0:dcs_cal_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_enable_fiber_clock" "TOP_SERDES_0:DCS_ENABLE_CLOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_enable_fiber_marker" "TOP_SERDES_0:DCS_ENABLE_MARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_ewm_enable_50mhz" "TOP_SERDES_0:DCS_INT_EVM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_force_full" "TOP_SERDES_0:DCS_FORCE_FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_busy" "TOP_SERDES_0:dcs_hv_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_init" "TOP_SERDES_0:dcs_hv_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_enable_reset" "TOP_SERDES_0:ENABLE_ALIGNMENT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:DCS_DDRRESET" "pulse_stretcher_1:pulse_i" }
@@ -759,6 +770,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_DQ" "NewDDRInterface_0:DQ"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_DQM" "NewDDRInterface_0:DM_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_DQS_N" "NewDDRInterface_0:DQS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_DQS_P" "NewDDRInterface_0:DQS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE_EMPTY" "TOP_SERDES_0:DCS_LANE_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE_FULL" "TOP_SERDES_0:DCS_LANE_FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE_SIM_EMPTY" "TOP_SERDES_0:DCS_SIM_LANE_EMPTY" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:LANE_SIM_FULL" "TOP_SERDES_0:DCS_SIM_LANE_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_alignment" "SLOWCONTROLS_0:cal_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_error_count" "SLOWCONTROLS_0:cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_alignment" "SLOWCONTROLS_0:cal_lane1_alignment" }
@@ -766,6 +781,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_error
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_fifo_data" "NewDDRInterface_0:DIGI_ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_size" "NewDDRInterface_0:DIGI_ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_tag" "NewDDRInterface_0:DIGI_ew_tag" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ewtag_in" "NewDDRInterface_0:spill_ewtag_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hit_in" "TOP_SERDES_0:DCS_SIM_HIT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane0_alignment" "SLOWCONTROLS_0:hv_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane0_error_count" "SLOWCONTROLS_0:hv_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane1_alignment" "SLOWCONTROLS_0:hv_lane1_alignment" }
@@ -779,6 +796,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:data_expc" "T
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:data_seen" "TOP_SERDES_0:data_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:datareq_state" "TOP_SERDES_0:datareq_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:dreq_cnt" "TOP_SERDES_0:DCS_DREQCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:dreq_full_count" "TOP_SERDES_0:dreq_full_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:dreq_tag" "TOP_SERDES_0:DATAREQ_EVENT_WINDOW_TAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:et_fifo_rdata" "TOP_SERDES_0:DATAREQ_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:et_pckts" "TOP_SERDES_0:DATAREQ_PACKETS_IN_EVT" }
@@ -791,22 +809,23 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:ewtag_dreq_fu
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:ewtag_offset_out" "TOP_SERDES_0:DCS_OFFSETTAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:ewtag_state" "TOP_SERDES_0:ewtag_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:fetch_cnt" "SLOWCONTROLS_0:DDRSIZERD[19:0]" "TOP_SERDES_0:DCS_FETCH_CNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:fetch_event_tag[15:0]" "TOP_SERDES_0:fetch_event_tag" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:fetch_event_tag" "TOP_SERDES_0:fetch_event_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:fetch_pos_cnt" "SLOWCONTROLS_0:DDRSIZERD[25:24]" "TOP_SERDES_0:DCS_FETCH_POS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:fetch_state_cnt" "TOP_SERDES_0:fetch_state" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_cnt" "TOP_SERDES_0:DCS_HBCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_cnt_onhold" "TOP_SERDES_0:DCS_HBONHOLD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_dreq_error_cnt" "TOP_SERDES_0:hb_dreq_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_empty_overlap_count" "TOP_SERDES_0:hb_empty_overlap_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_event_window" "TOP_SERDES_0:HEARTBEAT_EVENT_WINDOW_TAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_tag_err_cnt" "TOP_SERDES_0:hb_tag_err_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_tag_full_count" "TOP_SERDES_0:hb_tag_full_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hdr1_expc" "TOP_SERDES_0:hdr1_expc" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hdr1_seen" "TOP_SERDES_0:hdr1_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hdr2_expc" "TOP_SERDES_0:hdr2_expc" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hdr2_seen" "TOP_SERDES_0:hdr2_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:missed_fetch_cnt" "TOP_SERDES_0:missed_fetch_cnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:next_read_event_tag[15:0]" "TOP_SERDES_0:next_read_event_tag" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:next_read_event_tag" "TOP_SERDES_0:next_read_event_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:spill_hbtag_in" "TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:spilltag_full_count" "TOP_SERDES_0:spilltag_full_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:start_fetch_cnt[15:0]" "TOP_SERDES_0:start_fetch_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:store_cnt" "SLOWCONTROLS_0:DDRSIZEWR[19:0]" "TOP_SERDES_0:DCS_STORE_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:store_pos_cnt" "SLOWCONTROLS_0:DDRSIZEWR[25:24]" "TOP_SERDES_0:DCS_STORE_POS" }
@@ -824,8 +843,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TX_WRCNT" "T
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_ERRORCNT" "TOP_SERDES_0:PRBS_ERROR_COUNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_addr" "TOP_SERDES_0:dcs_cal_addr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_data" "TOP_SERDES_0:dcs_cal_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_data_out" "TOP_SERDES_0:dcs_cal_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_addr" "TOP_SERDES_0:dcs_hv_addr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_data" "TOP_SERDES_0:dcs_hv_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_data_out" "TOP_SERDES_0:dcs_hv_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_use_lane" "TOP_SERDES_0:DCS_USE_LANE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:error_address" "TOP_SERDES_0:address_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:error_counter" "TOP_SERDES_0:counter_out" }

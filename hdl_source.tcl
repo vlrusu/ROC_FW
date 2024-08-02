@@ -9,6 +9,8 @@ import_files -library work -hdl_source hdl/EW_FIFO_controller.v
 import_files -library work -hdl_source hdl/ew_size_store_and_fetch_controller.vhd
 import_files -library work -hdl_source hdl/ewtag_cntrl.v
 import_files -library work -hdl_source hdl/clus_pattern_cntrl.v
+import_files -library work -hdl_source hdl/clus_pattern_sim.v
+import_files -library work -hdl_source hdl/MUX_DIGI_DATA.v
 import_files -library work -hdl_source hdl/rocfifo_cntrl.v
 import_files -library work -hdl_source hdl/hit_ram.vhd
 import_files -library work -hdl_source hdl/pattern_switch.v
@@ -24,7 +26,7 @@ import_files -library work -hdl_source hdl/DRACRegisters.vhd
 import_files -library work -hdl_source hdl/DREQProcessor.vhd
 import_files -library work -hdl_source hdl/DataStatusProcessor.vhd
 import_files -library work -hdl_source hdl/ErrorCounter.vhd
-import_files -library work -hdl_source hdl/evm_delay_fifo_driver.vhd
+import_files -library work -hdl_source hdl/delay_sreg_1bit.vhd
 import_files -library work -hdl_source hdl/pulse_time_crossing.v
 import_files -library work -hdl_source hdl/PBRS_checker.v
 import_files -library work -hdl_source hdl/PRBS_generator.v

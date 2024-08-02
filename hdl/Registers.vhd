@@ -134,6 +134,11 @@ entity Registers is
     dtc_serdes_reset_n : out std_logic;
     
     event_window_expected : out std_logic_vector(15 downto 0);
+    
+    cal_busy    : out std_logic;
+    cal_data_out: out std_logic_vector(15 downto 0);
+    hv_busy     : out std_logic;
+    hv_data_out : out std_logic_vector(15 downto 0);
 
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
@@ -390,15 +395,15 @@ architecture synth of Registers is
     --end component;
 --
     signal cal_init : std_logic;
-    signal cal_busy : std_logic;
+--    signal cal_busy : std_logic;                          -- July'24: MT changes to module output to be available for fiber read
     signal cal_data_in : std_logic_vector(15 downto 0);
-    signal cal_data_out : std_logic_vector(15 downto 0);
+--    signal cal_data_out : std_logic_vector(15 downto 0);  -- July'24: MT changes to module output to be available for fiber read
     signal cal_address_in : std_logic_vector(8 downto 0);
   
     signal hv_init : std_logic;
-    signal hv_busy : std_logic;
+--    signal hv_busy : std_logic;                           -- July'24: MT changes to module output to be available for fiber read
     signal hv_data_in : std_logic_vector(15 downto 0);
-    signal hv_data_out : std_logic_vector(15 downto 0);
+--    signal hv_data_out : std_logic_vector(15 downto 0);   -- July'24: MT changes to module output to be available for fiber read
     signal hv_address_in : std_logic_vector(8 downto 0);
 
 

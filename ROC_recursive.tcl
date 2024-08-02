@@ -18,7 +18,9 @@ source components/PF_TX_PLL_0.tcl
 source components/PF_XCVR_0.tcl 
 source components/PF_XCVR_REF_CLK_0.tcl 
 source components/ROCFIFO.tcl 
+source components/ROCFIFO_SIM.tcl 
 source components/DigiLink.tcl 
+source components/DigiLink_sim.tcl 
 source components/DigiReaderFIFO.tcl 
 source components/DigiInterface.tcl 
 source components/INIT_component.tcl 
@@ -60,7 +62,6 @@ source components/TVS_Interface.tcl
 source components/UARTapb.tcl 
 source components/pwm.tcl 
 source components/SLOWCONTROLS.tcl 
-source components/EVM_DELAY_FIFO.tcl 
 source components/RxPacketFIFO.tcl 
 source components/CorePCS_C0.tcl 
 source components/PF_XCVR_ERM_C0.tcl 

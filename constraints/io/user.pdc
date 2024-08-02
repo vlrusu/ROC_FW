@@ -497,8 +497,23 @@ set_io -port_name ROC_CAL_LVDS0_P  \
     -pin_name A17                  \
     -fixed true                    \
     -io_std LVDS25                 \
+    -DIRECTION INOUT
+
+    
+set_io -port_name ROC_CAL_LVDS1_N  \
+    -pin_name B15                  \
+    -fixed true                    \
+    -io_std LVCMOS25               \
     -DIRECTION OUTPUT
 
+
+set_io -port_name ROC_CAL_LVDS1_P  \
+    -pin_name B14                  \
+    -fixed true                    \
+    -io_std LVCMOS25               \
+    -DIRECTION OUTPUT
+
+    
 
 set_io -port_name ROC_HV_DEVRSTn  \
     -pin_name L3                  \
@@ -518,6 +533,41 @@ set_io -port_name ROC_HV_LVDS0_P  \
     -pin_name A2                  \
     -fixed true                   \
     -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+    
+set_io -port_name ROC_HV_LVDS1_N  \
+    -pin_name B1                  \
+    -fixed true                   \
+    -io_std LVCMOS25              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_HV_LVDS1_P  \
+    -pin_name C1                  \
+    -fixed true                   \
+    -io_std LVCMOS25              \
+    -DIRECTION INOUT
+
+
+set_io -port_name ROC_HV_LVDS0_N  \
+    -pin_name A3                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_MARKER      \
+    -pin_name C6                  \
+    -fixed true                   \
+    -io_std LVCMOS25              \
+    -DIRECTION OUTPUT
+
+    
+set_io -port_name HV_MARKER       \
+    -pin_name B7                  \
+    -fixed true                   \
+    -io_std LVCMOS25              \
     -DIRECTION OUTPUT
 
 
@@ -655,6 +705,13 @@ set_io -port_name ROCtoCAL_CLK0_P  \
     -DIRECTION OUTPUT
 
 
+set_io -port_name ROCtoCAL_LVTTL0  \
+    -pin_name P4                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
 set_io -port_name ROCtoCAL_LVTTL1  \
     -pin_name R3                   \
     -fixed true                    \
@@ -666,7 +723,14 @@ set_io -port_name ROCtoCAL_LVTTL2  \
     -pin_name T2                   \
     -fixed true                    \
     -io_std LVCMOS33               \
-    -DIRECTION INOUT
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoCAL_LVTTL3  \
+    -pin_name T3                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
 
 
 set_io -port_name ROCtoHV_CLK0_N  \
@@ -696,6 +760,19 @@ set_io -port_name ROCtoHV_LVTTL1  \
     -io_std LVCMOS33              \
     -DIRECTION INOUT
 
+    
+set_io -port_name ROCtoHV_LVTTL2  \
+    -pin_name P1                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROCtoHV_LVTTL3  \
+    -pin_name P6                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -DIRECTION OUTPUT
 
 
 # 

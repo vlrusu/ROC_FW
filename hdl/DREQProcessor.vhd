@@ -67,7 +67,8 @@ port (
     dreq_state_count    : out std_logic_vector(7 downto 0);
     dreq_error_count    : out std_logic_vector(15 downto 0);
     reqType_debug       : out std_logic_vector(3 downto 0);
-    reqEventWindowTag_debug : out std_logic_vector(EVENT_WINDOW_TAG_SIZE-1 downto 0)
+    reqEventWindowTag_debug     : out std_logic_vector(EVENT_WINDOW_TAG_SIZE-1 downto 0);
+    fetchEventWindowTag_debug   : out std_logic_vector(EVENT_WINDOW_TAG_SIZE-1 downto 0)
     
 );
 end DREQProcessor;
@@ -181,6 +182,10 @@ begin
         dreqTimeout     <= (others => '1');
         reset_dreq_logic<= '0';
         
+        reqType_debug               <= (others => '0');
+        reqEventWindowTag_debug     <= (others => '0');
+        fetchEventWindowTag_debug   <= (others => '0');
+         
     elsif rising_edge(clk) then
         crc_en <= '0';
         crc_rst <= '1';
@@ -268,7 +273,8 @@ begin
                         dreq_state <= DREQ;
                     else -- catch-all condition for "unusual" EW Timestamps: send back a data packet header with Status bit(7) 
                         reqType_debug   <= std_logic_vector(reqType);
-                        reqEventWindowTag_debug <= std_logic_vector(reqEventWindowTag);
+                        reqEventWindowTag_debug     <= std_logic_vector(reqEventWindowTag);
+                        fetchEventWindowTag_debug   <= std_logic_vector(FETCH_EVENT_WINDOW_TAG);
                         mark_window_tag_unknown <= '1';
                         
                         dataReqStatus(7)    <= '1';

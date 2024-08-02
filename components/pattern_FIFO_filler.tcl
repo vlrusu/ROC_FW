@@ -10,6 +10,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -p
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_done} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill_reset} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk} -port_direction {IN}
 
@@ -67,6 +68,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"axi_start_on_serdesclk" "rocfif
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:ddr_done" "ddr_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:hit_re" "hit_ram_0:re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:pattern_init" "pattern_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:pattern_type" "pattern_type" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"curr_ewfifo_wr" "rocfifo_cntrl_0:curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_done" "rocfifo_cntrl_0:ew_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_fifo_we" "rocfifo_cntrl_0:ew_fifo_we" }

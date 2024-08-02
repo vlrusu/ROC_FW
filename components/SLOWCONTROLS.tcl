@@ -95,6 +95,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_pcs_reset_n} -po
 sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_pma_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_serdes_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {calscl} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_cal_busy} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_hv_busy} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dtc_enable_reset} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dtc_serdes_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {enable_fiber_clock} -port_direction {OUT}
@@ -171,6 +173,8 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction
 sd_create_bus_port -sd_name ${sd_name} -port_name {GPIO_OUT} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRDATA} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {SERDES_HOWMANY} -port_direction {OUT} -port_range {[12:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_cal_data_out} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_hv_data_out} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dummy_status_address} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {error_address} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_early_cut} -port_direction {OUT} -port_range {[15:0]}
@@ -507,6 +511,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_RE" "SERDES_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERENABLE" "counter32_0:en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERRESET" "counter32_0:rst_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:align_roc_to_digi" "align_roc_to_digi" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_busy" "dcs_cal_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_aligned" "cal_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_pcs_reset_n" "cal_lane0_pcs_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_pma_reset_n" "cal_lane0_pma_reset_n" }
@@ -529,6 +534,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:enable_fiber_marker
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_50mhz" "ewm_50mhz" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_enable_50mhz" "ewm_enable_50mhz" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:force_full" "force_full" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_busy" "dcs_hv_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_aligned" "hv_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_pcs_reset_n" "hv_lane0_pcs_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_pma_reset_n" "hv_lane0_pma_reset_n" }
@@ -586,6 +592,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_DATA" "SERDE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_HOWMANY" "SERDES_HOWMANY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_RDCNT" "SERDES_RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:TIMERCOUNTER" "counter32_0:cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_data_out" "dcs_cal_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_alignment" "cal_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane0_error_count" "cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane1_alignment" "cal_lane1_alignment" }
@@ -606,6 +613,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:event_window_early_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:event_window_expected" "event_window_expected" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:event_window_late_cut" "event_window_late_cut" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ewm_delay" "ewm_delay" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_data_out" "dcs_hv_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_alignment" "hv_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane0_error_count" "hv_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane1_alignment" "hv_lane1_alignment" }
