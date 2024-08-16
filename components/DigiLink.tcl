@@ -1,4 +1,4 @@
-# Creating SmartDesign DigiLink
+# Creating SmartDesign "DigiLink"
 set sd_name {DigiLink}
 create_smartdesign -sd_name ${sd_name}
 
@@ -231,7 +231,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TX_PLL_0_0:CLKS_TO_XCVR" "PF
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign DigiLink
+# Generate SmartDesign "DigiLink"
 generate_component -component_name ${sd_name}

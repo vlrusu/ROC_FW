@@ -1,4 +1,4 @@
-# Creating SmartDesign pattern_FIFO_filler
+# Creating SmartDesign "pattern_FIFO_filler"
 set sd_name {pattern_FIFO_filler}
 create_smartdesign -sd_name ${sd_name}
 
@@ -8,6 +8,7 @@ auto_promote_pad_pins -promote_all 0
 # Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_done} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {haltrun_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill_reset} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
@@ -66,14 +67,15 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:RRESET_N" "SIM_R
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:WE" "clus_pattern_cntrl_0:pattern_we0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"axi_start_on_serdesclk" "rocfifo_cntrl_0:axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:ddr_done" "ddr_done" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:haltrun_en" "haltrun_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:hit_re" "hit_ram_0:re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:newspill_reset" "newspill_reset" "rocfifo_cntrl_0:newspill_reset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:pattern_init" "pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:pattern_type" "pattern_type" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"curr_ewfifo_wr" "rocfifo_cntrl_0:curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_done" "rocfifo_cntrl_0:ew_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_fifo_we" "rocfifo_cntrl_0:ew_fifo_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_ovfl" "rocfifo_cntrl_0:ew_ovfl" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"newspill_reset" "rocfifo_cntrl_0:newspill_reset" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:DATA" "clus_pattern_cntrl_0:pattern_data0" }
@@ -89,7 +91,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_tag" "rocfifo_cntrl_0:ew_tag
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign pattern_FIFO_filler
+# Generate SmartDesign "pattern_FIFO_filler"
 generate_component -component_name ${sd_name}

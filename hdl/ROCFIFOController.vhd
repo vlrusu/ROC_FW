@@ -7,6 +7,11 @@
 --      v2.0: <Mar. 2022>: Fixed size of EW_SIZE output as (EVENT_SIZE_BITS downto 0)  => MAX allowed value is 4096
 --      v3.0: <July 2023>: Added NEWSPILL_RESET input used as overall logic reset
 --      v4.0: <Feb. 2024>: Merged with version committed by Richie in DRACTesting
+--      v5.0: <Jul. 2024>: Changed DIGI header word content:
+--              bit[19:0] => 20 bits of local tag counter
+--              bit[30:20]=> number of 128-bit words for SERDES lane 
+--              bit[31]   => error bit if ROC to DIGI TAG_SYNC fails (where TAG_SYNC is local tag counter roll-over every 2**14=8192 tags)
+--           Sent EW_TAG_ERROR and TAG_SYNC_ERROR out to DDR
 --
 -- Description: 
 --
@@ -40,10 +45,10 @@ port (
     lane2_empty : in std_logic;
     lane3_empty : in std_logic;
     
-    lane0_data : in std_logic_vector(31 downto 0);
-    lane1_data : in std_logic_vector(31 downto 0);
-    lane2_data : in std_logic_vector(31 downto 0);
-    lane3_data : in std_logic_vector(31 downto 0);
+    lane0_data : in std_logic_vector(DIGI_BITS-1 downto 0);
+    lane1_data : in std_logic_vector(DIGI_BITS-1 downto 0);
+    lane2_data : in std_logic_vector(DIGI_BITS-1 downto 0);
+    lane3_data : in std_logic_vector(DIGI_BITS-1 downto 0);
     
     axi_start_on_serdesclk : in std_logic;
     
@@ -56,8 +61,11 @@ port (
     ew_ovfl : out std_logic;
     ew_size : out std_logic_vector(EVENT_SIZE_BITS-1 downto 0);
     ew_tag  : out std_logic_vector(SPILL_TAG_BITS-1 downto 0);
-    newspill_reset : in  std_logic;
-    curr_ewfifo_wr : out std_logic;
+    newspill_reset  : in  std_logic;
+    curr_ewfifo_wr  : out std_logic;
+    tag_sync_error  : out std_logic;
+    ew_tag_error    : out std_logic;
+    tag_sync_err_cnt: out std_logic_vector(15 downto 0);
     
     state_count : out std_logic_vector(7 downto 0);
 
@@ -65,11 +73,11 @@ port (
     
     uart_fifo_full : in std_logic;
     uart_fifo_we   : out std_logic;
-    uart_fifo_data : out std_logic_vector(31 downto 0);
+    uart_fifo_data : out std_logic_vector(DIGI_BITS-1 downto 0);
     
     ew_fifo_full : in std_logic;  -- not used because EW_FIFO size is hard-wired to be at most equal to one maximum size event
     ew_fifo_we   : out std_logic;
-    ew_fifo_data : out  std_logic_vector(31 downto 0)
+    ew_fifo_data : out  std_logic_vector(DIGI_BITS-1 downto 0)
 );
 end ROCFIFOController;
 architecture architecture_ROCFIFOController of ROCFIFOController is
@@ -78,11 +86,11 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
     signal state            : state_type;
     
     signal current_lane : integer range 0 to NROCFIFO-1;
-    signal ew_tag_error : std_logic;
+--    signal ew_tag_error : std_logic;
 
     signal lane_size : unsigned(12 downto 0);
     signal full_size : unsigned(11 downto 0);
-    constant  MAX_BEATS: integer := (2**TRK_HIT_BITS-1)*4;
+    constant  MAX_BEATS: integer := (2**TRK_HIT_BITS-1)*4;  -- one TRK hit comprises 256-bits, ie 4x64-bit words
     
     signal rd_cnt : unsigned(15 downto 0);    -- this counts words read from ROCFIFO in units of 32-bit words
     signal wr_cnt : unsigned(15 downto 0);    -- this counts words written to EW_FIFO in units of 64-bit words (must stop when overflow condition is reached!!)
@@ -164,22 +172,24 @@ begin
         ew_done <= '0';
         ew_ovfl <= '0';
         ew_size <= (others => '0');
-        ew_tag <= (others => '0');
-        ew_tag_error <= '0';
+        ew_tag  <= (others => '0');
+        ew_tag_error    <= '0';
+        tag_sync_error  <= '0';
+        tag_sync_err_cnt<= (others => '0');
         lane_size <= (others => '0');
         full_size <= (others => '0');
         rd_cnt <= (others => '0');
         wr_cnt <= (others => '0');
-        wait_cnt <= (others => '0');
-        timeout_en <= '0';
+        wait_cnt    <= (others => '0');
+        timeout_en  <= '0';
         timeout_cnt <= (others => '0');
         
-        want_we     <= '0';
+        want_we <= '0';
         want_re <= (others => '0');
-        want_ew_fifo_we  <= '0';
-        want_uart_fifo_we <= '0';
-        uart_fifo_data <= (others => '0');
-        ew_fifo_data <= (others => '0');
+        want_ew_fifo_we     <= '0';
+        want_uart_fifo_we   <= '0';
+        uart_fifo_data  <= (others => '0');
+        ew_fifo_data    <= (others => '0');
         
         --first_used_lane <= 4;     -- this is an unphysical value: use to disable start of STATE MACHINE until USE_LANE is set
         active_lane     <= (others => '0');
@@ -243,7 +253,7 @@ begin
             when START2 =>
                 state_count <= X"11";
                 
-                -- BAD! Will get stuch when lane reports ONLY header word
+                -- BAD! Will get stuck when lane reports ONLY header word
                 --if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
                     
                 -- set EW_TAG for first enabled lane. Set an error if other enabled lanes don't agree
@@ -253,6 +263,9 @@ begin
                 elsif current_data(SPILL_TAG_BITS-1 downto 0) /= ew_tag then
                     ew_tag_error <= '1';
                 end if;
+                
+                tag_sync_error      <= tag_sync_error or current_data(31);
+                tag_sync_err_cnt    <= std_logic_vector(unsigned(tag_sync_err_cnt) + 1);
                      
                 -- assume header word from Richie is in unit of 128-bit (ie number of DTC packets == 2*(no. of hits) )
                 --  LANE_SIZE is in units of 32-bits and use to save the number of hits in the current lane
@@ -262,8 +275,8 @@ begin
                     
                 -- write header word to DigiReaderFIFO (but not to DDR)
                 if (use_uart = '1' and unsigned(current_data(30 downto 20)) /= 0) then
-                    want_uart_fifo_we    <= '1';
-                    uart_fifo_data 	<= current_data;
+                    want_uart_fifo_we   <= '1';
+                    uart_fifo_data 	    <= current_data;
                 end if;
                     
                 state <= CHECK;
@@ -388,9 +401,11 @@ begin
                 state_count <= X"07";
                 ew_done <= '0';
                 if axi_start_on_serdesclk = '1' or use_uart = '1' then
-                    ew_size <= (others => '0');
-                    full_size <= (others => '0');
-                    ew_ovfl <= '0';
+                    ew_size     <= (others => '0');
+                    full_size   <= (others => '0');
+                    ew_ovfl     <= '0';
+                    ew_tag_error    <= '0';
+                    tag_sync_error  <= '0';
                     state <= IDLE;
                 end if;
                 

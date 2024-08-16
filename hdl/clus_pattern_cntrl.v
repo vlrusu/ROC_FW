@@ -9,6 +9,7 @@
 //                            [19:0]   = event tag as counter from start of SPILL  
 //    v3.0: 01/2022:  added generation of data to multiple SIM_ROC_FIFOs on a rotating basis                 
 //    v4.0: 07/2024:  added PATTERN_TYPE input                 
+//    v5.0: 08/2024:  added NEWSPILL_RESET and HALTRUN_EN input                 
 //
 // Description: 
 //
@@ -28,11 +29,14 @@ module clus_pattern_cntrl #(
 	parameter 	NROCFIFO    =	1     // no. of ROCFIFOs
 )(
 //global signals
-    input		serdesclk,
-    input		serdesclk_resetn,
+    input	serdesclk,
+    input   serdesclk_resetn,
+    
+    input   newspill_reset,
+    input   haltrun_en,             // gate set by addr=8 bit[13]
 
-    input		pattern_init,						//	Event Window and Event payload start
-	input		ddr_done,					        //	event has been read from EW_FIFO and written to DDR
+    input   pattern_init,						//	Event Window and Event payload start
+	input	ddr_done,					        //	event has been read from EW_FIFO and written to DDR
 //   input	[`TRK_HIT_BITS-1:0]		hit_in,	        // simulated tracker bit number from HIT_NO_TPSRAM 
     input	[9:0]		            hit_in,	        // allow more hits to check for overflow condition (0x200 hits fills header[31:20]!)
 	input	[`SPILL_TAG_BITS-1:0]   ewtag_in,       // SPILLTAG from SPILLTAG_FIFO
@@ -96,7 +100,7 @@ assign pattern_data0 = (is_header == 1'b1) ? header_data[0]  : payload_data[0];
 integer index;          // index for current SIM_ROC_FIFO
 integer event_index;    // index for bouncing writing payload between SIM_ROC_FIFO
 //pattern output state machine
-always@(posedge serdesclk, negedge serdesclk_resetn)
+always@(posedge serdesclk, negedge serdesclk_resetn, posedge newspill_reset)
 begin
     if(serdesclk_resetn == 1'b0)
     begin
@@ -113,11 +117,36 @@ begin
 		//payload_data[1]<=	0;
 		//payload_data[2]<=	0;
 		//payload_data[3]<=	0;
+        
 		counter_data<=  -1'b1;
         pattern_index   <= 1'b0;
         hit_filled  <=	0;
         hit_re     	<=	0;
         hit_rdaddr 	<=	0; 
+		hit_cnt		<=  0;
+		hit_under	<=  0;
+		hit_over	<=  0;
+		hit_error	<=  0;
+        word_cnt    <=	0;
+        wr_state    <=	IDLE;
+    end
+    
+    // do NOT reset data payload counter or 64-events sequence in HATLRUN mode
+    else if (newspill_reset == 1'b1)
+    begin
+        index       = 0;
+        event_index = 0;
+        pattern_we  <=  0;
+        is_header   <=  0;
+        is_shared   <=  0;
+		header_data[0]  <=  0;
+        payload_data[0] <=  0;
+        
+		if (!haltrun_en) counter_data<=  -1'b1;
+        pattern_index   <= 1'b0;
+        hit_filled  <=	0;
+        hit_re     	<=	0;
+        if (!haltrun_en) hit_rdaddr 	<=	0; 
 		hit_cnt		<=  0;
 		hit_under	<=  0;
 		hit_over	<=  0;
@@ -221,7 +250,6 @@ begin
                 begin
                     word_cnt	        <=	word_cnt + 1;
                     counter_data        <=	counter_data + 1'b1;
-//                    payload_data[index] <=  counter_data + 1'b1;
                     if ( pattern_type == 1'b0 ) begin
                         payload_data[index] <=  counter_data + 1'b1;
                     end   else  begin
@@ -254,7 +282,6 @@ begin
                     begin
                         word_cnt	        <=	word_cnt + 1;
                         counter_data        <=	counter_data + 1'b1;
-//                        payload_data[index] <=  counter_data + 1'b1;
                         if ( pattern_type == 1'b0 ) begin
                             payload_data[index] <=  counter_data + 1'b1;
                         end   else  begin

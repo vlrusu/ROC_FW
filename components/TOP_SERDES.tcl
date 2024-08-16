@@ -1,4 +1,4 @@
-# Creating SmartDesign TOP_SERDES
+# Creating SmartDesign "TOP_SERDES"
 set sd_name {TOP_SERDES}
 create_smartdesign -sd_name ${sd_name}
 
@@ -11,6 +11,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_DATA_READY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_LAST_WORD} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_PACKETS_OVFL} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_TAG_ERROR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_DATA_ERR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_DREQ_FIFO_EMPTY} -port_direction {IN}
@@ -60,18 +61,20 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {END_EVM_SEEN} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {EWM} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {FETCH_START} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {FIRST_HB_SEEN} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HALTRUN_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HEARTBEAT_SEEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LAST_EWM} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWSPILL} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWRUN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ONSPILL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PCS_ALIGNED} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_LOCK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_ON} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RXCLK_RESETN} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {TAG_SYNC} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_cal_init} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_hv_init} -port_direction {OUT}
 
@@ -113,21 +116,28 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {ew_fifo_emptied_counter} -por
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewm_out_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewtag_state} -port_direction {IN} -port_range {[2:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_event_tag} -port_direction {IN} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_missing_TAG} -port_direction {IN} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_missing_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_runover_TAG} -port_direction {IN} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_runover_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_state} -port_direction {IN} -port_range {[1:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hb_dreq_err_cnt} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {fetch_timeout_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hb_dreq_err_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_empty_overlap_counter} -port_direction {IN} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hb_tag_err_cnt} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {hb_tag_err_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_tag_full_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_seen} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_seen} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {missed_fetch_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {next_read_event_tag} -port_direction {IN} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {rocfifocntrl_state} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {skipped_DREQ_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {skipped_DREQ_tag} -port_direction {IN} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {spilltag_full_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {start_fetch_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_error_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_valid_counter} -port_direction {IN} -port_range {[15:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction {OUT} -port_range {[15:0]}
@@ -139,7 +149,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {FETCH_EVENT_WINDOW_TAG} -port
 sd_create_bus_port -sd_name ${sd_name} -port_name {HEARTBEAT_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_ERROR_COUNT} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PREFETCH_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[47:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {SPILL_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[19:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {SPILL_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[39:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {counter_out} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_cal_addr} -port_direction {OUT} -port_range {[8:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_cal_data} -port_direction {OUT} -port_range {[15:0]}
@@ -159,11 +169,6 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 # Add AND2_1 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_1}
-
-
-
-# Add AND2_2 instance
-sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_2}
 
 
 
@@ -217,6 +222,16 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 
 # Add delay_sreg_1bit_1 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit} -hdl_file {hdl\delay_sreg_1bit.vhd} -instance_name {delay_sreg_1bit_1}
+
+
+
+# Add delay_sreg_1bit_2 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit} -hdl_file {hdl\delay_sreg_1bit.vhd} -instance_name {delay_sreg_1bit_2}
+
+
+
+# Add delay_sreg_1bit_3 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit} -hdl_file {hdl\delay_sreg_1bit.vhd} -instance_name {delay_sreg_1bit_3}
 
 
 
@@ -348,6 +363,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_3:EMPTY}
 
 # Add RxPacketReader_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {RxPacketReader} -hdl_file {hdl\RxPacketReader.vhd} -instance_name {RxPacketReader_0}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketReader_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[31:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketReader_0:rx_loopmarker_out} -pin_slices {[15:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketReader_0:rx_loopmarker_out} -pin_slices {[17:16]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:HEARTBEAT_INVALID}
@@ -382,15 +398,13 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {XCVR_Block} -insta
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "INV_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "AND2_0_0:B" "AND2_2:A" "DCSClkReset:EXT_RST_N" "DCSProcessor_0:reset_n" "DCSReadCMDProcessor_0:RESET_N" "DCSWriteCMDProcessor_0:RESET_N" "DRACRegisters_0:EXT_RST_N" "EXT_RST_N" "PBRS_checker_0:RESETCN" "PRBS_generator_0:RESETGN" "RXClkReset:EXT_RST_N" "RxPacketFIFO_1:RRESET_N" "RxPacketFIFO_1:WRESET_N" "RxPacketFIFO_3:RRESET_N" "RxPacketFIFO_3:WRESET_N" "TXClkReset:EXT_RST_N" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" "pulse_time_crossing_0:resetn_in" "pulse_time_crossing_0:resetn_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "AND2_0_0:B" "DCSClkReset:EXT_RST_N" "DCSProcessor_0:reset_n" "DCSReadCMDProcessor_0:RESET_N" "DCSWriteCMDProcessor_0:RESET_N" "DRACRegisters_0:EXT_RST_N" "EXT_RST_N" "PBRS_checker_0:RESETCN" "PRBS_generator_0:RESETGN" "RXClkReset:EXT_RST_N" "RxPacketFIFO_1:RRESET_N" "RxPacketFIFO_1:WRESET_N" "RxPacketFIFO_3:RRESET_N" "RxPacketFIFO_3:WRESET_N" "RxPacketReader_0:roc_resetn" "TXClkReset:EXT_RST_N" "delay_sreg_1bit_0:resetn" "delay_sreg_1bit_1:resetn" "delay_sreg_1bit_2:resetn" "delay_sreg_1bit_3:resetn" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" "pulse_time_crossing_0:resetn_in" "pulse_time_crossing_0:resetn_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "RxPacketFIFO_0:RRESET_N" "RxPacketFIFO_0:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0_0:A" "INV_0_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0_0:Y" "RxPacketFIFO_2:RRESET_N" "RxPacketFIFO_2:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "DRACRegisters_0:HRESETN" "HRESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:B" "DTCALIGN_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:Y" "XCVR_Block_0:ALIGN_RESETN" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_2:B" "RXCLK_RESETN" "RXClkReset:FABRIC_RESET_N" "RxPacketReader_0:reset_n" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_2:Y" "delay_sreg_1bit_0:resetn" "delay_sreg_1bit_1:resetn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CLOCK_ALIGNED" "XCVR_Block_0:CLOCK_ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_IN_WE" "DCSWriteCMDProcessor_0:CMD_IN_WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "ErrorCounter_0:CTRL_RESET_N" "XCVR_Block_0:CTRL_ARST_N" }
@@ -400,6 +414,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DATAREQ_LAST_WORD" "DREQProcess
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DATAREQ_PACKETS_OVFL" "DREQProcessor_0:DATAREQ_PACKETS_OVFL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DATAREQ_RE_FIFO" "DREQProcessor_0:DATAREQ_RE_FIFO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DATAREQ_START_EVENT" "DREQProcessor_0:DATAREQ_START_EVENT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DATAREQ_TAG_ERROR" "DREQProcessor_0:DATAREQ_TAG_ERROR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSClkReset:CLK" "DCSProcessor_0:clk" "DCSReadCMDProcessor_0:DCS_CLK" "DCSWriteCMDProcessor_0:DCS_CLK" "DCS_CLK" "DRACRegisters_0:DCS_CLK" "RxPacketFIFO_0:RCLOCK" "RxPacketFIFO_1:WCLOCK" "crc_0:CLK" "pulse_stretcher_0:clk_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSClkReset:FPGA_POR_N" "FPGA_POR_N" "RXClkReset:FPGA_POR_N" "TXClkReset:FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSClkReset:INIT_DONE" "INIT_DONE" "RXClkReset:INIT_DONE" "TXClkReset:INIT_DONE" }
@@ -447,7 +462,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_FULL" "DRACRegisters_0:D
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_EMPTY" "DRACRegisters_0:DCS_TX_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_FULL" "DRACRegisters_0:DCS_TX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_ERROR_EN" "ErrorCounter_0:dcs_error_en" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:SPILL_TO_ENABLE" "RxPacketReader_0:spill_timeout_enable" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:HALTRUN_EN" "HALTRUN_EN" "RxPacketReader_0:haltrun_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_busy" "dcs_cal_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_init" "dcs_cal_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_busy" "dcs_hv_busy" }
@@ -466,7 +481,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ERROR_CLEAR" "PBRS_checker_0:ER
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ERROR_IN" "PRBS_generator_0:ERROR_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWM" "delay_sreg_1bit_0:sr_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:aligned" "PCS_ALIGNED" "RxPacketReader_0:aligned" "XCVR_Block_0:PCS_ALIGNED" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:clk" "LANE0_RX_CLK_R" "PBRS_checker_0:CLK" "RXClkReset:CLK" "RxPacketFIFO_0:WCLOCK" "RxPacketFIFO_2:WCLOCK" "RxPacketReader_0:clk" "XCVR_Block_0:LANE0_RX_CLK_R" "crc_2:CLK" "delay_sreg_1bit_0:clk" "delay_sreg_1bit_1:clk" "pulse_time_crossing_0:clk_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:clk" "LANE0_RX_CLK_R" "PBRS_checker_0:CLK" "RXClkReset:CLK" "RxPacketFIFO_0:WCLOCK" "RxPacketFIFO_2:WCLOCK" "RxPacketReader_0:clk" "XCVR_Block_0:LANE0_RX_CLK_R" "crc_2:CLK" "delay_sreg_1bit_0:clk" "delay_sreg_1bit_1:clk" "delay_sreg_1bit_2:clk" "delay_sreg_1bit_3:clk" "pulse_time_crossing_0:clk_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:reset_n" "XCVR_Block_0:resetn_align" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:rx_err" "XCVR_Block_0:EPCS_RxERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:rx_val" "PBRS_checker_0:RX_VAL_IN" "XCVR_Block_0:LANE0_RX_VAL" }
@@ -480,23 +495,27 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "XCVR_Block_0:LANE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "XCVR_Block_0:LANE0_TXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TX_CLK_R" "PRBS_generator_0:CLK" "RxPacketFIFO_1:RCLOCK" "RxPacketFIFO_3:RCLOCK" "TXClkReset:CLK" "TxPacketWriter_0:clk" "XCVR_Block_0:LANE0_TX_CLK_R" "pulse_time_crossing_0:clock_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LAST_EWM" "delay_sreg_1bit_1:sr_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWSPILL" "RxPacketReader_0:NEWSPILL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ONSPILL" "RxPacketReader_0:ONSPILL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWRUN" "RxPacketReader_0:NEWRUN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ONSPILL" "delay_sreg_1bit_2:sr_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:PRBS_ON" "PRBS_ON" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:RX_VAL_OUT" "PRBS_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:START" "PRBS_EN" "PRBS_generator_0:START" "XCVR_Block_0:PRBS_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_Block_0:REF_CLK_PAD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_Block_0:REF_CLK_PAD_P" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RXCLK_RESETN" "RXClkReset:FABRIC_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RXClkReset:PLL_LOCK" "XCVR_Block_0:LANE0_RX_READY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:WE" "RxPacketReader_0:rx_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:RE" "TxPacketWriter_0:dcs_fifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_2:WE" "RxPacketReader_0:req_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:RE" "TxPacketWriter_0:dreq_fifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:LAST_EWM" "delay_sreg_1bit_1:sr_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:ONSPILL" "delay_sreg_1bit_2:sr_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:TAG_SYNC" "delay_sreg_1bit_3:sr_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:crc_en" "crc_2:CRC_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:crc_rst" "crc_2:RST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:eventmarker" "delay_sreg_1bit_0:sr_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:loopmarker" "pulse_time_crossing_0:pulse_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TAG_SYNC" "delay_sreg_1bit_3:sr_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TXClkReset:FABRIC_RESET_N" "TxPacketWriter_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TXClkReset:PLL_LOCK" "XCVR_Block_0:LANE0_TX_CLK_STABLE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_Block_0:MARKER_EN" "pulse_time_crossing_0:pulse_out" }
@@ -555,11 +574,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_ERR_SEEN" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_FETCHTAG" "DREQProcessor_0:FETCH_EVENT_WINDOW_TAG" "FETCH_EVENT_WINDOW_TAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_HBCNT" "RxPacketReader_0:hb_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_HBTAG" "HEARTBEAT_EVENT_WINDOW_TAG" "RxPacketReader_0:HEARTBEAT_EVENT_WINDOW_TAG" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_LOOPBACK_COARSE_DELAY" "delay_sreg_1bit_0:sr_delay" "delay_sreg_1bit_1:sr_delay" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_LOOPBACK_COARSE_DELAY" "delay_sreg_1bit_0:sr_delay" "delay_sreg_1bit_1:sr_delay" "delay_sreg_1bit_2:sr_delay" "delay_sreg_1bit_3:sr_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_NULLHBCNT" "RxPacketReader_0:null_hb_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_PREFCNT" "RxPacketReader_0:pref_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_PREFTAG" "PREFETCH_EVENT_WINDOW_TAG" "RxPacketReader_0:PREFETCH_EVENT_WINDOW_TAG" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_SPILLCNT" "RxPacketReader_0:SPILL_EVENT_WINDOW_TAG" "SPILL_EVENT_WINDOW_TAG" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_SPILLCNT" "RxPacketReader_0:SPILL_EVENT_WINDOW_TAG[31:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_TAG_LOST" "RxPacketReader_0:TAG_LOST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:EVENT_MARKER_CNT" "RxPacketReader_0:event_marker_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:IS_SKIPPED_DREQ_CNT" "ErrorCounter_0:is_skipped_dreq_cnt" "RxPacketReader_0:is_skipped_dreq_cnt" }
@@ -575,6 +594,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:evm_lost_cnt" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_dreq_err_cnt" "hb_dreq_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_lost_cnt" "RxPacketReader_0:hb_lost_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_tag_err_cnt" "hb_tag_err_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:tag_sync_err_cnt" "tag_sync_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_data_in" "crc_1:CRC_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_data_out" "crc_1:DATA_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:dreq_error_count" "ErrorCounter_0:dreq_crc_error" }
@@ -598,7 +618,12 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ew_fifo_emptied_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewm_out_counter" "ewm_out_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewtag_state" "ewtag_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_event_tag" "fetch_event_tag" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_missing_TAG" "fetch_missing_TAG" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_missing_counter" "fetch_missing_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_runover_TAG" "fetch_runover_TAG" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_runover_counter" "fetch_runover_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_state" "fetch_state" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:fetch_timeout_counter" "fetch_timeout_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:hb_bad_crc_counter" "RxPacketReader_0:hb_bad_crc_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:hb_empty_overlap_counter" "hb_empty_overlap_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:hb_tag_full_counter" "hb_tag_full_counter" }
@@ -606,7 +631,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:invalid_hb_count
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:invalid_k" "XCVR_Block_0:INVALID_K" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:loop_marker_counter" "RxPacketReader_0:loop_marker_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:marker_error" "RxPacketReader_0:marker_error_count" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:missed_fetch_cnt" "missed_fetch_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:next_read_event_tag" "next_read_event_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:other_marker_counter" "RxPacketReader_0:other_marker_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:rd_err" "XCVR_Block_0:RD_ERR" }
@@ -615,6 +639,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:rocfifocntrl_sta
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:rx_packet_error" "RxPacketReader_0:rx_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:seq_error_counter" "RxPacketReader_0:seq_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:serial_address" "address_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:skipped_DREQ_counter" "skipped_DREQ_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:skipped_DREQ_tag" "skipped_DREQ_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:spilltag_full_counter" "spilltag_full_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:start_fetch_counter" "start_fetch_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:tag_error_counter" "tag_error_counter" }
@@ -629,6 +655,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:Q[17:0]" "TxPack
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:RDCNT" "TxPacketWriter_0:dcs_fifo_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:Q[17:0]" "TxPacketWriter_0:dreq_fifo_data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:RDCNT" "TxPacketWriter_0:dreq_fifo_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:SPILL_EVENT_WINDOW_TAG" "SPILL_EVENT_WINDOW_TAG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:crc_data_in" "crc_2:CRC_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:crc_data_out" "crc_2:DATA_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:rx_loopmarker_out[15:0]" "XCVR_Block_0:MARKER_DATA" }
@@ -647,7 +674,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_seen" "req_err_switch_0:hd
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign TOP_SERDES
+# Generate SmartDesign "TOP_SERDES"
 generate_component -component_name ${sd_name}

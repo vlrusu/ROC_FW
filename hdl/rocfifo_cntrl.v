@@ -120,22 +120,22 @@ reg [2:0]  data_state;
 ///////////////////////////////////////////////////////////////////////////////
 // state machine encoding
 ///////////////////////////////////////////////////////////////////////////////
-localparam [2:0]  IDLE	=   3'b000,
-                  CHECK	=   3'b001,
-						COUNT	=   3'b010,
-                  STOP	=   3'b011,
-                  UPDATE=   3'b100,
-                  HOLD	=   3'b101,
-                  RESET =   3'b111;
+localparam [2:0]    IDLE	=   3'b000,
+                    CHECK	=   3'b001,
+                    COUNT	=   3'b010,
+                    STOP	=   3'b011,
+                    UPDATE  =   3'b100,
+                    HOLD	=   3'b101,
+                    RESET   =   3'b111;
 
 integer  index;
 reg[7:0] wait_cnt;
 reg      timeout_en;
 reg[15:0]timeout_cnt;
 
-always@(posedge serdesclk, negedge resetn_serdesclk)
+always@(posedge serdesclk, negedge resetn_serdesclk, posedge newspill_reset)
 begin
-    if(resetn_serdesclk == 1'b0)
+    if(resetn_serdesclk == 1'b0 || newspill_reset == 1'b1)
 	begin
         index       = 0;
         curr_ewfifo_wr <= 1'b1;
@@ -163,13 +163,13 @@ begin
         
         ew_fifo_we  <= 1'b0;
       
-        if (newspill_reset)   
-        begin 
-            index           = 0;
-            curr_ewfifo_wr  <= 1'b1;
-            full_size   <= 0;
-            ew_size     <= 0;
-        end    
+        //if (newspill_reset)   
+        //begin 
+            //index           = 0;
+            //curr_ewfifo_wr  <= 1'b1;
+            //full_size   <= 0;
+            //ew_size     <= 0;
+        //end    
       
       case(data_state)
        

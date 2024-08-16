@@ -73,9 +73,15 @@ port (
     dcs_tx_state    : in std_logic_vector(7 downto 0);
     
     fetch_state     : in std_logic_vector(1 downto 0);
+    skipped_DREQ_counter    : in std_logic_vector(15 downto 0);
     fetch_event_tag : in std_logic_vector(47 downto 0);
     next_read_event_tag : in std_logic_vector(47 downto 0);
-    missed_fetch_cnt    : in std_logic_vector(15 downto 0);
+    skipped_DREQ_tag : in std_logic_vector(47 downto 0);
+    fetch_runover_TAG : in std_logic_vector(47 downto 0);
+    fetch_missing_TAG : in std_logic_vector(47 downto 0);
+    fetch_timeout_counter   : in std_logic_vector(15 downto 0);
+    fetch_runover_counter   : in std_logic_vector(15 downto 0);
+    fetch_missing_counter   : in std_logic_vector(15 downto 0);
     
     reqType_debug : in std_logic_vector(3 downto 0);
     reqEventWindowTag_debug     : in std_logic_vector(47 downto 0);
@@ -185,7 +191,7 @@ begin
         elsif address = X"16" then  -- 22
             counter_out <= tag_valid_counter;
         elsif address = X"17" then  -- 23
-            counter_out <= missed_fetch_cnt;
+            counter_out <= skipped_DREQ_counter;
         elsif address = X"18" then  -- 24
             counter_out <= is_skipped_dreq_cnt;
         elsif address = X"19" then  -- 25
@@ -230,6 +236,12 @@ begin
             counter_out <= fetchEventWindowTag_debug(31 downto 16);
         elsif address = X"2C" then      -- 44
             counter_out <= fetchEventWindowTag_debug(47 downto 32);
+        elsif address = X"2D" then      -- 45
+            counter_out <= skipped_DREQ_tag(15 downto 0);
+        elsif address = X"2E" then      -- 46
+            counter_out <= skipped_DREQ_tag(31 downto 16);
+        elsif address = X"2F" then      -- 47
+            counter_out <= skipped_DREQ_tag(47 downto 32); 
             
         elsif address = X"30" then      -- 48
             counter_out(7 downto 0) <= dcs_proc_state(7 downto 0);
@@ -255,6 +267,18 @@ begin
         elsif address = X"37" then      -- 55
             counter_out(1 downto 0) <= fetch_state(1 downto 0);
             counter_out(15 downto 2) <= (others => '0');
+        elsif address = X"38" then      -- 56
+            counter_out <= fetch_missing_TAG(15 downto 0);
+        elsif address = X"39" then      -- 57
+            counter_out <= fetch_missing_TAG(31 downto 16);
+        elsif address = X"3A" then      -- 58
+            counter_out <= fetch_missing_TAG(47 downto 32); 
+        elsif address = X"3B" then      -- 59
+            counter_out <= fetch_runover_TAG(15 downto 0);
+        elsif address = X"3C" then      -- 60
+            counter_out <= fetch_runover_TAG(31 downto 16);
+        elsif address = X"3D" then      -- 61
+            counter_out <= fetch_runover_TAG(47 downto 32); 
             
         elsif address = X"40" then      -- 64
             counter_out <= dreq_full_counter;
@@ -266,6 +290,12 @@ begin
             counter_out <= hb_tag_full_counter;
         elsif address = X"44" then      -- 68
             counter_out <= spilltag_full_counter;
+        elsif address = X"45" then      -- 69
+            counter_out <= fetch_timeout_counter;
+        elsif address = X"46" then      -- 70
+            counter_out <= fetch_runover_counter;
+        elsif address = X"47" then      -- 71
+            counter_out <= fetch_missing_counter;
              
         else
             counter_out <= (others => '0');

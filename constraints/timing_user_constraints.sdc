@@ -45,8 +45,9 @@ set_clock_groups -name {asyn2} -asynchronous \
     -group [ get_clocks { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE0/TX_CLK_R } ] \
     -group [ get_clocks { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/RX_CLK_R } ] \
     -group [ get_clocks { DigiInterface_0/DigiLink_1/PF_XCVR_0_0/I_XCVR/LANE1/TX_CLK_R } ] \
-    -group [ get_clocks { PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_0/I_CD/Y_DIV } ] \
-    -group [ get_clocks { PF_OSC_0_0/PF_OSC_0_0/I_OSC_160/CLK } ]
+    -group [ get_clocks { PF_CLK_DIV_C0_0/PF_CLK_DIV_C0_0/I_CD/Y_DIV } ] 
+# cannot find as clock in Libero 2024.1
+#    -group [ get_clocks { PF_OSC_0_0/PF_OSC_0_0/I_OSC_160/CLK } ]
 
 # TX_CLK and RX_CLK on Regionals clock uncertainty constraint
 set_clock_uncertainty -setup 0.150 [ get_pins { TOP_SERDES_0/XCVR_Block_0/XCVR_IF_0/I_XCVR/LANE0/TX_CLK_R } ]

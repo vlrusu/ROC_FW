@@ -3,11 +3,8 @@
 //
 // File: clus_pattern_sim.v
 // File history:
-//    v1.0: 03/2024:  first version
-//    v2.0: 12/2021:  added event header word as:
-//                            [31:20]  = event size (in units of 32-bit words)
-//                            [19:0]   = event tag as counter from start of SPILL  
-//    v3.0: 01/2022:  added generation of data to multiple SIM_ROC_FIFOs on a rotating basis                 
+//    v1.0: 07/2024:  first version
+//    v2.0: 08/2024:  added NEWSPILL_RESET and HALTRUN_EN input                
 //
 // Description: 
 //
@@ -27,6 +24,9 @@ module clus_pattern_sim(
 //global signals
     input	fifoclk,
     input	fifoclk_resetn,
+
+    input   newspill_reset,
+    input   haltrun_en,             // gate set by addr=8 bit[13]
 
     input	pattern_init,						    //	Event Window and Event payload start
     input   pattern_type,                           // if 0 => use 32-bit counter pattern; if 1 => use alternating 5s&As
@@ -61,11 +61,10 @@ reg   [`DIGI_BITS-1:0]   header_data;
 reg   [`DIGI_BITS-1:0]   payload_data;
 
 //pattern output state machine
-always@(posedge fifoclk, negedge fifoclk_resetn)
+always@(posedge fifoclk, negedge fifoclk_resetn, posedge newspill_reset)
 begin
     if(fifoclk_resetn == 1'b0)
     begin
-
         pattern_we  <=  0;
         pattern_data<=  0;
 		counter_data<=  0;
@@ -75,6 +74,18 @@ begin
         wr_state    <=	IDLE;
     end
 
+    // do NOT reset data payload counter or 64-events sequence
+    else if (newspill_reset == 1'b1)
+    begin
+        pattern_we  <=  0;
+        pattern_data<=  0;
+		if (!haltrun_en) counter_data<=  0;
+        pattern_index   <= 1'b0;
+        hit_filled  <=	0;
+        word_cnt    <=	0;
+        wr_state    <=	IDLE;
+    end
+    
     else
     begin
 

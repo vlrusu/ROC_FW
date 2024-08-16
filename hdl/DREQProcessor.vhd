@@ -8,6 +8,7 @@
 --      <v2>: <02/2022>: Add Prefetch decoding and drive new FETCH/FETCH_EVENT_WINDOW_TAG outputs, with logic to give priority to Prefetch data over Data Request packet, if present
 --      <v3>: <07/2023>: Add FORMAT_VRS to data header for Packet Format Version and drive with DRACRegister address 29
 --      <v4>: <02/2024>: MT Add timeout for automatic State Machine reset when garbage data comes in during DTC Flashing or DTC Reset
+--      <v5>: <07/2024>: MT Add DATAREQ_PACKETS_OVFL and DATAREQ_TAG_ERROR as Data Header status bit (4) and (5), respectively 
 --
 -- Description: 
 --
@@ -60,6 +61,7 @@ port (
     DATAREQ_DATA			: IN  STD_LOGIC_VECTOR(DATAREQ_DWIDTH-1 downto 0);		   	--Data Reply
     DATAREQ_PACKETS_IN_EVT  : IN  STD_LOGIC_VECTOR(EVENT_SIZE_BITS-1 DOWNTO 0);
     DATAREQ_PACKETS_OVFL    : IN  STD_LOGIC;
+    DATAREQ_TAG_ERROR       : IN  STD_LOGIC;
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
     
     -- debug signals
@@ -106,6 +108,7 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal dataReqStatus            : std_logic_vector(7 downto 0);                 -- hold status to pass to DATA HEADER packet
     signal dataReqPktCnt            : std_logic_vector(EVENT_SIZE_BITS-2 DOWNTO 0); -- hold packet count to pass to DATA HEADER packet
     signal dataReqPktOvfl           : std_logic;
+    signal dataReqTagErr            : std_logic;
     signal firstDone				: std_logic; 
     
     -- debug signals for ILA
@@ -164,6 +167,7 @@ begin
         dataReqPktCnt       <= (others => '0'); 
         dataReqDataReadCnt  <= (others => '0'); 
         dataReqPktOvfl      <= '0';
+        dataReqTagErr       <= '0';
         
         dataReq_dataReady 		<= '0';
         firstDone 				<= '0';
@@ -250,8 +254,8 @@ begin
                 dreq_state_count <= X"04";
                 word_count <= 0;
                 
-                -- signals for ILA triggering
-                if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG))  then   mark_window_tag_error <= '1';  end if;
+                -- signals for ILA triggering: skip first DREQ after reset
+                if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG) and unsigned(FETCH_EVENT_WINDOW_TAG) > 0)  then   mark_window_tag_error <= '1';  end if;
                 
                 if  unsigned(dreq_rdcnt) > 0 then   mark_dreq_pkt_error <= '1';  end if;
                 
@@ -267,7 +271,9 @@ begin
                         FETCH_START <= '1';
                         FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
                         dreq_state <= IDLE;
-                    elsif (reqType = X"02" and (reqEventWindowTag = X"000000000000" or reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG)) ) then
+                    -- skip this check for now or we need to force zeroing of FETCH_EVENT_WINDOW_TAG at start of NEWRUN... 
+                    --elsif (reqType = X"02" and (reqEventWindowTag = X"000000000000" or reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG)) ) then
+                    elsif (reqType = X"02") then
                         FETCH_START <= '1';
                         FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
                         dreq_state <= DREQ;
@@ -318,6 +324,7 @@ begin
                     
                 else
                     dataReqPktOvfl      <= DATAREQ_PACKETS_OVFL;
+                    dataReqTagErr       <= DATAREQ_TAG_ERROR;
                     dataReqDataReadCnt  <= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
                     dataReqPktCnt       <= DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
                     dreq_state          <= SENDHEADER;
@@ -335,6 +342,9 @@ begin
                 end if;
                 if  (dataReqPktOvfl = '1') then
                     dataReqStatus(4) <= '1';  
+                end if;
+                if  (dataReqTagErr = '1') then
+                    dataReqStatus(5) <= '1';  
                 end if;
                 
                 

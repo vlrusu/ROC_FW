@@ -5,7 +5,8 @@
 -- File history:
 --      <v1>: <Feb. 17,2024>: Reset register 8 enables ONLY on POWER ON reset (HRESETN) and not on EXT_RST_N
 --      <v2>: <June,2024>: Clean up registers. Add "dcs_newspill_cntrl"
---      <v3>: <July,2024>: Remove "dcs_newspill_cntrl". Add "DCS_PATTERN_TYPE"
+--      <v3>: <July,2024>: Remove "dcs_newspill_cntrl". Add "DCS_PATTERN_TYPE".
+--      <v4>: <Aug,2024>:  Add HALTRUN_EN.
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -81,7 +82,7 @@ port (
     DCS_DREQREAD    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request read from DDR
     DCS_DREQSENT    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request sent to DTC
     DCS_DREQNULL    : IN  std_logic_vector(31 DOWNTO 0);    -- number of Data Request with null payload
-    DCS_SPILLCNT    : IN  std_logic_vector(19 DOWNTO 0);    -- number of HB from start of SPILL
+    DCS_SPILLCNT    : IN  std_logic_vector(31 DOWNTO 0);    -- number of HB from start of SPILL
     DCS_HBTAG       : IN  std_logic_vector(47 DOWNTO 0);    -- last HB tag
     DCS_PREFTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- last PREFETCH tag
     DCS_FETCHTAG    : IN  std_logic_vector(47 DOWNTO 0);    -- last FETCH tag
@@ -104,7 +105,7 @@ port (
     DCS_FORCE_FULL  : OUT std_logic;						-- enable FORCE_FULL to DIGIs(addr=8, bit[10])
     DCS_DIGI_SIM_EN : OUT std_logic;						-- enable DIGI simulation of fixed-size events (addr=8, bit[11])
     DCS_PATTERN_TYPE: OUT std_logic;					    -- switch pattern between 32-bit counters to alternating 5s&As (addr=8, bit[12])
-    SPILL_TO_ENABLE : OUT std_logic;					    -- enable spill timeout (addr=8, bit[13])
+    HALTRUN_EN      : OUT std_logic;					    -- enable HALTRUN mode(addr=8, bit[13])
 
     DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(10 downto 0);		-- coarse Event Window Marker delay (addr=4)
     DCS_SIM_HIT     : OUT std_logic_vector(9 downto 0);		-- number of simulated hit per lane 
@@ -112,16 +113,17 @@ port (
     DCS_ERROR_DATA  : IN  std_logic_vector(15 DOWNTO 0);    -- read error counter content for address DCS_ERROR_ADDRESS
     DCS_ERROR_ADDR  : OUT std_logic_vector(7 DOWNTO 0);     -- set address of ErrorCounter to be read
 
-    hb_tag_err_cnt  : IN std_logic_vector(7 DOWNTO 0);    
-    hb_dreq_err_cnt : IN std_logic_vector(7 DOWNTO 0);    
-    hb_lost_cnt     : IN std_logic_vector(7 DOWNTO 0);    
-    evm_lost_cnt    : IN std_logic_vector(7 DOWNTO 0);    
+    hb_tag_err_cnt  : IN std_logic_vector(15 DOWNTO 0);    
+    hb_dreq_err_cnt : IN std_logic_vector(15 DOWNTO 0);    
+    hb_lost_cnt     : IN std_logic_vector(15 DOWNTO 0);    
+    evm_lost_cnt    : IN std_logic_vector(15 DOWNTO 0);    
 
     DATAREQ_CNT         : IN std_logic_vector(31 DOWNTO 0);
     EVENT_MARKER_CNT    : IN std_logic_vector(31 DOWNTO 0);  
     IS_SKIPPED_DREQ_CNT : IN std_logic_vector(15 DOWNTO 0);  
     BAD_MARKER_CNT      : IN std_logic_vector(15 DOWNTO 0);       
     LOSS_OF_LOCK_CNT    : IN std_logic_vector(15 DOWNTO 0);
+    tag_sync_err_cnt    : IN std_logic_vector(15 DOWNTO 0);
     
    -- added signals for DIGIRW via DCS: drive signals for TWIController inside SLOWCONTROLS/Registers module
     dcs_cal_init    : out std_logic;                        -- drive TWI CAL_INIT    via DCS write to addr=23: must toggle 1->0 after DATA and ADDR have been set
@@ -166,7 +168,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
     signal enable_marker_reg    : std_logic;
     signal enable_sim_digi_reg  : std_logic;
     signal force_full_reg       : std_logic;
-    signal spill_timeout_en     : std_logic;
+    signal haltrun_en_reg       : std_logic;
 
     signal err_req_reg		: std_logic_vector(1 downto 0);
     signal expc_reg_15_0,   expc_reg_31_16,   expc_reg_47_32,   expc_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
@@ -191,7 +193,7 @@ begin
     DCS_ENABLE_MARKER   <= enable_marker_reg;
     DCS_DIGI_SIM_EN <= enable_sim_digi_reg;
     DCS_FORCE_FULL  <= force_full_reg; 
-    SPILL_TO_ENABLE <= spill_timeout_en;
+    HALTRUN_EN      <= haltrun_en_reg;
     
    -------------------------------------------------------------------------------
    -- Process Read/Write Commands
@@ -224,7 +226,8 @@ begin
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
         force_full_reg      <= '0';
-        spill_timeout_en    <= '0';
+        haltrun_en_reg      <= '0';
+        
         dcs_format_vrs      <= (others => '0');
         
         expc_reg_15_0   <= (others => '0');      
@@ -274,7 +277,7 @@ begin
 		read_latch		<= '0';
 		write_latch		<= '0';
 		SEL_RST			<= '0';
-				
+        
 		DCS_DDRRESET    <= '0';
             
         DCS_ERR_REQ     <= err_req_reg(1 downto 0);
@@ -301,9 +304,8 @@ begin
 						
    -- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
 			if (drac_addrs = 0) then			-- RESET ALL
-				SEL_RST	<= '1';
-			elsif (drac_addrs = 1) then		-- SELECTIVE RESET 
-				SEL_RST	<= '1';
+--				SEL_RST	<= '1';
+--			elsif (drac_addrs = 1) then		-- SELECTIVE RESET 
 				--reset_cntl	    <= drac_wdata(9 downto 0);	  -- any bit high issues reset to the associated block 
 			--elsif (drac_addrs = 2) then			 -- reserved to drive ALGO_ADDR in module write/read 
 				--algo_addr_sig <= drac_wdata;
@@ -331,7 +333,7 @@ begin
                 force_full_reg      <= drac_wdata(10);
                 enable_sim_digi_reg <= drac_wdata(11);                
                 pattern_type_reg    <= drac_wdata(12);
-                spill_timeout_en    <= drac_wdata(13);
+                haltrun_en_reg      <= drac_wdata(13);
 			elsif (drac_addrs = 13) then
 				DCS_RESETFIFO	<= drac_wdata(0);
 			elsif (drac_addrs = 14) then
@@ -409,7 +411,7 @@ begin
 					
    -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then		 	 
-				DATA_OUT <= B"00" & SPILL_TO_ENABLE & DCS_PATTERN_TYPE &
+				DATA_OUT <= B"00" & HALTRUN_EN & DCS_PATTERN_TYPE &
                             DCS_DIGI_SIM_EN & DCS_FORCE_FULL & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
                             DCS_INT_EVM_EN & DCS_ERROR_EN & DCS_DLYD_EVM_EN & DCS_PATTERN_EN & 
                             DCS_USE_LANE;
@@ -424,14 +426,15 @@ begin
 				DATA_OUT 	<= EVENT_MARKER_CNT(31 downto 16);			
 			elsif (drac_addrs = 13) then		 	 
 				DATA_OUT 	<= IS_SKIPPED_DREQ_CNT;			
-                            
+            elsif (drac_addrs = 14) then		 	 
+				DATA_OUT 	<= tag_sync_err_cnt;                
  			elsif (drac_addrs = 15) then
                 DATA_OUT 	<= B"00_0000" & DCS_SIM_HIT;
  			elsif (drac_addrs = 16) then		 	 
-				DATA_OUT <= B"00" & err_req_reg & 
+				DATA_OUT <= B"0000" & 
                             DCS_SIM_LANE_EMPTY  & 
                             DCS_SIM_LANE_FULL   &
-                            DCS_DATA_ERR & DCS_HDR2_ERR & DCS_HDR1_ERR & DCS_EVT_ERR;	
+                            B"0000";	
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
  			elsif (drac_addrs = 18) then		 	 
@@ -490,7 +493,7 @@ begin
 			elsif (drac_addrs = 43) then		 	 
 				DATA_OUT <= DCS_SPILLCNT(15 downto 0);
 			elsif (drac_addrs = 44) then		 	 
-				DATA_OUT <= X"000" & DCS_SPILLCNT(19 downto 16);
+				DATA_OUT <= DCS_SPILLCNT(31 downto 16);
 			elsif (drac_addrs = 45) then		 	 
 				DATA_OUT <= DCS_HBTAG(15 downto 0);
 			elsif (drac_addrs = 46) then		 	 
@@ -553,13 +556,13 @@ begin
 			elsif (drac_addrs = 71) then		 	 
 				DATA_OUT <= dcs_hv_data_out(15 downto 0);
 			elsif (drac_addrs = 72) then		 	 
-				DATA_OUT <= X"00" & hb_tag_err_cnt;
+				DATA_OUT <= hb_tag_err_cnt;
 			elsif (drac_addrs = 73) then		 	 
-				DATA_OUT <= X"00" & hb_dreq_err_cnt;
+				DATA_OUT <= hb_dreq_err_cnt;
 			elsif (drac_addrs = 74) then		 	 
-				DATA_OUT <= X"00" & hb_lost_cnt;
+				DATA_OUT <= hb_lost_cnt;
 			elsif (drac_addrs = 75) then		 	 
-				DATA_OUT <= X"00" & evm_lost_cnt;
+				DATA_OUT <= evm_lost_cnt;
                 
             -- CALO uses 77 to 126                
             -- DCS CMD Registers

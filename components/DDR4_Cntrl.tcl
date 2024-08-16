@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component DDR4_Cntrl
-create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.109} -component_name {DDR4_Cntrl} -params {\
+create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.111} -component_name {DDR4_Cntrl} -params {\
 "ADDRESS_MIRROR:false" \
 "ADDRESS_ORDERING:CHIP_ROW_BG_BANK_COL" \
 "AUTO_SELF_REFRESH:3" \
@@ -13,10 +13,11 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.109} -comp
 "BANK_GROUP_ADDR_WIDTH:1" \
 "BURST_LENGTH:0" \
 "CAS_ADDITIVE_LATENCY:0" \
-"CAS_LATENCY:17" \
+"CAS_LATENCY:10" \
 "CAS_WRITE_LATENCY:9" \
 "CA_PARITY_LATENCY_MODE:0" \
 "CCC_PLL_CLOCK_MULTIPLIER:6" \
+"CK_CA_ADDITIVE_OFFSET:0" \
 "CLOCK_DDR:666.666" \
 "CLOCK_PLL_REFERENCE:111.111" \
 "CLOCK_RATE:4" \
@@ -83,7 +84,7 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.109} -comp
 "TIMING_DS:75" \
 "TIMING_DSH:0.2" \
 "TIMING_DSS:0.2" \
-"TIMING_FAW:30" \
+"TIMING_FAW:42" \
 "TIMING_IH:275" \
 "TIMING_INIT:200" \
 "TIMING_IS:200" \
@@ -92,11 +93,11 @@ create_and_configure_core -core_vlnv {Actel:SystemBuilder:PF_DDR4:2.5.109} -comp
 "TIMING_QH:0.38" \
 "TIMING_QSH:0.38" \
 "TIMING_RAS:32" \
-"TIMING_RC:47" \
-"TIMING_RCD:15" \
+"TIMING_RC:46.25" \
+"TIMING_RCD:14.25" \
 "TIMING_REFI:7.8" \
 "TIMING_RFC:260" \
-"TIMING_RP:15" \
+"TIMING_RP:14.25" \
 "TIMING_RRD_L:5" \
 "TIMING_RRD_S:4" \
 "TIMING_RTP:7.5" \

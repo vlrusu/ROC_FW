@@ -1,4 +1,4 @@
-# Creating SmartDesign DigiInterface
+# Creating SmartDesign "DigiInterface"
 set sd_name {DigiInterface}
 create_smartdesign -sd_name ${sd_name}
 
@@ -37,7 +37,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_full} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_rclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifo_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {force_full} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {haltrun_en} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {newrun} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk_resetn} -port_direction {IN}
@@ -59,10 +60,12 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {curr_ewfifo_wr} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_done} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_we} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_ovfl} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_tag_error} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_aligned} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_aligned} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_empty} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_full} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {tag_sync_error} -port_direction {OUT}
 
 
 # Create top level Bus Ports
@@ -88,6 +91,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_d
 sd_create_bus_port -sd_name ${sd_name} -port_name {rocfifocntrl_state} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_data} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_rdcnt} -port_direction {OUT} -port_range {[16:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_cnt} -port_direction {OUT} -port_range {[15:0]}
 
 
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[0:0]}
@@ -202,6 +206,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_full" "LANE_FU
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_empty" "LANE_EMPTY[3:3]" "MUX_DIGI_DATA_0:digi_lane3_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_re" "MUX_DIGI_DATA_0:digi_lane3_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_full" "LANE_FULL[3:3]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:haltrun_en" "haltrun_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane0_sim_empty" "LANE_SIM_EMPTY[0:0]" "MUX_DIGI_DATA_0:sim_lane0_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane0_sim_full" "LANE_SIM_FULL[0:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane0_sim_re" "MUX_DIGI_DATA_0:sim_lane0_re" }
@@ -214,6 +219,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane2_sim_re" "M
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane3_sim_empty" "LANE_SIM_EMPTY[3:3]" "MUX_DIGI_DATA_0:sim_lane3_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane3_sim_full" "LANE_SIM_FULL[3:3]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:lane3_sim_re" "MUX_DIGI_DATA_0:sim_lane3_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:newspill_reset" "ROCFIFOController_0:newspill_reset" "edge_generator_1:risingEdge" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:pattern_init" "pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_Sim_0:pattern_type" "pattern_type" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:EMPTY" "serialfifo_empty" }
@@ -236,9 +242,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_done" "e
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_full" "ew_fifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_we" "ew_fifo_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_ovfl" "ew_ovfl" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:newspill_reset" "edge_generator_1:risingEdge" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_tag_error" "ew_tag_error" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:tag_sync_error" "tag_sync_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_uart" "use_uart" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_1:gate" "newspill" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_1:gate" "newrun" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_0" "cal_lane0_alignment" }
@@ -270,12 +277,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_dat
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_size" "ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_tag" "ew_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:state_count" "rocfifocntrl_state" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:tag_sync_err_cnt" "tag_sync_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_lane" "use_lane" }
 
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign DigiInterface
+# Generate SmartDesign "DigiInterface"
 generate_component -component_name ${sd_name}

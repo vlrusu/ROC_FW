@@ -1,4 +1,4 @@
-# Creating SmartDesign DigiLink_Sim
+# Creating SmartDesign "DigiLink_Sim"
 set sd_name {DigiLink_Sim}
 create_smartdesign -sd_name ${sd_name}
 
@@ -8,10 +8,12 @@ auto_promote_pad_pins -promote_all 0
 # Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifoclk_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {fifoclk} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {haltrun_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane0_sim_re} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane1_sim_re} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane2_sim_re} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {lane3_sim_re} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {newspill_reset} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
 
@@ -76,6 +78,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_SIM_2:RE" "lane2_sim_re
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_SIM_3:EMPTY" "lane3_sim_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_SIM_3:FULL" "lane3_sim_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_SIM_3:RE" "lane3_sim_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_sim_0:haltrun_en" "haltrun_en" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_sim_0:newspill_reset" "newspill_reset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_sim_0:pattern_init" "pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_sim_0:pattern_type" "pattern_type" }
 
@@ -91,7 +95,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_sim_0:hit_in" "hit
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign DigiLink_Sim
+# Generate SmartDesign "DigiLink_Sim"
 generate_component -component_name ${sd_name}

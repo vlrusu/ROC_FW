@@ -16,11 +16,18 @@
 --                       Replace SPILLTIMEOUT with WINDOWTIMEOUT. Add DATAREQ_CNT. 
 --                       Add ONSPILL rising edge to logic resetting NEWSPILL. 
 --                       Add first NULL HB and no change of ONSPILL to logic resetting NEWSPILL and logic generating EWM_to_EWM
---      <v10>: <07/2024>: Add NEWSPILL_CNTRL register (DRACRegister 30) to control which condition can reset NEWSPILL:
---                        of 0 (def): any condition;   if 1, only WINDOWTIMEOUT;  if 2, only NULL HB.   NB: Eliminate ONSPILL rising edge for now
---      <v11>: <07/2024>: Add INVALID HB and HB BAD CRC logic
---      <v12>: <07/2024>: Fix MARKER_ERROR_COUNT logic. Replace "counter<5" with "counter<3" and allow both EVM and CLKM on top of DREQ. 
---                        Remove logic for timer of DCS operations. Generate FIRST_HB_SEEN and SPILL_TIMEOUT_DIS
+--      <v10>: <07/2024>: Add INVALID HB and HB BAD CRC logic
+--      <v11>: <07/2024>: Fix MARKER_ERROR_COUNT logic. Replace "counter<5" with "counter<3" and allow both EVM and CLKM on top of DREQ. 
+--                        Remove logic for timer of DCS operations. Generate FIRST_HB_SEEN.
+--      <v12>: <07/2024>: Define TAG_SYNC signal when SPILL_EVENT_WINDOW_TAG counter wrap-arounds at 14th bit. Started by HB, cleared on the next.
+--                        Define LAST_EWM on the first null HB. Cleared a bit after the following EWM.
+--      <v13>: <07/2024>: Rename NEWSPILL with NEWRUN. NEWRUN gate rules:
+--                          1) starts on the first non null-HB when NEXT_IS_FIRSTHB is set
+--                          2) end of LAST_EWM being sent (ie EWM after a null-HB)
+--                        NEXT_IS_FIRSTHB is set by a) ROC_RESET_N; b) (first) null-HB seen;
+--                        Fix EWM_to_EWM logic. Remove HB_to_EWM.
+--      <v14>: <08/2024>: increase SPILL_EVENT_WINDOW_TAG to 40 bit and pass MSB 20 bits to EW_FIFO_CONTROLLER
+--      <v15>: <08/2024>: Remove SPILLTIMEOUT logic. Add HALTRUN_EN, which prevents counters reset after a NEWRUN (except fro SPILL_EVENT_WINDOW_TAG)
 --
 -- Description: 
 --
@@ -41,8 +48,8 @@ use work.algorithm_constants.all;
 
 entity RxPacketReader is
 port (	   
-	reset_n : in std_logic;
-	clk     : in std_logic;
+	roc_resetn  : in std_logic;
+	clk         : in std_logic;
     
 	aligned : in std_logic;
     
@@ -53,24 +60,25 @@ port (
 	rx_data_out : out std_logic_vector(15 downto 0);
 		
 	req_we      : out std_logic;
-    
-    spill_timeout_enable   : in std_logic;
-    
-    END_EVM_SEEN    :   out std_logic;
+        
+    haltrun_en          : in std_logic;  -- enable HALTRUN mode, in which NEWRUN after null-HB will NOT reset counters 
+        
 	HEARTBEAT_SEEN  :	out std_logic;
-	FIRST_HB_SEEN   :	out std_logic;
+	FIRST_HB_SEEN   :	out std_logic;      -- pulse used to save event tag offset at start of NEWRUN
 	--PREFETCH_SEEN	:	out std_logic;
+    END_EVM_SEEN    :   out std_logic;
     LAST_EWM        :   out std_logic;
+    TAG_SYNC        :   out std_logic; 
 	ONSPILL         :	out std_logic;
-    NEWSPILL        :   out std_logic;
-    HEARTBEAT_INVALID   :   out std_logic;
+    NEWRUN          :   out std_logic;
+    HEARTBEAT_INVALID   : out std_logic;
 	HEARTBEAT_EVENT_WINDOW_TAG	: out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
 	PREFETCH_EVENT_WINDOW_TAG	: out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
-	TAG_LOST	                : out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
-	SPILL_EVENT_WINDOW_TAG		: out std_logic_vector(SPILL_TAG_BITS-1 downto 0);
+	SPILL_EVENT_WINDOW_TAG		: out std_logic_vector(39 downto 0);
     EVT_MODE                    : out std_logic_vector(31 downto 0);
     RF_MARKER                   : out std_logic_vector(7 downto 0);
     SUBRUN_ID                   : out std_logic_vector(1 downto 0);
+	TAG_LOST	                : out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
 	 
     -- this are single RXCLK pulses
 	eventmarker	: out std_logic;
@@ -83,8 +91,8 @@ port (
     roc_id              : in std_logic_vector(3 downto 0);   -- from DCSProcessor (assumes at least one DCS request has been sent from DTC)
     rx_loopmarker_out   : out std_logic_vector(17 downto 0);
 
-    hb_lost_cnt     :  out std_logic_vector(7 downto 0);
-    evm_lost_cnt    :  out std_logic_vector(7 downto 0);
+    hb_lost_cnt     :  out std_logic_vector(15 downto 0);
+    evm_lost_cnt    :  out std_logic_vector(15 downto 0);
     
 	event_marker_count  : out std_logic_vector(31 downto 0);
     datareq_count 	    : out std_logic_vector(31 downto 0);
@@ -138,16 +146,12 @@ architecture architecture_RxPacketReader of RxPacketReader is
     
 	signal retr_seq_save    : std_logic_vector(2 downto 0);
 		
-	signal onspill_reg	    : std_logic;
-	signal onspill_save     : std_logic;
     signal is_firstCLKM     : std_logic;
-	signal next_is_firstHB  : std_logic;
-	signal is_first_DREQ  : std_logic;
-	signal is_first_nullHB  : std_logic;
+	signal next_is_firstHB  : std_logic;    -- this is needed to start NEWRUN on the first non null-HB
+	signal is_first_nullHB  : std_logic;    
     
 	signal counter 		    : unsigned(2 downto 0);
 	signal word_count 	    : integer range 0 to 31;
-    signal windowTimeout	: unsigned(15 downto 0);  --  corresponds to a 328 us timeout (ie window deltaT = 13107)
     
 	signal seq_num 			: unsigned(2 downto 0);
 	signal seq_num_expected	: unsigned(2 downto 0);
@@ -167,67 +171,118 @@ architecture architecture_RxPacketReader of RxPacketReader is
     
     signal evm_lost     : std_logic;
     signal hb_lost      : std_logic;
-    signal hb_seen_reg  : std_logic;
-    signal is_firstHB_dlyd  : std_logic; 
+    signal HEARTBEAT    : std_logic;
+    signal heartbeat_dlyd : std_logic;
+    signal next_firstHB_dlyd  : std_logic; 
     
-    signal hb_to_evm, hb_to_evm_reg    : std_logic;
+    signal evm_reg1, evm_reg2, evm_reg3, evm_reg4   : std_logic;
     signal missing_hb   : std_logic;
 	signal is_marker_error  : std_logic;
-    
-    signal link_id : std_logic_vector(2 downto 0);
     
     signal PREFETCH_SEEN        : std_logic;
     signal NULL_HEARTBEAT_SEEN  : std_logic;
     
-    signal newspill_reg     : std_logic;
-   
-    signal datareq_delta_cnt: unsigned(15 downto 0); 
+    signal HB_TAG_SAVE      : unsigned(EVENT_TAG_BITS-1 downto 0); 
+
     signal SAVE_EVM_TAG     : unsigned(15 downto 0); 
     signal EVM_TAG          : unsigned(15 downto 0); 
     signal is_loadtag       : std_logic;
     signal is_skipped_dreq  : std_logic;
     
     signal anymarker        : std_logic;
-	signal count_5in25     : unsigned(2 downto 0);    
+	signal count_5in25      : unsigned(2 downto 0);    
     signal is_bad_marker    : std_logic;
     
     signal  HB_to_HB        : std_logic;
+    signal  hb_to_hb_reg    : std_logic;
     signal  EWM_to_EWM      : std_logic;
     signal  ewm_to_ewm_reg  : std_logic;
-    
-    signal is_dreq_reg 	    : std_logic;
-    signal newspill_timeout : std_logic;
+    signal  ewm_to_ewm_dly  : std_logic;
     
     signal check_crc        : std_logic;
     signal crc_error        : std_logic;
     signal read_crc         : std_logic_vector(15 downto 0);
     
+    signal spill_count 	    : std_logic_vector(15 downto 0);
+
 begin
 	 
-    LAST_EWM  <=  is_evtmarker when  is_first_nullHB = '1'  else '0';
-     
-    process(reset_n, aligned, clk)  
+    process(roc_resetn, aligned, clk)  
 	begin
-	if reset_n = '0' then
-		word_count  <= 0;
+	if roc_resetn = '0' then
+    
+        -- module outputs
 		rx_we       <= '0';
 		req_we      <= '0';
 		rx_data_out     <= (others => '0');
+        
+		HEARTBEAT_SEEN	    <= '0';
+		NULL_HEARTBEAT_SEEN	<= '0';
+		FIRST_HB_SEEN	    <= '0';
+		PREFETCH_SEEN	    <= '0';
+        END_EVM_SEEN        <= '0';
+        LAST_EWM            <= '0';
+        TAG_SYNC            <= '0';
+		ONSPILL			    <= '0';
+		NEWRUN			    <= '0';
+		HEARTBEAT_INVALID   <= '0';	
+		HEARTBEAT_EVENT_WINDOW_TAG	<= (others => '0');	
+		PREFETCH_EVENT_WINDOW_TAG	<= (others => '0');	
+		SPILL_EVENT_WINDOW_TAG	    <= (others => '0');	
+        EVT_MODE                    <= (others => '0');
+        RF_MARKER                   <= (others => '0');
+        SUBRUN_ID                   <= (others => '0');
+        TAG_LOST                    <= (others => '0');
+        
+		rx_loopmarker_out   <= B"11" & X"BC3C";
+        
+         -- output counters
+        evm_lost_cnt    <= (others => '0');
+        hb_lost_cnt     <= (others => '0');
+
+		event_marker_count  <= (others => '0');
+        datareq_count       <= (others => '0');
+        hb_count            <= (others => '0');
+        null_hb_count       <= (others => '0');
+        pref_count          <= (others => '0');
+		clock_marker_count  <= (others => '0');
+		loop_marker_count   <= (others => '0');
+		other_marker_count  <= (others => '0');
+		retr_marker_count   <= (others => '0');
+        is_skipped_dreq_cnt <= (others => '0');
+        bad_marker_cnt  <= (others => '0');
+        
+		comma_err_count <= (others => '0');
 		rx_error_count  <= (others => '0');
+		seq_error_count 	<= (others => '0');
+		marker_error_count  <= (others => '0');
         
-     	eventmarker 	<= '0';
-        clockmarker 	<= '0';
-        loopmarker 	    <= '0';
-        othermarker 	<= '0';
-        retrmarker 	    <= '0';
-        retr_seq 	    <= "000";
+        dcsreq_start_count  <= (others => '0');
+        dcsreq_end_count    <= (others => '0');
+        any_marker_count    <= (others => '0');
+            
+        crc_en          <= '0';
+        crc_rst         <= '1';
+        check_crc       <= '0';
         
+        invalid_hb_count    <= (others => '0');
+        hb_bad_crc_count    <= (others => '0');
+        
+        -- internal signals
 		is_DTCpacket 	<= '0';
 		is_dcsreq		<= '0';
 		is_datareq		<= '0';
 		is_heartbeat	<= '0';
 		is_prefetch		<= '0';
 		is_loadpretag	<= '0';
+        
+     	eventmarker 	<= '0';
+        clockmarker 	<= '0';
+        loopmarker 	    <= '0';
+        othermarker 	<= '0';
+        retrmarker 	    <= '0';
+		retr_seq	    <= (others=> '0');
+        
 		is_evtmarker	<= '0';
 		is_clkmarker	<= '0';
 		is_loopmarker	<= '0';
@@ -236,54 +291,20 @@ begin
         is_anymarker	<= '0';	
         is_retrseq		<= '0';
         
-		rx_loopmarker_out   <= B"11" & X"BC3C";
+		retr_seq_save   <=(others=> '0');
         
-		onspill_reg		<= '0';
-		onspill_save	<= '0';
         is_firstCLKM    <= '1';
         next_is_firstHB <= '1';
-        is_first_DREQ    <= '1';
         is_first_nullHB <= '0';
-        windowTimeout   <= (others=> '1');
         
-		retr_seq			<= (others=> '0');
-		retr_seq_save	    <= (others=> '0');
+		counter <= (others => '1');
+		word_count  <= 0;
+       
 		seq_num 			<= (others => '0');
 		seq_num_expected 	<= (others => '0');
-		seq_error_count 	<= (others => '0');
-		
-		HEARTBEAT_SEEN	    <= '0';
-		FIRST_HB_SEEN	    <= '0';
-		NULL_HEARTBEAT_SEEN	<= '0';
-		PREFETCH_SEEN	    <= '0';
-		ONSPILL			    <= '0';
-		NEWSPILL			<= '0';
-		HEARTBEAT_INVALID   <= '0';	
-        is_firstHB_dlyd     <= '0';
-		SPILL_EVENT_WINDOW_TAG	    <= (others => '0');	
-        EVT_MODE                    <= (others => '0');
-        RF_MARKER                   <= (others => '0');
-        SUBRUN_ID                   <= (others => '0');
-		HEARTBEAT_EVENT_WINDOW_TAG	<= (others => '0');	
-		PREFETCH_EVENT_WINDOW_TAG	<= (others => '0');	
-		
-		is_marker_error	    <= '0';
-		marker_error_count  <= (others => '0');
-		  
-		counter <= (others => '1');
-		event_marker_count  <= (others => '0');
-        hb_count            <= (others => '0');
-        null_hb_count       <= (others => '0');
-        pref_count          <= (others => '0');
-        datareq_count       <= (others => '0');
-        
-		clock_marker_count  <= (others => '0');
-		loop_marker_count   <= (others => '0');
-		other_marker_count  <= (others => '0');
-		retr_marker_count   <= (others => '0');
-		retr_marker_count   <= (others => '0');
-        is_skipped_dreq_cnt <= (others => '0');
-        
+	 
+        rx_kchar_latch  <= (others => '0');
+        rx_data_latch 	<= (others => '0');
 		rx_kchar_prev1 	<= (others => '0');
 		rx_data_prev1 	<= (others => '0');
 		rx_kchar_prev2 	<= (others => '0');
@@ -293,56 +314,48 @@ begin
         
         rx_error_seen   <= '0';
         rx_comma_seen   <= '0';
-		comma_err_count <= (others => '0');
         
         evm_lost        <= '0';
         hb_lost         <= '0';
-        evm_lost_cnt    <= (others => '0');
-        hb_lost_cnt     <= (others => '0');
-        TAG_LOST        <= (others => '0');
+        HEARTBEAT       <= '0';         
+        heartbeat_dlyd  <= '0';         
+        next_firstHB_dlyd   <= '0';
         
-        END_EVM_SEEN    <= '0';
-        hb_to_evm       <= '0';
-        hb_to_evm_reg   <= '0';
+        evm_reg1        <= '0';
+        evm_reg2        <= '0';
+        evm_reg3        <= '0';
+        evm_reg4        <= '0';
         missing_hb      <= '0';
+		is_marker_error	<= '0';
         
-        newspill_reg    <= '0';
-		datareq_delta_cnt <= (others => '0');
+		HB_TAG_SAVE	                <= (others => '0');	
         SAVE_EVM_TAG    <= (others => '0');
         EVM_TAG         <= (others => '0');
-        is_skipped_dreq <= '0';
         is_loadtag      <= '0';
+        is_skipped_dreq <= '0';
         
         anymarker       <= '0';
         count_5in25     <= (others => '0');
         is_bad_marker   <= '0';
-        bad_marker_cnt  <= (others => '0');
         
         HB_to_HB        <= '0';
+        hb_to_hb_reg    <= '0';
         EWM_to_EWM      <= '0';
         ewm_to_ewm_reg  <= '0';
-        newspill_timeout    <= '0';
+        ewm_to_ewm_dly  <= '0';
         
-        dcsreq_start_count  <= (others => '0');
-        dcsreq_end_count    <= (others => '0');
-        any_marker_count    <= (others => '0');
-        
-        crc_en          <= '0';
-        crc_rst         <= '1';
-        check_crc       <= '0';
         crc_error       <= '0';
         crc_data_out    <= (others => '0');
         read_crc        <= (others => '0');
-        invalid_hb_count    <= (others => '0');
-        hb_bad_crc_count    <= (others => '0');
         
+        spill_count     <= (others => '0');
+       
 	elsif rising_edge(clk) then
 	 
         END_EVM_SEEN        <= '0';
-		HEARTBEAT_SEEN      <= '0';
+		HEARTBEAT           <= '0';
 		NULL_HEARTBEAT_SEEN	<= '0';
 		PREFETCH_SEEN	    <= '0';
-        newspill_timeout    <= '0';
         HEARTBEAT_INVALID   <= '0';
         
         crc_en      <= '0';
@@ -353,58 +366,115 @@ begin
         hb_lost     <= '0';
         evm_lost    <= '0';
         
-        -- NEXT_IS_FIRSTHB is reset to zero at the same time as HB_SEEN is set!!!
-        is_firstHB_dlyd <= next_is_firstHB;
-        FIRST_HB_SEEN <= (HEARTBEAT_SEEN and is_firstHB_dlyd); 
+        
+        if aligned = '1' then
+        
+        heartbeat_dlyd  <= HEARTBEAT;
+        HEARTBEAT_SEEN  <= heartbeat_dlyd;  -- use this delayed pulse to latch SPILL_TAG in EWTAG_CNTRL logic
+        
+        -- register NEXT_IS_FIRSTHB which is set to zero at the same time as HEARTBEAT is set!!!
+        next_firstHB_dlyd   <= next_is_firstHB;
+        FIRST_HB_SEEN       <= (HEARTBEAT  and  next_firstHB_dlyd); 
+        
+        -- use end of HEARTBEAT packets and REGISTERED NEXT_IS_FIRSTHB to clear diagnostics counters
+        if  (HEARTBEAT and next_firstHB_dlyd) then
+            SPILL_EVENT_WINDOW_TAG	<= (others => '0');
+            spill_count             <= (others => '0');
+            
+            if  haltrun_en = '0'    then
+                hb_count        <= (others => '0');          
+                event_marker_count  <= (others => '0');
+                evm_lost_cnt    <= (others => '0');
+                hb_lost_cnt     <= (others => '0');
+                datareq_count   <= (others => '0');
+                null_hb_count   <= (others => '0');
+                pref_count      <= (others => '0');
+                    
+                clock_marker_count  <= (others => '0');
+                loop_marker_count   <= (others => '0');
+                other_marker_count  <= (others => '0');
+                retr_marker_count   <= (others => '0');
+                any_marker_count    <= (others => '0');
+                is_skipped_dreq_cnt <= (others => '0');
+                bad_marker_cnt      <= (others => '0');
+                comma_err_count     <= (others => '0');
+                rx_error_count 	    <= (others => '0');
+                seq_error_count     <= (others => '0');
+                marker_error_count  <= (others => '0');
+                
+                invalid_hb_count  <= (others => '0');
+            end if;
+        end if;
+            
+        -- start gate from one HB to next need to check on windowTimeout (cleared by logic generating HEARTBEAT)
+        if  HEARTBEAT      then    HB_to_HB <= '1';    end if;
+        
+        -- count SPILL_COUNT to use for TAG_SYNC on HB_to_HB falling edge
+        hb_to_hb_reg    <= HB_to_HB;
+        if  HB_to_HB = '0' and hb_to_hb_reg = '1'   then    
+            spill_count <= std_logic_vector(unsigned(spill_count) + 1);
+        end if;
+        
+        -- SPILL_EVENT_WINDOW_TAG has been cleared on HEARTBEAT_SEEN: can generate TAG_SYNC now
+        if  spill_count(13 downto 0) = B"00_0000_0000_0000"  then 
+            TAG_SYNC <= '1';
+        elsif  spill_count(13 downto 0) = B"00_0000_0000_0001"  then
+            TAG_SYNC <= '0';
+        end  if;
+        
+        -- HB_COUNT counts both non-null and null HEARTBITS.
+        -- Start count on HEARTBEAT_REG1 since HEARTBEAT is used to clear counts
+        if  heartbeat_dlyd          then    hb_count <= std_logic_vector(unsigned(hb_count) + 1);           end if;
+        if  NULL_HEARTBEAT_SEEN     then    hb_count <= std_logic_vector(unsigned(hb_count) + 1);           end if;
+        if  NULL_HEARTBEAT_SEEN     then    null_hb_count <= std_logic_vector(unsigned(null_hb_count) + 1); end if;
+        if  PREFETCH_SEEN           then    pref_count <= std_logic_vector(unsigned(pref_count) + 1);       end if;
+        
+        ---- SPILL_EVENT_WINDOW_TAG has been cleared on HEARTBEAT_SEEN: can generate TAG_SYNC now
+        --if  heartbeat_dlyd = '1' then
+            --if  SPILL_EVENT_WINDOW_TAG(13 downto 0) = B"00_0000_0000_0000"  then 
+                --TAG_SYNC <= '1';
+            --elsif  SPILL_EVENT_WINDOW_TAG(13 downto 0) = B"00_0000_0000_0001"  then
+                --TAG_SYNC <= '0';
+            --end if;
+        --end  if;
+        
+        -- HB_COUNT has been updated on HEARTBEAT_REG1: can do checks on EVM vs HB counter now
+        if  HEARTBEAT_SEEN = '1' then
+            if  hb_count > std_logic_vector(unsigned(event_marker_count)+1)   then    
+                evm_lost <= '1';   
+                evm_lost_cnt <= std_logic_vector(unsigned(evm_lost_cnt) + 1);  
+            end if;
+            if  hb_count < std_logic_vector(unsigned(event_marker_count)+1)     then    
+                hb_lost<= '1';   
+                hb_lost_cnt <= std_logic_vector(unsigned(hb_lost_cnt) + 1);   
+            end if;
+            -- save TAG of first lost event
+            if  evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" and hb_count /= std_logic_vector(unsigned(event_marker_count)+1)   then
+                TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
+            end if;
+        end if;
+        
+        --
+        -- use delayed EVENTMARKER to clear LAST_EWM
+        evm_reg1    <=  eventmarker;
+        evm_reg2    <=  evm_reg1;
+        evm_reg3    <=  evm_reg2;
+        evm_reg4    <=  evm_reg3;
+        if  evm_reg4 = '1'  then    LAST_EWM <= '0';    end if;
       
-        -- re-established initial conditions for generating NEWSPILL (used in cleaning logic needed to restart data taking WITHOUT a full initialization) 
-        -- by waiting for a long time ( 13107 x 25-ns clocks) in between HBs 
-        -- NB: replace old way to detect first non-hull HB
-        if (HB_to_HB = '1')   then    
-            windowTimeout <= windowTimeout - 1;
-        else
-            windowTimeout   <= (others=> '1');
-        end if;   
-        
-        -- add ONSPILL rising EDGE to NEWSPILL reset logic
-        -- use NEWSPILL_TIMEOUT on "windowTimeout = 1" to give time to HB_to_HB to be cleared
-        if  (spill_timeout_enable = '1'  and  windowTimeout = X"0001")   then    newspill_timeout <= '1';    end if;
-        
---        onspill_reg     <= ONSPILL;
---        if ((ONSPILL and not onspill_reg) or newspill_timeout) then
-        if (newspill_timeout = '1') then
-            NEWSPILL        <= '0'; 
-            next_is_firstHB <= '1';   -- re-establish condition for NEWSPILL to be issued on next DREQ w/o reset
-            HB_to_HB        <= '0';
-            EWM_to_EWM      <= '0';
+        -- generate pulse on falling edge of EWM_TO_EWM gate to generate pattern
+        -- Any EWM_to_EWM falling edge counts, so prevent start of EWM_to_EWM for:
+        --  1) EWM following null-HB
+        --  2) EWM_to_EWM cleared when NEWRUN is forced to zero
+        ewm_to_ewm_reg  <=  EWM_to_EWM;
+        ewm_to_ewm_dly  <= ewm_to_ewm_reg;        
+        if  EWM_to_EWM = '0' and ewm_to_ewm_reg = '1'   then    END_EVM_SEEN <= '1';    end if; 
+        -- use delayed EWM_to_EWM to increase SPILL_EVENT_WINDOW_TAG so that we start latching from zero
+        if  ewm_to_ewm_reg = '0' and ewm_to_ewm_dly = '1'   then 
+            SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
         end if;
-
-        -- use NEWSPILL edge to clear diagnostics counters
-        newspill_reg    <= NEWSPILL;
-        if  (NEWSPILL and not newspill_reg) then
-            hb_count        <= X"00000001";  -- NEWSPILL issued after very first HB!          
-            event_marker_count  <= (others => '0');
-            evm_lost_cnt    <= (others => '0');
-            hb_lost_cnt     <= (others => '0');
-            datareq_count   <= (others => '0');
-            null_hb_count   <= (others => '0');
-            pref_count      <= (others => '0');
             
-            clock_marker_count  <= (others => '0');
-            loop_marker_count   <= (others => '0');
-            other_marker_count  <= (others => '0');
-            retr_marker_count   <= (others => '0');
-            any_marker_count    <= (others => '0');
-            is_skipped_dreq_cnt <= (others => '0');
-            bad_marker_cnt      <= (others => '0');
-            comma_err_count     <= (others => '0');
-            rx_error_count 	    <= (others => '0');
-            seq_error_count     <= (others => '0');
-            marker_error_count  <= (others => '0');
             
-            invalid_hb_count  <= (others => '0');
-        end if;
-        
         if (check_crc = '1') then
             if (crc_data_in /= read_crc) then
                 crc_error <= '1';
@@ -427,41 +497,7 @@ begin
 		rx_data_prev3	<= rx_data_prev2;
         
         is_anymarker	<= (is_evtmarker or is_clkmarker or is_loopmarker or is_othermarker or is_retrmarker);
-        
-        -- generate pulse on falling edge of EWM_TO_EVM gate, except when generated by windowTimeout=0  
-        ewm_to_ewm_reg   <=  EWM_to_EWM;
-        if (EWM_to_EWM = '0' and ewm_to_ewm_reg = '1' and windowTimeout /= X"FFFF") then    END_EVM_SEEN <= '1';    end if;
-        
-        
-        if aligned = '1' then
-        
-        -- start gate from one HB to next need to check on windowTimeout (cleared by logic generating HEATBEAT_SEEN)
-        if  HEARTBEAT_SEEN = '1'        then    HB_to_HB <= '1';        end if;
-     
-        -- HB_COUNT counts both non-null and null HEARTBITS!
-        if  HEARTBEAT_SEEN = '1'        then    hb_count <= std_logic_vector(unsigned(hb_count) + 1);           end if;
-        if  NULL_HEARTBEAT_SEEN = '1'   then    hb_count <= std_logic_vector(unsigned(hb_count) + 1);           end if;
-        if  NULL_HEARTBEAT_SEEN = '1'   then    null_hb_count <= std_logic_vector(unsigned(null_hb_count) + 1); end if;
-        if  PREFETCH_SEEN = '1'         then    pref_count <= std_logic_vector(unsigned(pref_count) + 1);       end if;
-        
-        -- HB_CNT has been updated: do checks on EVM vs HB counter
-        hb_seen_reg <= HEARTBEAT_SEEN;
-        if  hb_seen_reg = '1' then
-            if  hb_count > std_logic_vector(unsigned(event_marker_count)+1)   then    
-                evm_lost <= '1';   
-                evm_lost_cnt <= std_logic_vector(unsigned(evm_lost_cnt) + 1);  
-            end if;
-            if  hb_count < std_logic_vector(unsigned(event_marker_count)+1)     then    
-                hb_lost<= '1';   
-                hb_lost_cnt <= std_logic_vector(unsigned(hb_lost_cnt) + 1);   
-            end if;
-            -- save TAG of first lost event
-            if  evm_lost_cnt = X"00" and hb_lost_cnt = X"00" and hb_count /= std_logic_vector(unsigned(event_marker_count)+1)   then
-                TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
-            end if;
-        end if;
-        
-        
+                
         -- mark start and end of a DTC packet, including possible embedded markers
 		if  rx_kchar_in = "10" and rx_data_in(15 downto 8) = X"1C" and 
 			(   rx_data_in(4 downto 0) = B"00000" or    --  DCS Request 
@@ -505,7 +541,7 @@ begin
 				eventmarker     <= '0'; 	
 				is_evtmarker    <= '0';
                 -- generate EWM_to_EWM gate unless it follows a null HB
-                EWM_to_EWM      <= '1';
+                if  LAST_EWM = '0'      then    EWM_to_EWM      <= '1';     end if;
 				event_marker_count  <= std_logic_vector(unsigned(event_marker_count) + 1);
             end if;
             if  clockmarker = '1'   then
@@ -573,8 +609,6 @@ begin
 						counter <= (others => '0');
                         -- count free running EVM
                         is_evtmarker    <= '1';
-                        -- clear HB_TO_EVM gate
-                        hb_to_evm <= '0';
 					elsif (rx_data_prev2 = X"1C11" and rx_data_prev1 = X"1CEE") then
 						counter <= (others => '0');
 						is_clkmarker <= '1';
@@ -619,12 +653,6 @@ begin
                 ----is_retrseq 	<= '0';
 			--end if;
 		--end if;
-				
-        if (is_first_DREQ = '0'  and  is_datareq = '0') then
-            datareq_delta_cnt <= datareq_delta_cnt + 1;
-        else
-            datareq_delta_cnt <= (others=> '0');
-        end if; 
         
 		-- start and end of decoding DTC packet using PREV3 with look-ahead knowledge about incoming markers
 		if (is_evtmarker = '0' and is_clkmarker = '0' and is_loopmarker = '0' and is_othermarker = '0' and is_retrseq = '0' and is_retrmarker = '0') then
@@ -648,7 +676,6 @@ begin
 				elsif rx_kchar_prev3 = "10" and rx_data_prev3(15 downto 8) = X"1C" and rx_data_prev3(4 downto 0) = B"00010" then -- Data Request
 --					word_count  <= word_count + 1;
 					word_count  <= 1;
-                    if (is_first_DREQ = '1') then    is_first_DREQ <= '0';    end if;
 					is_datareq  <= '1';
                     is_loadtag  <= '1';
 					req_we      <= '1';
@@ -658,6 +685,9 @@ begin
 --					word_count  <= word_count + 1;
 					word_count  <= 1;
 					is_heartbeat<= '1';
+                    if  next_is_firstHB = '0'  then
+                        HB_TAG_SAVE <= unsigned(HEARTBEAT_EVENT_WINDOW_TAG);
+                    end if;
 					seq_num     <= unsigned(rx_data_prev3(7 downto 5));
                     
                     crc_data_out <= rx_data_prev3;
@@ -713,6 +743,12 @@ begin
 					if (word_count = 3) then 	HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
 					if (word_count = 4) then 	HEARTBEAT_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
 					if (word_count = 5) then 	HEARTBEAT_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
+                    if (word_count = 6  and  next_is_firstHB = '0') then
+                        if  unsigned(HEARTBEAT_EVENT_WINDOW_TAG) /= (HB_TAG_SAVE + 1)  then
+                            HEARTBEAT_INVALID   <= '1'; 
+                            invalid_hb_count    <= std_logic_vector(unsigned(invalid_hb_count) + 1);
+                        end if;
+                    end if;
                     -- as per Mu2e docDb 4914:  EVT_MODE[0] = Injection Data Source;  EVT_MODE[2:1] = Pattern Mode; EVT_MODE[7:3] = Byte 0-res; EVT_MODE[15:8] = Byte 1-res Trk
                     --                          EVT_MODE[16] = Calo Laser Injection;  EVT_MODE[23:17] = Byte 2-res Calo;                        EVT_MODE[31:24]= Byte 3-res CRV
                     if (word_count = 6) then 	EVT_MODE(15 downto 0)  <= rx_data_prev3;  end if;
@@ -722,36 +758,39 @@ begin
                         RF_MARKER   <= rx_data_prev3(15 downto 8);
                         SUBRUN_ID   <= rx_data_prev3(2 downto 1);
                         ONSPILL     <= rx_data_prev3(0);
-						if (unsigned(EVT_MODE) > 0) then
-                            SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
-                        end if;
-					end if;
+                        ---- increase local count only on non null-HB and not for the very first HB because DIGIs start counting from zero!!!
+						--if (unsigned(EVT_MODE) > 0 and next_is_firstHB = '0') then
+                            --SPILL_EVENT_WINDOW_TAG 	<= std_logic_vector(unsigned(SPILL_EVENT_WINDOW_TAG) + 1);
+                        --end if;
+                    end if;
                     
-					-- delay HEARTBEAT_SEEN until ONSPILL and EVTMODE have been determined
-					-- restart SPILL_EVENT_WINDOW_TAG on ONSPILL rising edge
-                    -- MT 07/20/23: use NEWSPILL for now
+					-- delay HEARTBEAT until end of HB packet
 					if (word_count = 9)	then 
                         read_crc    <= rx_data_prev3;
                         check_crc   <= '1';
-                        
-                        is_heartbeat <= '0';
-                        if (unsigned(EVT_MODE) > 0) then -- differentiate non_null from null HB
-                            HEARTBEAT_SEEN  <= '1'; 
-                            HB_to_HB        <= '0';
-                            hb_to_evm       <= '1';  -- gate from HB to EWM when HB is not null
                             
+                        is_heartbeat <= '0';
+                         
+                        if  SPILL_EVENT_WINDOW_TAG(13 downto 0) = B"00_0000_0000_0000"  then 
+                            TAG_SYNC <= '1';
+                        elsif  SPILL_EVENT_WINDOW_TAG(13 downto 0) = B"00_0000_0000_0001"  then
+                            TAG_SYNC <= '0';
+                        end if;
+                        
+                        -- differentiate non_null from null HB
+                        if (unsigned(EVT_MODE) > 0) then 
+                            HEARTBEAT   <= '1'; 
+                            HB_to_HB    <= '0';  -- set on next clock when HEARTBEAT = 1
                             if (next_is_firstHB = '1') then    
-                                next_is_firstHB  <= '0';
-                                is_first_nullHB <= '0';
-                                NEWSPILL    <= '1'; 
-                                SPILL_EVENT_WINDOW_TAG	<= X"00000";
+                                NEWRUN          <= '1'; 
+                                next_is_firstHB <= '0';
                             end if;
                         else  -- must be NULL HB! Tag FIRST non-null HB as the HB sent before last EWM
                             NULL_HEARTBEAT_SEEN <= '1';
-                            if (is_first_nullHB = '0') then
-                                is_first_nullHB <= '1';
-                                next_is_firstHB  <= '1';
-                            end if;
+                            LAST_EWM        <= '1';
+                            NEWRUN          <= '0'; 
+                            HB_to_HB        <= '0';
+                            next_is_firstHB <= '1';
                         end if;
                         
 					end if;
