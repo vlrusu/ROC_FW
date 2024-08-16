@@ -60,8 +60,8 @@ package algorithm_constants is
 	constant DIGI_BITS	        : integer := 32;  -- ROCFIFO output width
 	constant AXI_BITS	        : integer := 64;  -- AXI beat size
    
-   constant FIFO_DATA_SIZE  		   : integer := 40;  -- fits size for 3 events
-   constant ROCFIFO_DEPTH  		   : integer := 17;  -- fits 65K 32-bit words
+   constant FIFO_DATA_SIZE      : integer := 40;  -- fits size for 3 events (13-bit per event)
+   constant ROCFIFO_DEPTH       : integer := 17;  -- fits 65K 32-bit words
 
    
     ----==================================----	   
