@@ -1,4 +1,4 @@
-# Creating SmartDesign "TVS_Interface"
+# Creating SmartDesign TVS_Interface
 set sd_name {TVS_Interface}
 create_smartdesign -sd_name ${sd_name}
 
@@ -59,7 +59,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_DATA" "TVS_Cntrl
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "TVS_Interface"
+# Generate SmartDesign TVS_Interface
 generate_component -component_name ${sd_name}

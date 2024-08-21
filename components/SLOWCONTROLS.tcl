@@ -1,4 +1,4 @@
-# Creating SmartDesign "SLOWCONTROLS"
+# Creating SmartDesign SLOWCONTROLS
 set sd_name {SLOWCONTROLS}
 create_smartdesign -sd_name ${sd_name}
 
@@ -652,7 +652,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave9" "SPI_KEY_0:A
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "SLOWCONTROLS"
+# Generate SmartDesign SLOWCONTROLS
 generate_component -component_name ${sd_name}

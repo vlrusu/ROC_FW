@@ -1,4 +1,4 @@
-# Creating SmartDesign "TOP_SERDES"
+# Creating SmartDesign TOP_SERDES
 set sd_name {TOP_SERDES}
 create_smartdesign -sd_name ${sd_name}
 
@@ -23,7 +23,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_EMPTY} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_FULL} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DREQCLK_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DREQ_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCALIGN_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ENABLE_ALIGNMENT} -port_direction {IN}
@@ -66,7 +65,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HEARTBEAT_SEEN} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TXD_P} -port_direction {OUT} -port_is_pad {1}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_TX_CLK_R} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LAST_EWM} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWRUN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ONSPILL} -port_direction {OUT}
@@ -238,7 +236,6 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 # Add DRACRegisters_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DRACRegisters} -hdl_file {hdl\DRACRegisters.vhd} -instance_name {DRACRegisters_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:SEL_RST}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 
 
@@ -398,7 +395,7 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {XCVR_Block} -insta
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "INV_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "AND2_0_0:B" "DCSClkReset:EXT_RST_N" "DCSProcessor_0:reset_n" "DCSReadCMDProcessor_0:RESET_N" "DCSWriteCMDProcessor_0:RESET_N" "DRACRegisters_0:EXT_RST_N" "EXT_RST_N" "PBRS_checker_0:RESETCN" "PRBS_generator_0:RESETGN" "RXClkReset:EXT_RST_N" "RxPacketFIFO_1:RRESET_N" "RxPacketFIFO_1:WRESET_N" "RxPacketFIFO_3:RRESET_N" "RxPacketFIFO_3:WRESET_N" "RxPacketReader_0:roc_resetn" "TXClkReset:EXT_RST_N" "delay_sreg_1bit_0:resetn" "delay_sreg_1bit_1:resetn" "delay_sreg_1bit_2:resetn" "delay_sreg_1bit_3:resetn" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" "pulse_time_crossing_0:resetn_in" "pulse_time_crossing_0:resetn_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "AND2_0_0:B" "DCSClkReset:EXT_RST_N" "DCSProcessor_0:reset_n" "DCSReadCMDProcessor_0:RESET_N" "DCSWriteCMDProcessor_0:RESET_N" "DRACRegisters_0:EXT_RST_N" "DREQProcessor_0:reset_n" "EXT_RST_N" "PBRS_checker_0:RESETCN" "PRBS_generator_0:RESETGN" "RXClkReset:EXT_RST_N" "RxPacketFIFO_1:RRESET_N" "RxPacketFIFO_1:WRESET_N" "RxPacketFIFO_3:RRESET_N" "RxPacketFIFO_3:WRESET_N" "RxPacketReader_0:roc_resetn" "TXClkReset:EXT_RST_N" "delay_sreg_1bit_0:resetn" "delay_sreg_1bit_1:resetn" "delay_sreg_1bit_2:resetn" "delay_sreg_1bit_3:resetn" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" "pulse_time_crossing_0:resetn_in" "pulse_time_crossing_0:resetn_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "RxPacketFIFO_0:RRESET_N" "RxPacketFIFO_0:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0_0:A" "INV_0_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0_0:Y" "RxPacketFIFO_2:RRESET_N" "RxPacketFIFO_2:WRESET_N" }
@@ -467,7 +464,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_busy" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_init" "dcs_cal_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_busy" "dcs_hv_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_init" "dcs_hv_init" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQCLK_RESETN" "DREQProcessor_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:FETCH_START" "FETCH_START" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:clk" "DREQ_CLK" "RxPacketFIFO_2:RCLOCK" "RxPacketFIFO_3:WCLOCK" "crc_1:CLK" "pulse_stretcher_1:clk_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_en" "crc_1:CRC_EN" }
@@ -493,13 +489,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_N" "XCVR_Block_0:LANE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_RXD_P" "XCVR_Block_0:LANE0_RXD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_N" "XCVR_Block_0:LANE0_TXD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TXD_P" "XCVR_Block_0:LANE0_TXD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"LANE0_TX_CLK_R" "PRBS_generator_0:CLK" "RxPacketFIFO_1:RCLOCK" "RxPacketFIFO_3:RCLOCK" "TXClkReset:CLK" "TxPacketWriter_0:clk" "XCVR_Block_0:LANE0_TX_CLK_R" "pulse_time_crossing_0:clock_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LAST_EWM" "delay_sreg_1bit_1:sr_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWRUN" "RxPacketReader_0:NEWRUN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ONSPILL" "delay_sreg_1bit_2:sr_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:PRBS_ON" "PRBS_ON" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:RX_VAL_OUT" "PRBS_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:START" "PRBS_EN" "PRBS_generator_0:START" "XCVR_Block_0:PRBS_EN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_generator_0:CLK" "RxPacketFIFO_1:RCLOCK" "RxPacketFIFO_3:RCLOCK" "TXClkReset:CLK" "TxPacketWriter_0:clk" "XCVR_Block_0:LANE0_TX_CLK_R" "pulse_time_crossing_0:clock_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_Block_0:REF_CLK_PAD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_Block_0:REF_CLK_PAD_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RXCLK_RESETN" "RXClkReset:FABRIC_RESET_N" }
@@ -674,7 +670,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_seen" "req_err_switch_0:hd
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "TOP_SERDES"
+# Generate SmartDesign TOP_SERDES
 generate_component -component_name ${sd_name}

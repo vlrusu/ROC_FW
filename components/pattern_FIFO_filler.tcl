@@ -1,4 +1,4 @@
-# Creating SmartDesign "pattern_FIFO_filler"
+# Creating SmartDesign pattern_FIFO_filler
 set sd_name {pattern_FIFO_filler}
 create_smartdesign -sd_name ${sd_name}
 
@@ -91,7 +91,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_tag" "rocfifo_cntrl_0:ew_tag
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "pattern_FIFO_filler"
+# Generate SmartDesign pattern_FIFO_filler
 generate_component -component_name ${sd_name}

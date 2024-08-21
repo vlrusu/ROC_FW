@@ -1,4 +1,4 @@
-# Creating SmartDesign "XCVR_Block"
+# Creating SmartDesign XCVR_Block
 set sd_name {XCVR_Block}
 create_smartdesign -sd_name ${sd_name}
 
@@ -164,7 +164,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:CLKS_FROM_TXPLL_0" "X
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "XCVR_Block"
+# Generate SmartDesign XCVR_Block
 generate_component -component_name ${sd_name}

@@ -1,4 +1,4 @@
-# Creating SmartDesign "NewDDRInterface"
+# Creating SmartDesign NewDDRInterface
 set sd_name {NewDDRInterface}
 create_smartdesign -sd_name ${sd_name}
 
@@ -22,7 +22,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWRUN} -port_direction {I
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RXCLK_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RX_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SERIAL_pattern_en} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {dreqclk_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dreqclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {end_evm_seen} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_re} -port_direction {IN}
@@ -230,7 +229,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SYSCLKReset:PLL_POWERDOWN_B}
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ACT_N" "DDR4_Cntrl_0:ACT_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DDR_BANK_CALIB" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "DREQ_FIFO_1:RRESET_N" "DREQ_FIFO_1:WRESET_N" "EW_FIFO_controller_0:resetn_fifo" "EW_FIFO_controller_0:resetn_serdesclk" "EXT_RST_N" "SYSCLKReset:EXT_RST_N" "edge_generator_1:resetn" "ewtag_cntrl_0:resetn_fifo" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "pattern_switch_0:resetn_serdesclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "DREQ_FIFO_1:RRESET_N" "DREQ_FIFO_1:WRESET_N" "EW_FIFO_controller_0:resetn_dreqclk" "EW_FIFO_controller_0:resetn_fifo" "EW_FIFO_controller_0:resetn_serdesclk" "EXT_RST_N" "SYSCLKReset:EXT_RST_N" "edge_generator_0:resetn" "edge_generator_1:resetn" "ew_size_store_and_fetch_controller_0:rreset_n" "ewtag_cntrl_0:resetn_dreqclk" "ewtag_cntrl_0:resetn_fifo" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "pattern_switch_0:resetn_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "DDR4_Cntrl_0:SYS_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ACLK" "DDR4_Cntrl_0:SYS_CLK" "DREQ_FIFO_1:WCLOCK" "EW_FIFO_controller_0:sysclk" "SYSCLKReset:CLK" "edge_generator_2:clk" "ew_size_store_and_fetch_controller_0:wclk" "ewtag_cntrl_0:sysclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ARESETN" "EW_FIFO_controller_0:resetn_sysclk" "SYSCLKReset:FABRIC_RESET_N" "edge_generator_2:resetn" "ew_size_store_and_fetch_controller_0:wreset_n" "ewtag_cntrl_0:resetn_sysclk" }
@@ -290,7 +289,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:header2_er
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:last_word" "ewtag_cntrl_0:last_word" "last_word" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_dreqclk" "edge_generator_0:risingEdge" "ew_size_store_and_fetch_controller_0:fetch_newspill" "ewtag_cntrl_0:new_spill_on_dreqclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_sysclk" "edge_generator_2:risingEdge" "ew_size_store_and_fetch_controller_0:store_newspill" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:resetn_dreqclk" "dreqclk_resetn" "edge_generator_0:resetn" "ew_size_store_and_fetch_controller_0:rreset_n" "ewtag_cntrl_0:resetn_dreqclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:serdesclk" "edge_generator_1:clk" "ewtag_cntrl_0:serdesclk" "pattern_FIFO_filler_0:serdesclk" "pattern_switch_0:serdesclk" "serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:start_read_pulse" "ewtag_cntrl_0:start_read" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_error" "ew_size_store_and_fetch_controller_0:fetch_sync_error" }
@@ -409,7 +407,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:AXI4mslave0
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "NewDDRInterface"
+# Generate SmartDesign NewDDRInterface
 generate_component -component_name ${sd_name}

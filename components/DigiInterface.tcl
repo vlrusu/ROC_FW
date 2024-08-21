@@ -1,4 +1,4 @@
-# Creating SmartDesign "DigiInterface"
+# Creating SmartDesign DigiInterface
 set sd_name {DigiInterface}
 create_smartdesign -sd_name ${sd_name}
 
@@ -8,6 +8,7 @@ auto_promote_pad_pins -promote_all 0
 # Create top level Scalar Ports
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {EXT_RST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {FPGA_POR_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_PCS_ARST_N_0} -port_direction {IN}
@@ -41,7 +42,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {haltrun_en} -port_directio
 sd_create_scalar_port -sd_name ${sd_name} -port_name {newrun} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk_resetn} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_rclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serialfifo_re} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {use_uart} -port_direction {IN}
@@ -153,7 +153,7 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ROCFIFOControlle
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DigiLink_0:fifo_reset" "DigiLink_1:fifo_reset" "DigiReaderFIFO_0:RRESET_N" "DigiReaderFIFO_0:WRESET_N" "edge_generator_1:resetn" "fifo_resetn" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "serdesclk_resetn" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "DigiLink_Sim_0:fifoclk_resetn" "ROCFIFOController_0:reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "DigiLink_0:CTRL_ARST_N" "DigiLink_1:CTRL_ARST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "DigiLink_0:CTRL_CLK" "DigiLink_1:CTRL_CLK" }
@@ -283,7 +283,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_lane" "
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the SmartDesign 
+# Save the smartDesign
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign "DigiInterface"
+# Generate SmartDesign DigiInterface
 generate_component -component_name ${sd_name}
