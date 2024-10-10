@@ -64,7 +64,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISDO} -port_direct
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISS} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE0n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_FCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_ERRORCLR} -port_direction {OUT}
@@ -119,6 +119,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {use_uart} -port_direction 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {write_to_fifo} -port_direction {OUT}
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CLK} -port_direction {INOUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SS} -port_direction {INOUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {calsda} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hvsda} -port_direction {INOUT}
@@ -293,6 +294,11 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {GPIO_0:GPIO_IN} -val
 
 # Add INV_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {INV} -instance_name {INV_0}
+
+
+
+# Add LeakMux_0 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {LeakMux} -hdl_file {hdl\LeakMux.vhd} -instance_name {LeakMux_0}
 
 
 
@@ -489,12 +495,19 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DTCALIGN_RESETN" "Registers_0:D
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FLASH" "PF_SPI_0:FLASH" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE0n" "PREAMPSPI_0:SPISS[0:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE1n" "PREAMPSPI_0:SPISS[1:1]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_FCLK" "LeakMux_0:HV_PREAMP_FCLK_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MISO" "PREAMPSPI_0:SPISDI" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MOSI" "PREAMPSPI_0:SPISDO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MOSI" "LeakMux_0:HV_PREAMP_MOSI_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_SCLK" "PREAMPSPI_0:SPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"IFACE" "PF_SPI_0:IFACE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:A" "MX2_0:A" "PREAMPSPI_1:SPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "MX2_0:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:HV_PREAMP_MOSI" "PREAMPSPI_0:SPISDO" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SCL" "Registers_0:leak_scl" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SDA_DIR" "Registers_0:leak_sdir" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SDI" "Registers_0:leak_sdi" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SDO" "Registers_0:leak_sdo" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:muxselect" "Registers_0:leak_muxselect" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MX2_0:S" "Registers_0:INVERTCALSPICLCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_SPI_0:SS" "SS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_EN" "Registers_0:PRBS_EN" }

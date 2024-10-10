@@ -1003,3 +1003,86 @@ set_io -port_name HVPROGSPISS  \
     -fixed true            \
     -io_std LVTTL          \
     -DIRECTION OUTPUT
+    
+    
+    
+set_io -port_name HV_PREAMP_FCLK  \
+    -pin_name R8                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -RES_PULL Up                  \
+    -DIRECTION OUTPUT
+
+
+
+# 
+# Dedicated Peripheral I/O Settings
+# 
+
+
+# 
+# Unlocked I/O settings
+# The I/Os in this section are unplaced or placed but are not locked
+# the other listed attributes have been applied
+# 
+
+
+#
+#Ports using Dedicated Pins
+
+#
+
+set_io -port_name CLK  \
+    -pin_name G3       \
+    -DIRECTION INOUT
+
+
+set_io -port_name DI  \
+    -pin_name G10     \
+    -DIRECTION INPUT
+
+
+set_io -port_name DO   \
+    -pin_name G5       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name FLASH  \
+    -pin_name H10        \
+    -DIRECTION INPUT
+
+
+set_io -port_name IFACE  \
+    -pin_name G9         \
+    -DIRECTION INPUT
+
+
+set_io -port_name SS  \
+    -pin_name G4      \
+    -DIRECTION INOUT
+
+
+set_io -port_name TCK  \
+    -pin_name F8       \
+    -DIRECTION INPUT
+
+
+set_io -port_name TDI  \
+    -pin_name G8       \
+    -DIRECTION INPUT
+
+
+set_io -port_name TDO  \
+    -pin_name F6       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name TMS  \
+    -pin_name F7       \
+    -DIRECTION INPUT
+
+
+set_io -port_name TRSTB  \
+    -pin_name G7         \
+    -DIRECTION INPUT
+

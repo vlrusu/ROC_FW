@@ -70,7 +70,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HVPROGSPISS} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_MARKER} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE0n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_FCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO0} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {KEY_IO2} -port_direction {OUT}
@@ -128,6 +128,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TDO} -port_direction {OUT}
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CLK} -port_direction {INOUT} -port_is_pad {1}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoCAL_LVTTL2} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROCtoHV_LVTTL1} -port_direction {INOUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SS} -port_direction {INOUT} -port_is_pad {1}
@@ -141,10 +142,10 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQS_N} -port_direction {
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQS_P} -port_direction {INOUT} -port_range {[3:0]} -port_is_pad {1}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDR4_DQ} -port_direction {INOUT} -port_range {[31:0]} -port_is_pad {1}
 
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_CAL_LVDS1_P} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_HV_LVDS1_P} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_CAL_LVDS1_N} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_CAL_LVDS1_P} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_HV_LVDS1_N} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {ROC_HV_LVDS1_P} -value {GND}
 # Add AND2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
@@ -493,8 +494,8 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:PREFETCH_EVENT_
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[19:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[39:20]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:CLOCK_ALIGNED}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_DLYD_EVM_EN}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_TAG_OFFSET}
 
 
@@ -636,6 +637,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"HVPROGSPISDO" "SLOWCONTROLS_0:H
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HVPROGSPISS" "SLOWCONTROLS_0:HVPROGSPISS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE0n" "SLOWCONTROLS_0:HV_PREAMP_CE0n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_CE1n" "SLOWCONTROLS_0:HV_PREAMP_CE1n" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_FCLK" "SLOWCONTROLS_0:HV_PREAMP_FCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MISO" "SLOWCONTROLS_0:HV_PREAMP_MISO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_MOSI" "SLOWCONTROLS_0:HV_PREAMP_MOSI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_SCLK" "SLOWCONTROLS_0:HV_PREAMP_SCLK" }

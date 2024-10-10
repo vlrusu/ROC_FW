@@ -160,6 +160,13 @@ entity Registers is
     dcs_use_lane            : in std_logic_vector(3 downto 0);
     dcs_force_full          : in std_logic;
 
+    leak_muxselect : out std_logic;
+    leak_scl : out std_logic;
+    leak_sdo : out std_logic;
+    leak_sdi : in std_logic;
+    leak_sdir : out std_logic;
+    
+    
     PRBS_LOCK		: in  std_logic;
     PRBS_ON		    : in  std_logic;
     PRBS_ERRORCNT   : in  std_logic_vector(31 downto 0);
@@ -348,6 +355,10 @@ architecture synth of Registers is
     constant CR_USE_UART                : std_logic_vector(7 downto 0) := x"F1";  -- send DIGI data to DIGIReaderFIFO. bypassing ROCFIFOs 
     constant CR_DIGIRW_SEL              : std_logic_vector(7 downto 0) := x"F2";  -- select source of some signals as fiber (if 0) or serail (if 1)
 
+    constant CR_LEAK_MUX : std_logic_vector(7 downto 0) := x"F3";
+    constant CR_LEAK_SDIR : std_logic_vector(7 downto 0) := x"F4";
+    constant CR_LEAK_SCLK : std_logic_vector(7 downto 0) := x"F5";
+    constant CR_LEAK_SDA : std_logic_vector(7 downto 0) := x"F6";
 
   -------------------------------------------------------------------------------
   -- Signal declarations
@@ -649,6 +660,8 @@ begin
             DataOut(15 downto 8) <= hv_lane1_error_count;
         when CR_ERROR_COUNTER =>
             DataOut(15 downto 0) <= error_counter;
+        when CR_LEAK_SDA =>
+            DataOut(0) <= leak_sdi;
             
         when others =>
           DataOut <= (others => '0');
@@ -734,6 +747,9 @@ begin
         --enable_fiber_marker <= '0';
         serial_enable_fiber_clock <= '0';
         serial_enable_fiber_marker <= '0';
+      
+      leak_muxselect <= '0';
+        leak_sdir <= '0';
       
         error_address <= (others => '0');
 		
@@ -882,6 +898,16 @@ begin
                 use_uart <= PWDATA(0);
             when CR_DIGIRW_SEL =>
                 digirw_sel <= PWDATA(0);
+                
+                
+            when CR_LEAK_MUX =>
+                leak_muxselect <= PWDATA(0);
+            when CR_LEAK_SCLK =>
+                leak_scl <= PWDATA(0);
+            when CR_LEAK_SDIR =>
+                leak_sdir <= PWDATA(0);
+            when CR_LEAK_SDA =>
+                leak_sdo <= PWDATA(0);
 				            
             when others =>
         end case;
