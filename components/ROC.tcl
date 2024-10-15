@@ -93,6 +93,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS0_P} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS1_N} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_HV_LVDS1_P} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_LED0_n} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SC_GOLDENn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI0_ADC0_CEn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI0_ADC1_CEn} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ROC_SPI0_ADC2_CEn} -port_direction {OUT}
@@ -164,6 +165,11 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {AND3_0:C} -value {VC
 
 # Add AND3_1 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND3} -instance_name {AND3_1}
+
+
+
+# Add Blinking_LED_driver_0 instance
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {Blinking_LED_driver} -hdl_file {hdl\Blinking_LED_driver.vhd} -instance_name {Blinking_LED_driver_0}
 
 
 
@@ -307,10 +313,10 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[4:4]} -value {GND}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {MIV_RV32IMC_C0_0:EXT_SYS_IRQ} -pin_slices {[5:5]}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_SYS_IRQ[5:5]} -value {GND}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:JTAG_TDO_DR}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_RESETN}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:EXT_IRQ} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MIV_RV32IMC_C0_0:TIME_COUNT_OUT}
 
 
 
@@ -493,7 +499,6 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:HEARTBEAT_EVENT
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:PREFETCH_EVENT_WINDOW_TAG} -pin_slices {[31:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[19:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[39:20]}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:CLOCK_ALIGNED}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_DLYD_EVM_EN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_TAG_OFFSET}
@@ -510,10 +515,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:Y" "DigiInterface_0:CTRL
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:A" "INIT_component_0:BANK_0_CALIB_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:B" "INIT_component_0:BANK_1_CALIB_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:Y" "NewDDRInterface_0:DDR_BANK_CALIB" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:A" "MIV_RV32IMC_C0_0:RESETN" "PF_SRAM_0:HRESETN" "Reset50MHz:FABRIC_RESET_N" "SLOWCONTROLS_0:PRESETN" "TOP_SERDES_0:HRESETN" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:A" "Blinking_LED_driver_0:RESETN" "MIV_RV32IMC_C0_0:RESETN" "PF_SRAM_0:HRESETN" "Reset50MHz:FABRIC_RESET_N" "SLOWCONTROLS_0:PRESETN" "TOP_SERDES_0:HRESETN" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:B" "INV_2:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:C" "INV_1:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:Y" "DigiInterface_0:EXT_RST_N" "HCLKReset:EXT_RST_N" "NewDDRInterface_0:EXT_RST_N" "SLOWCONTROLS_0:DCS_CLK_RESETN" "TOP_SERDES_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:CLK" "DigiInterface_0:serialfifo_rclk" "HCLKReset:CLK" "MIV_RV32IMC_C0_0:CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" "PF_SRAM_0:HCLK" "Reset50MHz:CLK" "SLOWCONTROLS_0:PCLK" "pulse_stretcher_0:clk_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGIN" "TOP_SERDES_0:CLOCK_ALIGNED" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGOUT" "ROC_SC_GOLDENn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISCLKO" "SLOWCONTROLS_0:CALPROGSPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDI" "SLOWCONTROLS_0:CALPROGSPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDO" "SLOWCONTROLS_0:CALPROGSPISDO" }
@@ -619,7 +627,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:pattern_init" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:pattern_type" "NewDDRInterface_0:pattern_type" "TOP_SERDES_0:DCS_PATTERN_TYPE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_empty" "SLOWCONTROLS_0:SERDES_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_full" "SLOWCONTROLS_0:SERDES_FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_rclk" "HCLKReset:CLK" "MIV_RV32IMC_C0_0:CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" "PF_SRAM_0:HCLK" "Reset50MHz:CLK" "SLOWCONTROLS_0:PCLK" "pulse_stretcher_0:clk_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_re" "SLOWCONTROLS_0:SERDES_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:tag_sync_error" "NewDDRInterface_0:DIGI_tag_sync_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:use_uart" "SLOWCONTROLS_0:use_uart" }

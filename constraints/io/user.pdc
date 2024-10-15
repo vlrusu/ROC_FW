@@ -1,12 +1,12 @@
-# Microsemi I/O Physical Design Constraints file
+# Microchip I/O Physical Design Constraints file
 
 # User I/O Constraints file 
 
-# Version: 2022.1 2022.1.0.10
+# Version: 2022.3 2022.3.0.8
 
 # Family: PolarFire , Die: MPF300TS , Package: FCG484
 
-# Date generated: Fri Sep 30 14:03:05 2022 
+# Date generated: Tue Oct 15 10:39:13 2024 
 
 
 # 
@@ -24,6 +24,41 @@
 # 
 # User Locked I/O settings
 # 
+
+set_io -port_name CALPROGSPISCLKO  \
+    -pin_name N2                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CALPROGSPISDI  \
+    -pin_name T5                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION INPUT
+
+
+set_io -port_name CALPROGSPISDO  \
+    -pin_name P2                 \
+    -fixed true                  \
+    -io_std LVCMOS33             \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CALPROGSPISS  \
+    -pin_name T6                \
+    -fixed true                 \
+    -io_std LVCMOS33            \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name CAL_MARKER  \
+    -pin_name C6              \
+    -fixed true               \
+    -io_std LVCMOS25          \
+    -DIRECTION OUTPUT
+
 
 set_io -port_name DDR4_ACTn  \
     -pin_name AA6            \
@@ -451,6 +486,91 @@ set_io -port_name DDR4_RESETn  \
     -DIRECTION OUTPUT
 
 
+set_io -port_name HVPROGSPISCLKO  \
+    -pin_name R6                  \
+    -fixed true                   \
+    -io_std LVTTL                 \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HVPROGSPISDI  \
+    -pin_name N5                \
+    -fixed true                 \
+    -io_std LVTTL               \
+    -DIRECTION INPUT
+
+
+set_io -port_name HVPROGSPISDO  \
+    -pin_name N6                \
+    -fixed true                 \
+    -io_std LVTTL               \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HVPROGSPISS  \
+    -pin_name P8               \
+    -fixed true                \
+    -io_std LVTTL              \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_MARKER  \
+    -pin_name B7             \
+    -fixed true              \
+    -io_std LVCMOS25         \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name HV_PREAMP_FCLK  \
+    -pin_name R8                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
+    -RES_PULL Up                  \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO0  \
+    -pin_name K4           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO1  \
+    -pin_name J7           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION INPUT
+
+
+set_io -port_name KEY_IO2  \
+    -pin_name L5           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO3  \
+    -pin_name L6           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name KEY_IO4  \
+    -pin_name M8           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION INPUT
+
+
+set_io -port_name KEY_IO5  \
+    -pin_name M9           \
+    -fixed true            \
+    -io_std LVCMOS33       \
+    -DIRECTION OUTPUT
+
+
 set_io -port_name ROC_ACCEL_CLK0_N  \
     -pin_name E16                   \
     -fixed true                     \
@@ -497,9 +617,9 @@ set_io -port_name ROC_CAL_LVDS0_P  \
     -pin_name A17                  \
     -fixed true                    \
     -io_std LVDS25                 \
-    -DIRECTION INOUT
+    -DIRECTION OUTPUT
 
-    
+
 set_io -port_name ROC_CAL_LVDS1_N  \
     -pin_name B15                  \
     -fixed true                    \
@@ -513,7 +633,6 @@ set_io -port_name ROC_CAL_LVDS1_P  \
     -io_std LVCMOS25               \
     -DIRECTION OUTPUT
 
-    
 
 set_io -port_name ROC_HV_DEVRSTn  \
     -pin_name L3                  \
@@ -528,6 +647,13 @@ set_io -port_name ROC_HV_LVDS0_N  \
     -io_std LVDS25                \
     -DIRECTION OUTPUT
 
+set_io -port_name ROC_HV_LVDS0_N  \
+    -pin_name A3                  \
+    -fixed true                   \
+    -io_std LVDS25                \
+    -DIRECTION OUTPUT
+
+
 
 set_io -port_name ROC_HV_LVDS0_P  \
     -pin_name A2                  \
@@ -535,7 +661,7 @@ set_io -port_name ROC_HV_LVDS0_P  \
     -io_std LVDS25                \
     -DIRECTION OUTPUT
 
-    
+
 set_io -port_name ROC_HV_LVDS1_N  \
     -pin_name B1                  \
     -fixed true                   \
@@ -547,27 +673,6 @@ set_io -port_name ROC_HV_LVDS1_P  \
     -pin_name C1                  \
     -fixed true                   \
     -io_std LVCMOS25              \
-    -DIRECTION INOUT
-
-
-set_io -port_name ROC_HV_LVDS0_N  \
-    -pin_name A3                  \
-    -fixed true                   \
-    -io_std LVDS25                \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CAL_MARKER      \
-    -pin_name C6                  \
-    -fixed true                   \
-    -io_std LVCMOS25              \
-    -DIRECTION OUTPUT
-
-    
-set_io -port_name HV_MARKER       \
-    -pin_name B7                  \
-    -fixed true                   \
-    -io_std LVCMOS25              \
     -DIRECTION OUTPUT
 
 
@@ -575,6 +680,13 @@ set_io -port_name ROC_LED0_n  \
     -pin_name M5              \
     -fixed true               \
     -io_std LVCMOS33          \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name ROC_SC_GOLDENn  \
+    -pin_name N1                  \
+    -fixed true                   \
+    -io_std LVCMOS33              \
     -DIRECTION OUTPUT
 
 
@@ -661,35 +773,6 @@ set_io -port_name ROC_SPI1_SCLK  \
     -io_std LVCMOS33             \
     -DIRECTION OUTPUT
 
-#this are connected only to the serial programmer pod
-#to use the key connector, change RX->J7 and TX->K4
-#set_io -port_name ROC_UART1_RXD  \
-    #-pin_name J6                 \
-    #-fixed true                  \
-    #-io_std LVCMOS33             \
-    #-DIRECTION INPUT
-#
-#
-#set_io -port_name ROC_UART1_TXD  \
-    #-pin_name L7                 \
-    #-fixed true                  \
-    #-io_std LVCMOS33             \
-    #-DIRECTION OUTPUT
-#
-    
-set_io -port_name KEY_IO1  \
-    -pin_name J7                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION INPUT
-
-
-set_io -port_name KEY_IO0  \
-    -pin_name K4                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
 
 set_io -port_name ROCtoCAL_CLK0_N  \
     -pin_name C17                  \
@@ -723,7 +806,7 @@ set_io -port_name ROCtoCAL_LVTTL2  \
     -pin_name T2                   \
     -fixed true                    \
     -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
+    -DIRECTION INOUT
 
 
 set_io -port_name ROCtoCAL_LVTTL3  \
@@ -760,7 +843,7 @@ set_io -port_name ROCtoHV_LVTTL1  \
     -io_std LVCMOS33              \
     -DIRECTION INOUT
 
-    
+
 set_io -port_name ROCtoHV_LVTTL2  \
     -pin_name P1                  \
     -fixed true                   \
@@ -775,12 +858,17 @@ set_io -port_name ROCtoHV_LVTTL3  \
     -DIRECTION OUTPUT
 
 
+
 # 
 # Dedicated Peripheral I/O Settings
 # 
 
 
-
+# 
+# Unlocked I/O settings
+# The I/Os in this section are unplaced or placed but are not locked
+# the other listed attributes have been applied
+# 
 
 
 #
@@ -808,6 +896,26 @@ set_io -port_name CALtoROC_SERDES_TXD1_P  \
     -DIRECTION INPUT
 
 
+set_io -port_name CLK  \
+    -pin_name G3       \
+    -DIRECTION INOUT
+
+
+set_io -port_name DI  \
+    -pin_name G10     \
+    -DIRECTION INPUT
+
+
+set_io -port_name DO   \
+    -pin_name G5       \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name FLASH  \
+    -pin_name H10        \
+    -DIRECTION INPUT
+
+
 set_io -port_name HVtoROC_SERDES_TXD0_N  \
     -pin_name M21                        \
     -DIRECTION INPUT
@@ -825,6 +933,11 @@ set_io -port_name HVtoROC_SERDES_TXD1_N  \
 
 set_io -port_name HVtoROC_SERDES_TXD1_P  \
     -pin_name T22                        \
+    -DIRECTION INPUT
+
+
+set_io -port_name IFACE  \
+    -pin_name G9         \
     -DIRECTION INPUT
 
 
@@ -920,142 +1033,6 @@ set_io -port_name ROCtoHV_SERDES_TXD1_P  \
     -pin_name V22                        \
     -DIRECTION OUTPUT
 
-set_io -port_name KEY_IO2  \
-    -pin_name L5           \
-    -fixed true            \
-    -io_std LVCMOS33       \
-    -DIRECTION INPUT
-
-
-set_io -port_name KEY_IO3  \
-    -pin_name L6           \
-    -fixed true            \
-    -io_std LVCMOS33       \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name KEY_IO4  \
-    -pin_name M8           \
-    -fixed true            \
-    -io_std LVCMOS33       \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name KEY_IO5  \
-    -pin_name M9           \
-    -fixed true            \
-    -io_std LVCMOS33       \
-    -DIRECTION OUTPUT
-
-    
-set_io -port_name CALPROGSPISCLKO  \
-    -pin_name N2                   \
-    -fixed true                    \
-    -io_std LVCMOS33               \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CALPROGSPISDI  \
-    -pin_name T5                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION INPUT
-
-
-set_io -port_name CALPROGSPISDO  \
-    -pin_name P2                 \
-    -fixed true                  \
-    -io_std LVCMOS33             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name CALPROGSPISS  \
-    -pin_name T6                \
-    -fixed true                 \
-    -io_std LVCMOS33            \
-    -DIRECTION OUTPUT
-    
-    
-    
-set_io -port_name HVPROGSPISCLKO  \
-    -pin_name R6              \
-    -fixed true               \
-    -io_std LVTTL             \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HVPROGSPISDI  \
-    -pin_name N5            \
-    -fixed true             \
-    -io_std LVTTL           \
-    -DIRECTION INPUT
-
-
-set_io -port_name HVPROGSPISDO  \
-    -pin_name N6            \
-    -fixed true             \
-    -io_std LVTTL           \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name HVPROGSPISS  \
-    -pin_name P8           \
-    -fixed true            \
-    -io_std LVTTL          \
-    -DIRECTION OUTPUT
-    
-    
-    
-set_io -port_name HV_PREAMP_FCLK  \
-    -pin_name R8                  \
-    -fixed true                   \
-    -io_std LVCMOS33              \
-    -RES_PULL Up                  \
-    -DIRECTION OUTPUT
-
-
-
-# 
-# Dedicated Peripheral I/O Settings
-# 
-
-
-# 
-# Unlocked I/O settings
-# The I/Os in this section are unplaced or placed but are not locked
-# the other listed attributes have been applied
-# 
-
-
-#
-#Ports using Dedicated Pins
-
-#
-
-set_io -port_name CLK  \
-    -pin_name G3       \
-    -DIRECTION INOUT
-
-
-set_io -port_name DI  \
-    -pin_name G10     \
-    -DIRECTION INPUT
-
-
-set_io -port_name DO   \
-    -pin_name G5       \
-    -DIRECTION OUTPUT
-
-
-set_io -port_name FLASH  \
-    -pin_name H10        \
-    -DIRECTION INPUT
-
-
-set_io -port_name IFACE  \
-    -pin_name G9         \
-    -DIRECTION INPUT
-
 
 set_io -port_name SS  \
     -pin_name G4      \
@@ -1085,4 +1062,5 @@ set_io -port_name TMS  \
 set_io -port_name TRSTB  \
     -pin_name G7         \
     -DIRECTION INPUT
+
 

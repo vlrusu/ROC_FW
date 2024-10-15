@@ -19,6 +19,7 @@ import_files -library work -hdl_source hdl/TWIController.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/LeakMux.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
+import_files -library work -hdl_source hdl/Blinking_LED_driver.vhd
 import_files -library work -hdl_source hdl/counter32.v
 import_files -library work -hdl_source hdl/DCSProcessor.vhd
 import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
