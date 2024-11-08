@@ -35,7 +35,9 @@ port (
     dreq_fifo_data_in : in std_logic_vector(17 downto 0);
     
     tx_data_out : out std_logic_vector(15 downto 0);
-    tx_kchar_out : out std_logic_vector(1 downto 0)
+    tx_kchar_out : out std_logic_vector(1 downto 0);
+    
+    dtc_pkt_count: out std_logic_vector(15 downto 0)
 );
 end TxPacketWriter;
 architecture architecture_TxPacketWriter of TxPacketWriter is
@@ -61,6 +63,7 @@ begin
         tx_word_count <= 0;
         tx_state <= IDLE;
         sequence_num <= (others => '0');
+        dtc_pkt_count<= (others => '0');
     elsif rising_edge(clk) then
         dcs_fifo_re <= '0';
         dreq_fifo_re <= '0';
@@ -90,7 +93,8 @@ begin
                     tx_kchar <= dcs_fifo_data_in(17 downto 16);
                 end if;
                 if tx_word_count = 10 then
-						  sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    dtc_pkt_count  <= std_logic_vector(unsigned(dtc_pkt_count) + 1);
                     tx_state <= IDLE;
                 end if;
                 
@@ -107,7 +111,8 @@ begin
                     tx_kchar <= dreq_fifo_data_in(17 downto 16);
                 end if;
                 if tx_word_count = 10 then
-						  sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
+                    dtc_pkt_count  <= std_logic_vector(unsigned(dtc_pkt_count) + 1);
                     tx_state <= IDLE;
                 end if;
         end case;

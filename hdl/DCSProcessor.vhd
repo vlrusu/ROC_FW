@@ -16,6 +16,7 @@
 --      <v9>: <02/07/2024>: MT Add timeout for automatic State Machine when garbage data comes in during DTC Flashing or DTC Reset
 --      <v10>: <02/28/2024>: MT Added ROC_ID output for LOOPBACK REPLY MARKER
 --      <v11>: <05/23/2024>: MT Added PRE_IDLE state to generate END_DC_OPS output pulse to measure DCSProcessor timing
+--      <v12>: <10/29/2024>: MT Added DCS packet counter to CALCULATECRC state
 --
 -- Description: 
 --      Module decoding DCS operations. DCS Single RD, DCS Single WR (with ACK), DCS Block RD and DCS Block WRITE supported so far.
@@ -98,6 +99,8 @@ port (
     roc_id      :   out std_logic_vector(3 downto 0);
 
     end_dcs_ops :   out   std_logic;
+    dcs_pkt_count:  out std_logic_vector(15 downto 0);
+    
     dcs_state_count : out std_logic_vector(7 downto 0); -- IDLE=00, FIRSTREAD=01, SECONDREAD=02, CHECKCRC=03, SEND_ADDR=04, SEND_DATA=05, CHECK_FOR_ACK=06, WAIT_DATA_READY=x10, SET_DATA=x11,
                                                         -- SENDPACKET=07, CALCULATECRC=08, WRITECRC=09, SENDFIRSTPACKET=x0A, WAITTOSENDNEXT=x0B, SENDNEXTPACKET=x0C, PRE_IDLE=x0F,
                                                         -- BLK_WRD1=x12, CHECK_WRD1=x13, BLK_WRD2=x14, CHECK_WRD2=x15, BLK_WRD3=x16, CHECK_WRD3=x17, BLKIDLE=x18, NEXT_BLK_WR=x19, CHECK_BLK=x1A
@@ -245,6 +248,7 @@ begin
         roc_id          <= (others => '1');
         
         end_dcs_ops <= '0';
+        dcs_pkt_count   <= (others => '0');
         
     elsif rising_edge(clk) then
         
@@ -625,6 +629,7 @@ begin
                 word_count   <= 0;
                 crc_rst     <= '0';
                 crc_en      <= '1';
+                dcs_pkt_count  <= std_logic_vector(unsigned(dcs_pkt_count) + 1); 
                 dcs_state   <= WRITECRC;
                 
             when WRITECRC =>

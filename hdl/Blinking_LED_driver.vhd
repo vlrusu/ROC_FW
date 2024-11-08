@@ -27,6 +27,7 @@ port (
     RESETN  : IN  std_logic;
     
     SIGIN   : IN  std_logic;
+    LED_OFF : IN  std_logic;
     SIGOUT  : OUT std_logic
 );
 end Blinking_LED_driver;
@@ -44,10 +45,15 @@ begin
         clk_counter     <= (others => '0');
     elsif rising_edge(CLK) then
         if  SIGIN = '1' then
-            clk_counter <= clk_counter + 1;
-            
-            if  clk_counter(26) = '1'   then
-                SIGOUT      <= not(SIGOUT);
+            if (LED_OFF = '0') then
+                clk_counter <= clk_counter + 1;
+                
+                if  clk_counter(26) = '1'   then
+                    SIGOUT      <= not(SIGOUT);
+                    clk_counter <= (others => '0');
+                end if;
+            else
+                SIGOUT  <= '0';
                 clk_counter <= (others => '0');
             end if;
         else

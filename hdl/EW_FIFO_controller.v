@@ -13,9 +13,10 @@
 //      v7.0: <Feb.,2024>: added ET_PKTS_OVFL output to be used in data header status 
 //      v8.0: <Feb.,2024>: added HB_TAG_IN to and DREQ_TAG_IN to second DDR header word 
 //      v9.0: <Jul.,2024>: added TAG_ERROR (tag sync or inconsistent tag accross serdes lanes) and passed it to ET_PKTS_ERR output to be used in data header status  
+//      v10.0:<Nov.5,2024>: changed some internal signals names and changed definition of EVENT/HEADER1/HEADER2/DATA_ERROR (set on first error onset)
 //
 //
-// Description: 
+// Description:
 //
 //   Based on EW_DONE and EW_SIZE (on Serdes Clock domain):
 //    0) register cluster number for Event Window for at least two EW_DONEs before waiting for at least first of them entering AXI Write SM (use EW_FIFO_WE semaphore) 
@@ -59,10 +60,10 @@ module EW_FIFO_controller #(
     input   curr_ewfifo_wr,    // when 0/1, current EW_FIFO to write is EW_FIFO0/1
     input   ew_done,           // Event Window Tag has been processed and loaded into DIGIFIFO
     input   ew_fifo_we,        // WR data from ROCFIFO into current EWFIFO
-	input   ew_ovfl,           // packet size has reached maximum allowed of 1023
+	input   ew_ovfl,           // packet size has reached maximum allowed of 1023 in units of 64-bit AXI_beats
 	input   ew_error,          // event has error (tag sync or inconsistent tag accross serdes lanes)
     input   [`DIGI_BITS-1:0]        ew_data,    // EW data from ROCFIFO controller
-	input	[`EVENT_SIZE_BITS-1:0]  ew_size,    // beats max size is [9:0] from ROCFIFO controller in unit of 64-bit AXI_beats
+	input	[`EVENT_SIZE_BITS-1:0]  ew_size,    // beats max size is [9:0] from ROCFIFO controller in units of 64-bit AXI_beats
 	input	[`SPILL_TAG_BITS-1:0]   ew_tag,     // EW tag counter within SPILL	
     input   ewtag_offset_seen,                  // gate while first tag of new spill is processed
 	input   [`EVENT_TAG_BITS-1:0]   ewtag_offset_in,	// EW offset 
@@ -96,12 +97,12 @@ module EW_FIFO_controller #(
 	output  reg     et_fifo_emptied,            // pulse on EVT_FIFO becoming available: used to clear DATA_READY and generate LAST_WORD
     output          et_fifo_full,               // current ET FIFO is almost full (ie has 511 hits)
 // diagnostics
-	output  reg	    header1_error, header2_error,
-	output	reg	    data_error, event_error,
+	output  reg[7:0]    DDR_error_mask,
 	output  reg  [`AXI_BITS-1:0]  hdr1_expc,  hdr1_seen,												   
 	output  reg  [`AXI_BITS-1:0]  hdr2_expc,  hdr2_seen,												   
 	output  reg  [`AXI_BITS-1:0]  evt_expc,   evt_seen,												   
 	output  reg  [`AXI_BITS-1:0]  data_expc,  data_seen,	
+	output  reg  [`AXI_BITS-1:0]  tag_expc,     tag_seen,	
 
     output  reg  [15:0]   hb_dreq_error_cnt,
     output  reg  [15:0]   hb_tag_err_cnt,
@@ -187,7 +188,7 @@ reg     curr_etfifo_rd;                 // when 0/1, when EVT_fifo0/1 is being r
 wire	et_fifo0_re, et_fifo1_re;	    // EVT_FFO read enable
 wire	et_fifo0_empty, et_fifo1_empty, et_fifo_empty;	    // EVT_FIFO empty
 wire    [`AXI_BITS-1:0]  et_fifo0_rdata, et_fifo1_rdata;    // data from EVT_FIFOs
-reg     et_pckt_empty_pulse;
+reg     et_pctk_empty_ren;
 
 // signals on SYSCLK to control AXI WR/RD semaphores
 reg	    ew_fifo0_toDDR, ew_fifo1_toDDR, DDR_to_write;
@@ -205,8 +206,9 @@ reg	    [7:0]   ew_pckt_to_do;      // max value is 127
 reg	    [`EVENT_SIZE_BITS-1:0] 	ew_left_to_do;
 reg	    [`DDR_ADDRESS_BITS-1:0]	next_write_addr;
 
-reg	    first_axi_read, start_read, start_read_reg;
-reg	    wait_for_read;
+reg	    first_axi_read, first_write_done;
+reg     start_read, start_read_reg;
+reg	    prev_read_done;
 reg     axi_read_done;
 reg	    et_fifo0_fromDDR, et_fifo1_fromDDR, DDR_to_read;
 reg	    et_fifo0_clr, et_fifo1_clr;
@@ -217,11 +219,9 @@ reg	    [`DDR_ADDRESS_BITS-1:0] et_addr;
 reg	    [`EVENT_TAG_BITS-1:0] 	et_fifo0_evt,  et_fifo1_evt;
 reg	    [`EVENT_TAG_BITS-1:0] 	et_evt;
 
-reg	    et_err0, et_err1, et_err;
-reg	    save_et_err, err_detected;
+reg	    et_err0, et_err1, et_err, save_et_err;
 reg     et_err_to_we, et_err_hold;
-reg	    et_ovfl0, et_ovfl1, et_ovfl;
-reg	    save_et_ovfl, ovfl_detected;
+reg	    et_ovfl0, et_ovfl1, et_ovfl, save_et_ovfl;
 reg     et_ovfl_to_we, et_ovfl_hold;
 reg 	[7:0]   et_blk0, et_blk1, et_blk;
 reg	    [7:0]   et_pckt_to_do;      // max value is 127
@@ -244,7 +244,7 @@ reg	    [63:0]  first_rd_hdr, second_rd_hdr;
 // DDR read data diagnostics (on SYSCLK) assuming all events are readout
 reg 	[63:0] next_word;
 reg	    [31:0] word32_offset;
-reg	    [`EVENT_TAG_BITS-1:0] evt_offset;
+reg	    [`EVENT_TAG_BITS-1:0] current_evt;
 
 // signals for  spurious EW_FIFO EMPTY at reset
 reg     [7:0]   wait_cnt;
@@ -272,7 +272,7 @@ wire    ew_tag_empty, ew_tag_full;
 wire 	[`SPILL_TAG_BITS-1:0]   ewtag_sync;
 reg     ew_empty_all, ew_empty_reg, ew_empty_latch;
 //reg     ew_empty_ren;
-reg     ew_empty_pulse;
+reg     ew_empty_ren_dly;
 
 
 // signals for SIZE_FIFO0, CNT_FIFO0 and EWTAG_FIFO0 (time domain crossing FIFOs for buses from EW_SIZE_STORE_AND_FETCH_CONTROLLER)
@@ -282,13 +282,17 @@ wire    [`EVENT_SIZE_BITS+1:0]   tag_size_sync;         // contains tag_size[9:0
 wire	[`DDR_ADDRESS_BITS-1:0]  tag_addr_sync;
 wire 	[`EVENT_TAG_BITS-1:0]    tag_evt_sync;
 
-reg     tag_empty_all, tag_empty_reg, tag_empty_latch;
-reg     tag_empty_ren, tag_empty_pulse;
+reg     tag_empty_all, tag_empty_reg;
+reg     tag_empty_ren, tag_empty_ren_dly;
 
 // signals for CDC (Cross-Domain Clock) handshake of EWTAG_OFFSET from DTCINTERFACE
 reg	    ewtag_offset_reg, ewtag_offset_latch, ewtag_offset_delay;
 reg     ewtag_offset_pulse;
 reg     [`EVENT_TAG_BITS-1:0] ewtag_offset_sync;  
+
+// DDR read vs write inconsistencies
+reg	    header1_error, header2_error;
+reg	    data_error, event_error, dtctag_error;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -350,6 +354,28 @@ assign ew_fifo0_wdata= (curr_ewfifo_wr == 1'b0) ?  ew_data     : 0;
 assign ew_fifo1_we   = (curr_ewfifo_wr == 1'b1) ?  ew_fifo_we  : 0; 
 assign ew_fifo1_wdata= (curr_ewfifo_wr == 1'b1) ?  ew_data     : 0;   
 assign ew_fifo_full  = (curr_ewfifo_wr == 1'b0) ?  ew_fifo0_full  : ew_fifo1_full; 
+
+
+// diagnostic signals
+reg     empty_write_event;
+always@(posedge serdesclk, negedge resetn_serdesclk)
+begin
+    if(resetn_serdesclk == 1'b0)    empty_write_event <= 0;
+    else begin
+        if (ew_done == 1'b1 && ew_size == 0)    empty_write_event <= 1;
+        else                                    empty_write_event <= 0;
+    end
+end
+
+reg     empty_read_event;
+always@(posedge dreqclk, negedge resetn_dreqclk)
+begin
+    if(resetn_dreqclk == 1'b0)      empty_read_event <= 0;
+    else begin
+        if (tag_valid == 1'b1 && tag_size == 0) empty_read_event <= 1;
+        else                                    empty_read_event <= 0;
+    end
+end
 
 //
 // CDC (Cross-Domain Clock) handshake for DDR_WRITE_DONE
@@ -594,7 +620,7 @@ begin
         end
         
         // pulse indicating that EW_FIFOs have full event and EW_SIZE signals have been properly latched
-        if (ew_empty_pulse) 
+        if (ew_empty_ren_dly) 
         begin
             first_ew_ready 	<= ~first_ew_ready;
 				
@@ -660,8 +686,8 @@ begin
 		et_blk1			<= 0;
 		et_fifo0_size	<= 0;
 		et_fifo1_size	<= 0;
-		et_fifo0_addr    <= 0;
-		et_fifo1_addr    <= 0;
+		et_fifo0_addr   <= 0;
+		et_fifo1_addr   <= 0;
 		et_fifo0_evt    <= 0;
 		et_fifo1_evt	<= 0;
     end
@@ -672,12 +698,14 @@ begin
             curr_etfifo_wr  <=  1'b1; 
         end
         
-        // use pulse indicating that TAG bus signals have been properly latched
-        if (tag_empty_pulse) 
+        // at this point TAG bus signals have been properly latched.
+        // Make a copy for the next ET_FIFO to use and 
+        // generate "et_fifo_fromDDDR" signals used in starting DDR read state machine 
+        if (tag_empty_ren_dly) 
         begin
             curr_etfifo_wr <= ~curr_etfifo_wr;
 				
-			if(curr_etfifo_wr)	
+			if(curr_etfifo_wr == 1'b1)	
 			begin
 				et_fifo0_fromDDR<= 1;
                 et_blk0         <= blk_of_size(tag_size_sync[`EVENT_SIZE_BITS-1:0]);
@@ -699,7 +727,7 @@ begin
 			end
 				
         end
-			
+		
 		if (et_fifo0_clr) et_fifo0_fromDDR	<= 0;
 		if (et_fifo1_clr) et_fifo1_fromDDR	<= 0;
     end
@@ -725,7 +753,7 @@ begin
     end
     else
     begin
-        tag_sent <= et_pckt_empty_pulse;
+        tag_sent <= et_pctk_empty_ren;
         tag_null <= 1'b0;
         
         if (newspill_on_dreqclk)   begin
@@ -847,6 +875,7 @@ begin
     if(resetn_sysclk == 1'b0)
     begin
 		DDR_to_write	<= 0;
+        first_write_done<= 0;
         
         awaddr_o        <=	0;
         awvalid_o  		<=	0;
@@ -879,7 +908,14 @@ begin
         ddr_write_done	<= 0;
         hb_tag_err      <= 0;
         
-        if (newspill_on_sysclk)   DDR_to_write    <= 0;
+        // on FIRST write done, generate condition to start read
+        if (ddr_write_done == 1)    first_write_done <= 1;
+        
+        if (newspill_on_sysclk)
+        begin   
+            DDR_to_write    <= 0;
+            first_write_done<= 0;
+        end
         
         case(waddr_state)
         
@@ -928,10 +964,11 @@ begin
         
         // Set length of remaining write burst
         SET:
-        begin            
+        begin
             // must leave space for header words!!!
             if (ew_left_to_do > 126)	ew_pckt_to_do <= 126;
-            else						ew_pckt_to_do <= ew_left_to_do[7:0];			
+            else						ew_pckt_to_do <= ew_left_to_do[7:0];	
+            
             waddr_state	<=	VALID;   
         end
         
@@ -939,7 +976,7 @@ begin
         //Set start of next DDR address block to write to, depending on the size of the current event
         VALID:
         begin            
-            first_wr_hdr	<=  {ew_err_to_store, ew_ovfl_to_store, 4'b0, ew_size_to_store, ew_tag_to_store};
+            first_wr_hdr	<=  {2'b0, ew_err_to_store, ew_ovfl_to_store, 2'b0, ew_size_to_store, ew_tag_to_store};
 //            second_wr_hdr	<=	{16'b0, 8'b0, ew_pckt_to_do,	8'b0,	ew_blk_to_store, 8'b0, (wburst_cnt + 1'b1)}; 
             second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, (wburst_cnt + 1'b1), hb_tag_in[39:0]}; 
             
@@ -951,8 +988,11 @@ begin
             awvalid_o		<=	1'b1;
             if(awready_i)
             begin
-                if(ew_DDRwrap_to_store == 1)    next_write_addr	<= 0;
-                else                            next_write_addr	<=	next_write_addr + 1;
+                // commented after moving zeroeing of write address to NEXT state
+                //if(ew_DDRwrap_to_store == 1)    next_write_addr	<= 0;
+                //else                            next_write_addr	<=	next_write_addr + 1;
+                next_write_addr	<=	next_write_addr + 1;
+                
                 wburst_cnt	<=	wburst_cnt + 1'b1;
                 waddr_state	<=	DONE;   
             end
@@ -964,9 +1004,12 @@ begin
             awvalid_o	<=	1'b0;
             if(bvalid_i)
             begin
-                //Address for next AXI write 
-                if(ew_DDRwrap_to_store == 1)    awaddr_o	<= 0;
-                else                            awaddr_o	<=	awaddr_o  + BURST_OFFSET;
+                // commented after moving zeroeing of write address to NEXT state
+                // Address for next AXI write 
+                //if(ew_DDRwrap_to_store == 1)    awaddr_o	<= 0;
+                //else                            awaddr_o	<=	awaddr_o  + BURST_OFFSET;
+                awaddr_o	<=	awaddr_o  + BURST_OFFSET;
+                
                 waddr_state	<=	NEXT;
             end
         end
@@ -977,6 +1020,12 @@ begin
             if(wburst_cnt == ew_blk_to_store)
             begin
                 ddr_write_done	<= 1;
+                // delay write address zeroing until full event with multiple blocks has been written out
+                if(ew_DDRwrap_to_store == 1)    
+                begin
+                    awaddr_o	    <= 0;
+                    next_write_addr	<= 0;
+                end    
                 waddr_state	<=	IDLE;
             end
             else
@@ -1100,7 +1149,7 @@ begin
     if(resetn_sysclk == 1'b0)
     begin
 		first_axi_read	<= 1;
-		DDR_to_read		<= 0;		// ET_FIFO toggle control
+        DDR_to_read		<= 0;		// ET_FIFO toggle control
         
         araddr_o		<=	0;
         arvalid_o		<=	0;
@@ -1126,7 +1175,7 @@ begin
         et_fifo1_clr	<=	0;
         if (newspill_on_sysclk)   begin
             first_axi_read <= 1;
-            DDR_to_read     <= 0;
+            DDR_to_read    <= 0;
         end
         
         start_read_reg  <= start_read;
@@ -1142,7 +1191,7 @@ begin
             //	1) starts on valid tag signal being received
             // 2) waits until previous read is finished (unless very first read)
             // 3) gets data from toggling ET_FIFOs
-            if ((wait_for_read || first_axi_read) && DDR_to_read == 0 && et_fifo0_fromDDR == 1)
+            if ( (first_axi_read || prev_read_done) && DDR_to_read == 0 && et_fifo0_fromDDR == 1)
             begin
                 DDR_to_read		<=	1;
                 first_axi_read	<=  0;
@@ -1157,7 +1206,7 @@ begin
                 et_evt			<=  et_fifo0_evt;
                 raddr_state		<=	SET;
             end
-            else if (wait_for_read & DDR_to_read == 1 && et_fifo1_fromDDR == 1)
+            else if (prev_read_done & DDR_to_read == 1 && et_fifo1_fromDDR == 1)
             begin
                 DDR_to_read		<=	0;
                 start_read		<=  1;
@@ -1194,7 +1243,9 @@ begin
         // make exception for wrap around condition
         WAIT:
         begin
-            if (araddr_o != awaddr_o) raddr_state	<=	VALID;
+            // this condition can fail when DR wraps around
+            //if (araddr_o != awaddr_o) raddr_state	<=	VALID;
+            if (first_write_done) raddr_state	<=	VALID;
         end
         
         //monitor read memory count
@@ -1238,36 +1289,38 @@ end
 always@(posedge sysclk, negedge resetn_sysclk)
 begin
     if(resetn_sysclk == 1'b0) begin
-        rready_o       <=	1'b0;
+        rready_o        <=	1'b0;
         rdburst_cnt		<=	8'b0;
-        wait_for_read	<=	1'b0;		// level started by end or RBURST and ended by START_READ
+        prev_read_done	<=	1'b0;		// level started by end or RBURST and ended by START_READ
 		axi_read_done	<= 1'b0;		// pulse at the end of DDR read after RVALID is cleared
         et_fifo_wdata	<=	64'b0;
         et_fifo_we		<=	1'b0; 
 		et_packets		<= 0;
 		first_rd_hdr	<= 0;
 		second_rd_hdr	<= 0;
-		header1_error	<=	0;
-		header2_error	<=	0;
+        header1_error	<=	1'b0;
+        header2_error	<=	1'b0;
+        dtctag_error    <=	1'b0;
+        data_error      <=	1'b0;
+        event_error     <=	1'b0;
 		hdr_cnt			<= 0;
 		save_et_err	    <= 0;
 		save_et_ovfl	<= 0;
-		err_detected	<= 0;
-		ovfl_detected	<= 0;
-		data_error		<= 0;
-		event_error		<= 0;
 		word32_offset	<= -1;
-		evt_offset		<= 0;
+		current_evt		<= 0;
 		next_word		<= 0;
 	  
-        hdr1_expc      <= 0;
-        hdr1_seen      <= 0;
-        hdr2_expc      <= 0;
-        hdr2_seen      <= 0;
-        evt_expc       <= 0;
-        evt_seen       <= 0;
-        data_expc      <= 0;
-        data_seen      <= 0;
+        DDR_error_mask  <= 0;
+        hdr1_expc       <= 0;
+        hdr1_seen       <= 0;
+        hdr2_expc       <= 0;
+        hdr2_seen       <= 0;
+        evt_expc        <= 0;
+        evt_seen        <= 0;
+        data_expc       <= 0;
+        data_seen       <= 0;
+        tag_expc        <= 0;
+        tag_seen        <= 0;
         
         hb_dreq_error  <= 1'b0;
         hb_dreq_error_cnt   <= 16'b0;
@@ -1291,15 +1344,16 @@ begin
             et_fifo_we		<=	1'b0; 
             first_rd_hdr	<= 0;
             second_rd_hdr	<= 0;
-            // by commenting them, the first error or each will drive the ERROR output forever
-            header1_error	<=	0;
-            header2_error	<=	0;
-            data_error		<= 0;
-            event_error		<= 0;
+            // by commenting them, the first error of each kind will drive the relative ERROR forever
+            header1_error	<=	1'b0;
+            header2_error	<=	1'b0;
+            dtctag_error    <=	1'b0;
+            data_error      <=	1'b0;
+            event_error     <=	1'b0;
 			
             // start of read data state machine AFTER read address state machine has set the address
             if (start_read && (araddr_o != awaddr_o) ) begin
-                wait_for_read	<= 1'b0;
+                prev_read_done	<=  1'b0;
                 rready_o		<=	1'b0;
                 rdata_state		<=	SET; 
             end
@@ -1309,13 +1363,9 @@ begin
         // detect condition for fixing DATA_ERROR logic
         SET:
         begin
-            evt_offset			<= et_evt;
-            
-            save_et_err		    <= et_err;
-            if (save_et_err)	err_detected	<=	save_et_err;
-            
+            current_evt			<= et_evt;            
+            save_et_err		    <= et_err;            
             save_et_ovfl		<= et_ovfl;
-            if (save_et_ovfl)	ovfl_detected	<=	save_et_ovfl;
             
             rready_o			<=	1'b1;
             rdata_state			<=	VALID;
@@ -1327,7 +1377,7 @@ begin
             if(rdburst_cnt == et_blk)   begin
                 axi_read_done	<= 1'b1;			
                 et_packets		<= et_size; // change from 64-bit beat units to 128-bit packet units
-                wait_for_read	<=	1'b1;	// level from end of read to start of next one
+                prev_read_done	<=	1'b1;	// level from end of read to start of next one
                 rready_o		<=	1'b0;
                 rdata_state		<=	IDLE;
             end
@@ -1337,22 +1387,39 @@ begin
                     // stop here so first and second_rd_hdr are not overwritten
                     if (hdr_cnt < 3)	hdr_cnt	<= hdr_cnt + 1; 
                     
-                    // Use EVT_OFFSET to make it become the Event Window Tag at the end of previous run 
-                    // Check SIZE with HEADER1_ERROR and EVTAG info with EVENT_ERROR flag.
-                    // Save seen and expected ONLY for first error.
+                    // Start error checking:
+                    // 1) EVENT_ERROR   (DDR_error_mask[0]=1) if local event tag in data from DDR does not agree with current event tag
+                    // 2) HEADER1_ERROR (DDR_error_mask[1]=1) if event size in data from DDR does not agree with current event size
+                    // 3) HEADER2_ERROR (DDR_error_mask[2]=1) if event block in data from DDR does not agree with current event block
+                    // 4) DATA_ERROR    (DDR_error_mask[3]=1) if event err/ovfl in data from DDR does not agree with current err/ovfl
+                    // 5) DTC_ERROR     (DDR_error_mask[4]=1) if DREQ event tag does not agree with save HB event tag
+                    // Save seen and expected ONLY for first error occurence.
                     if (hdr_cnt == 1)   begin
                     
-                        if (event_error == 0 && first_rd_hdr[`EVENT_TAG_BITS-1:0] != evt_offset) begin
-                            event_error <= 1;
-                            evt_expc    <= {16'b0, evt_offset};
-                            evt_seen    <= {16'b0, first_rd_hdr[`EVENT_TAG_BITS-1:0]};
+                        if (event_error == 0 && first_rd_hdr[`EVENT_TAG_BITS-1:0] != current_evt) begin
+                            event_error         <= 1;
+                            DDR_error_mask[0]   <= 1'b1;
+                            evt_expc    <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                            evt_seen    <= first_rd_hdr;
                         end
                         
-                        if  ( header1_error == 0 && 
-                             (first_rd_hdr[63] != et_err || first_rd_hdr[62] != et_ovfl ||	first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
-                            header1_error  <= 1;
-                            hdr1_expc      <= {et_err, et_ovfl, 4'b0, et_size, first_rd_hdr[`EVENT_SIZE_BITS-1:0]};
-                            hdr1_seen      <= first_rd_hdr;
+                        if  (header1_error == 0 && 
+                                (first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
+                                //(   first_rd_hdr[63] != et_err || 
+                                    //first_rd_hdr[62] != et_ovfl ||	
+                                    //first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
+                            header1_error       <= 1;
+                            DDR_error_mask[1]   <= 1'b1;
+                            hdr1_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                            hdr1_seen   <= first_rd_hdr;
+                        end
+                        
+                        if  ( data_error == 0 && 
+                                (first_rd_hdr[63] != et_err || first_rd_hdr[62] != et_ovfl ) ) begin
+                            data_error          <= 1;
+                            DDR_error_mask[3]   <= 1'b1;
+                            data_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                            data_seen   <= first_rd_hdr;
                         end
                     end
                     
@@ -1361,13 +1428,20 @@ begin
                         if (second_rd_hdr[39:0] != dreq_tag_in[39:0] ) begin
                             hb_dreq_error   <= 1'b1;
                             hb_dreq_error_cnt <= hb_dreq_error_cnt + 1;
+                            if (dtctag_error == 0)  begin
+                                dtctag_error        <= 1;
+                                DDR_error_mask[4]   <= 1'b1;
+                                tag_expc    <= {16'b0, dreq_tag_in};
+                                tag_seen    <= second_rd_hdr;
+                            end
                         end;
                         
                         if  (header2_error == 0 && 
-                             (second_rd_hdr[63:56] != et_pckt_to_do   ||  
-                            second_rd_hdr[55:48] != et_blk          || 
-                            second_rd_hdr[47:40] != (rdburst_cnt+1)) ) begin
-                            header2_error  <= 1;
+                                (   second_rd_hdr[63:56] != et_pckt_to_do   ||  
+                                    second_rd_hdr[55:48] != et_blk          || 
+                                    second_rd_hdr[47:40] != (rdburst_cnt+1)) ) begin
+                            header2_error       <= 1;
+                            DDR_error_mask[2]   <= 1'b1;
                             hdr2_expc      <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
                             hdr2_seen      <= second_rd_hdr;
                         end
@@ -1391,21 +1465,19 @@ begin
                         next_word	<= {word32_offset + 2, word32_offset + 1};
                         if (et_size>0) word32_offset	<= word32_offset + 2;
                         
-                        // check on data pattern
-                        if (data_error == 0 && next_word != rdata_i) begin
-                            data_error <= 1; 
-                            data_expc <= next_word;
-                            data_seen <= rdata_i;
-                        end
+                        //// check on data pattern
+                        //if (data_error == 0 && next_word != rdata_i) begin
+                            //data_error <= 1; 
+                            //data_expc <= next_word;
+                            //data_seen <= rdata_i;
+                        //end
 				  
                         //
                         // fix error detection and overwrite error if overflow was detected for previous event
                         if (hdr_cnt==2) begin
-                            if (ovfl_detected==1)   ovfl_detected	<= 0;
-                            if (err_detected==1)    err_detected	<= 0;
                             word32_offset	<= rdata_i[63:32] + 2;
                             next_word		<= {rdata_i[63:32] + 2, rdata_i[31:0] + 2};
-                            data_error		<=	0;
+                            //data_error		<=	0;
                         end
                     end
                 end
@@ -1543,44 +1615,44 @@ EVT_FIFO		evt_fifo1 (
 // align with DREQCLK
 always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
-   if(resetn_dreqclk == 1'b0)
-   begin
-		wait_after_dreqrst<= 1;
+    if(resetn_dreqclk == 1'b0)
+    begin
+        wait_after_dreqrst<= 1;
 		wait_cnt_dreq     <= 0;
       
-      et_fifo0_empty_reg   <= 0;
-      et_fifo0_empty_latch <= 0;
-      et_fifo0_empty_sync  <= 0;
-      et_fifo1_empty_reg   <= 0;
-      et_fifo1_empty_latch <= 0;
-      et_fifo1_empty_sync  <= 0;
+        et_fifo0_empty_reg   <= 0;
+        et_fifo0_empty_latch <= 0;
+        et_fifo0_empty_sync  <= 0;
+        et_fifo1_empty_reg   <= 0;
+        et_fifo1_empty_latch <= 0;
+        et_fifo1_empty_sync  <= 0;
       
-      // single SERDES_CLK pulse capturing SIZE_FIFO0 becoming available to receive a new event
-      // N.B. It relies on SIZE_FIFO0 writing something for each tag, even if of NULL SIZE
-      //      AND SIZE_FIFO0 being written again only after being read out (via AXI_READ_SEM)
-      et_fifo_emptied	<= 1'b0;
-   end
-   else
-   begin
-      if (wait_after_dreqrst) wait_cnt_dreq	<=	wait_cnt_dreq + 1;
-      if (wait_cnt_dreq > WAIT_FOR_RST) wait_after_dreqrst   <= 0;
+        // single SERDES_CLK pulse capturing SIZE_FIFO0 becoming available to receive a new event
+        // N.B. It relies on SIZE_FIFO0 writing something for each tag, even if of NULL SIZE
+        //      AND SIZE_FIFO0 being written again only after being read out (via AXI_READ_SEM)
+        et_fifo_emptied	<= 1'b0;
+    end
+    else
+    begin
+        if (wait_after_dreqrst) wait_cnt_dreq	<=	wait_cnt_dreq + 1;
+        if (wait_cnt_dreq > WAIT_FOR_RST) wait_after_dreqrst   <= 0;
       
-      et_fifo0_empty_reg   <= et_fifo0_empty;
-      et_fifo0_empty_latch <= et_fifo0_empty_reg;
-      et_fifo0_empty_sync  <= et_fifo0_empty_latch;
-      et_fifo1_empty_reg   <= et_fifo1_empty;
-      et_fifo1_empty_latch <= et_fifo1_empty_reg;
-      et_fifo1_empty_sync  <= et_fifo1_empty_latch;
+        et_fifo0_empty_reg   <= et_fifo0_empty;
+        et_fifo0_empty_latch <= et_fifo0_empty_reg;
+        et_fifo0_empty_sync  <= et_fifo0_empty_latch;
+        et_fifo1_empty_reg   <= et_fifo1_empty;
+        et_fifo1_empty_latch <= et_fifo1_empty_reg;
+        et_fifo1_empty_sync  <= et_fifo1_empty_latch;
       
 		et_fifo_emptied	<= 0;
-      // ET_FIFO_EMPTIED is driven by either one of the ET_FIFO getting emptied
+        // ET_FIFO_EMPTIED is driven by either one of the ET_FIFO getting emptied
 		if (wait_cnt_dreq > WAIT_FOR_RST)
 		begin
 			if (	(et_fifo0_empty_latch && !et_fifo0_empty_sync) 	|| 
 					(et_fifo1_empty_latch && !et_fifo1_empty_sync)) et_fifo_emptied	<= 1'b1;
 		end
-
-   end
+        
+    end
 end
 
 //
@@ -1595,7 +1667,7 @@ SIZE_FIFO   size_fifo2 (
 	.WE		(axi_read_to_we),
 	.RCLOCK	(dreqclk),
 	.RRESET_N(resetn_fifo),
-	.RE		(et_pckt_empty_pulse),
+	.RE		(et_pctk_empty_ren),
 	// Outputs
 	.EMPTY	(et_pckt_empty),
 	.FULL	(),
@@ -1605,24 +1677,24 @@ SIZE_FIFO   size_fifo2 (
 // logic to clean spurious ET_PCKT_EMPTY at reset
 always@(posedge dreqclk, negedge resetn_dreqclk)
 begin
-   if(resetn_dreqclk == 1'b0)
-   begin
-      et_pckt_empty_reg    <= 0;
-      et_pckt_empty_latch  <= 0;
-      et_pckt_empty_sync   <= 0;
-      et_pckt_empty_pulse  <= 0;
-   end
-   else
-   begin
-      et_pckt_empty_reg   <= ~et_pckt_empty;
-      et_pckt_empty_latch <= et_pckt_empty_reg;
-      et_pckt_empty_sync  <= et_pckt_empty_latch;
+    if(resetn_dreqclk == 1'b0)
+    begin
+        et_pckt_empty_reg   <= 0;
+        et_pckt_empty_latch <= 0;
+        et_pckt_empty_sync  <= 0;
+        et_pctk_empty_ren   <= 0;
+    end
+    else
+    begin
+        et_pckt_empty_reg   <= ~et_pckt_empty;
+        et_pckt_empty_latch <= et_pckt_empty_reg;
+        et_pckt_empty_sync  <= et_pckt_empty_latch;
       
-      if (wait_cnt_dreq  > WAIT_FOR_RST) 
-      begin
-         et_pckt_empty_pulse <= et_pckt_empty_latch && ~et_pckt_empty_sync;
-      end
-   end
+        if (wait_cnt_dreq  > WAIT_FOR_RST) 
+        begin
+            et_pctk_empty_ren <= et_pckt_empty_latch && ~et_pckt_empty_sync;
+        end
+    end
 end
 
 
@@ -1670,9 +1742,8 @@ begin
     begin
         ew_empty_all   <= 0;
         ew_empty_reg   <= 0;
-        ew_empty_latch <= 0;
         ew_empty_ren   <= 0;
-        ew_empty_pulse <= 0;
+        ew_empty_ren_dly    <= 0;
     end
     else
     begin
@@ -1682,10 +1753,9 @@ begin
         end
       
         ew_empty_reg   <= ew_empty_all;
-        ew_empty_latch <= ew_empty_reg;
       
-        ew_empty_ren   <= ew_empty_all && ~ew_empty_reg;
-        ew_empty_pulse <= ew_empty_reg && ~ew_empty_latch;
+        ew_empty_ren    <= ew_empty_all && ~ew_empty_reg;
+        ew_empty_ren_dly<= ew_empty_ren;
     end  
 end 
 
@@ -1739,27 +1809,28 @@ EWTAG_FIFO	ewtag_fifo0 (
 );
 
 //
-// logic to clean spurious TAG_EMPTY at reset
-// and latch TAG_EMPTY rising edge
+// logic to clean spurious TAG_EMPTYs at reset
+// and latch TAG_EMPTYs rising edge
 always@(posedge sysclk, negedge resetn_sysclk)
 begin
     if(resetn_sysclk == 1'b0)
     begin
         tag_empty_all    <= 0;
         tag_empty_reg    <=  0;
-        tag_empty_latch  <=  0;
         tag_empty_ren    <=  0;
-        tag_empty_pulse  <=  0;
+        tag_empty_ren_dly<=  0;
     end
     else
     begin
+        // TAG_EMPTY_ALL  is set when all TAG FIFOs have seen data and are NOT empty
         if (wait_cnt  > WAIT_FOR_RST) 
-            tag_empty_all     <= (!(tag_size_empty || tag_addr_empty || tag_evt_empty)) ? 1'b1: 1'b0;
+            tag_empty_all   <= (!(tag_size_empty || tag_addr_empty || tag_evt_empty)) ? 1'b1: 1'b0;
          
         tag_empty_reg  <= tag_empty_all;
-        tag_empty_latch<= tag_empty_reg;
-        tag_empty_ren  <= tag_empty_all && ~tag_empty_reg;
-        tag_empty_pulse<= tag_empty_reg && ~tag_empty_latch;
+        
+        // generate pulse, and a delayed version, at TAG_EMPTY_ALL rising edge 
+        tag_empty_ren       <= tag_empty_all && ~tag_empty_reg;
+        tag_empty_ren_dly   <= tag_empty_ren;
     end
 end   
 

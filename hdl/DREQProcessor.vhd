@@ -9,6 +9,7 @@
 --      <v3>: <07/2023>: Add FORMAT_VRS to data header for Packet Format Version and drive with DRACRegister address 29
 --      <v4>: <02/2024>: MT Add timeout for automatic State Machine reset when garbage data comes in during DTC Flashing or DTC Reset
 --      <v5>: <07/2024>: MT Add DATAREQ_PACKETS_OVFL and DATAREQ_TAG_ERROR as Data Header status bit (4) and (5), respectively 
+--      <v6>: <10/2024>: MT Add EMPTY_EVENT flag and DTC header/data packet counters
 --
 -- Description: 
 --
@@ -65,6 +66,11 @@ port (
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
     
     -- debug signals
+    dreq_pkt_count      : out std_logic_vector(15 downto 0);
+    dreq_hdr_pkt_count  : out std_logic_vector(15 downto 0);
+    dreq_data_pkt_count : out std_logic_vector(15 downto 0);
+    dreq_empty_pkt_count: out std_logic_vector(15 downto 0);
+    
     dreq_timeout_count  : out std_logic_vector(15 downto 0);
     dreq_state_count    : out std_logic_vector(7 downto 0);
     dreq_error_count    : out std_logic_vector(15 downto 0);
@@ -117,6 +123,8 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal mark_window_tag_error    : std_logic; 
     signal mark_window_tag_unknown  : std_logic;
     signal mark_dreq_timeout        : std_logic;  
+    
+    signal  empty_event             : std_logic;
 
     signal dreqTimeout  : unsigned(13 downto 0);        -- allow a 16383 x 12.5 ns = 205 us timeout
     signal readTimeout	: unsigned(13 downto 0);
@@ -189,6 +197,12 @@ begin
         reqType_debug               <= (others => '0');
         reqEventWindowTag_debug     <= (others => '0');
         fetchEventWindowTag_debug   <= (others => '0');
+        
+        dreq_pkt_count      <= (others => '0');
+        dreq_hdr_pkt_count  <= (others => '0');
+        dreq_data_pkt_count <= (others => '0');
+        dreq_empty_pkt_count<= (others => '0');
+        empty_event         <= '0';
          
     elsif rising_edge(clk) then
         crc_en <= '0';
@@ -368,6 +382,10 @@ begin
                     crc_data_out <= b"0000000" & dataReqPktCnt;
                     crc_rst <= '0';
                     crc_en <= '1';
+                    if  dataReqPktCnt = B"0_0000_0000"   then    
+                        empty_event <= '1';
+                        dreq_empty_pkt_count  <= std_logic_vector(unsigned(dreq_empty_pkt_count) + 1);
+                    end if;
                 elsif word_count = 4 then 		
                     dreq_fifo_out <= "00" & inbuffer(3);		--timestamp[15:0]
                     crc_data_out <= inbuffer(3);
@@ -394,7 +412,9 @@ begin
                     crc_rst <= '0';
                     crc_en <= '1';
                     dataReq_dataReady			<= '0';
-                    dataReq_FIFOReadyState	<= (others => '0');			 
+                    dataReq_FIFOReadyState	<= (others => '0');	
+                    dreq_hdr_pkt_count  <= std_logic_vector(unsigned(dreq_hdr_pkt_count) + 1); 
+                    empty_event         <= '0';
                     dreq_state <= CALCULATECRC;
                 end if;
                 
@@ -404,6 +424,7 @@ begin
                 dreq_fifo_we <= '0';
                 crc_rst <= '0';
                 crc_en <= '1';
+                dreq_pkt_count  <= std_logic_vector(unsigned(dreq_pkt_count) + 1); 
                 dreq_state <= WRITECRC;
                 
             when WRITECRC =>
@@ -504,7 +525,8 @@ begin
                     crc_en <= '1';
                     dataReq_dataReady			<= '0';
                     dataReq_FIFOReadyState	<= (others => '0');
-                    dataReqDataReadCnt	<= dataReqDataReadCnt - 1;		  
+                    dataReqDataReadCnt	<= dataReqDataReadCnt - 1;	
+                    dreq_data_pkt_count  <= std_logic_vector(unsigned(dreq_data_pkt_count) + 1);   
                     dreq_state <= CALCULATECRC;
                 end if;
 					 

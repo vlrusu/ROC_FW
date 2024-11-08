@@ -61,16 +61,13 @@ port (
     DCS_LANE_FULL       : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} FULL bus
     DCS_SIM_LANE_EMPTY  : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO_SIM {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} EMPTY  bus
     DCS_SIM_LANE_FULL   : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO_SIM {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} FULL bus
-    DCS_EVT_ERR      : IN  std_logic;               -- error seen for EVENT Tag number
-    DCS_HDR1_ERR     : IN  std_logic;               -- error seen in header 1
-    DCS_HDR2_ERR     : IN  std_logic;               -- error seen in header 2
-    DCS_DATA_ERR     : IN  std_logic;               -- error seen for pattern data
-    DCS_ERR_EXPC     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four expected 64-bit with error
-    DCS_ERR_SEEN     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four seen 64-bit with error
-    DCS_DREQ_FIFO_FULL: IN  std_logic;                -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
-    DCS_STORE_POS    : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
-    DCS_STORE_CNT    : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
-    DCS_DREQ_FIFO_EMPTY:IN  std_logic;                -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
+    DDR_ERROR_MASK      : IN std_logic_vector(7 DOWNTO 0);      -- DDR error mask (see EW_FIFO_controller for definition)
+    DCS_ERR_EXPC        : IN  std_logic_vector(63 DOWNTO 0);    -- one of four expected 64-bit with error
+    DCS_ERR_SEEN        : IN  std_logic_vector(63 DOWNTO 0);    -- one of four seen 64-bit with error
+    DCS_DREQ_FIFO_FULL  : IN  std_logic;                        -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
+    DCS_STORE_POS       : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
+    DCS_STORE_CNT       : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
+    DCS_DREQ_FIFO_EMPTY :IN  std_logic;                     -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
     DCS_FETCH_POS   : IN  std_logic_vector(1 DOWNTO 0);     -- number of sizes fetched from a partially read FIFO entry (0 to 2)
     DCS_FETCH_CNT   : IN  std_logic_vector(19 DOWNTO 0);    -- number of fully read DREQ FIFO read entries
     DCS_EVMCNT      : IN  std_logic_vector(31 DOWNTO 0);    -- number of windows (between two EVMs)
@@ -90,9 +87,10 @@ port (
     DCS_OFFSETTAG   : IN  std_logic_vector(47 DOWNTO 0);    -- offset TAG in present SPILL
     DCS_FULLTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- first TAG with DREQ full
     DCS_TAG_LOST    : IN  std_logic_vector(47 downto 0);	-- first TAG with EVM counter falling behing of HB counter
-    DCS_ERR_REQ     : OUT std_logic_vector(1 downto 0);     -- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
+    DCS_ERR_REQ     : OUT std_logic_vector(2 downto 0);     -- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
     DCS_TAG_OFFSET  : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
 
+    DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 13
     DCS_DDRRESET    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
@@ -170,7 +168,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
     signal force_full_reg       : std_logic;
     signal haltrun_en_reg       : std_logic;
 
-    signal err_req_reg		: std_logic_vector(1 downto 0);
+    signal err_req_reg		    : std_logic_vector(2 downto 0);
     signal expc_reg_15_0,   expc_reg_31_16,   expc_reg_47_32,   expc_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
     signal seen_reg_15_0,   seen_reg_31_16,   seen_reg_47_32,   seen_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
     signal offset_reg_15_0, offset_reg_31_16, offset_reg_47_32                 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
@@ -280,7 +278,7 @@ begin
         
 		DCS_DDRRESET    <= '0';
             
-        DCS_ERR_REQ     <= err_req_reg(1 downto 0);
+        DCS_ERR_REQ     <= err_req_reg;
         DCS_TAG_OFFSET  <= offset_reg_47_32 & offset_reg_31_16 & offset_reg_15_0;
             
         expc_reg_15_0   <= DCS_ERR_EXPC(15 downto 0);      
@@ -334,6 +332,8 @@ begin
                 enable_sim_digi_reg <= drac_wdata(11);                
                 pattern_type_reg    <= drac_wdata(12);
                 haltrun_en_reg      <= drac_wdata(13);
+            elsif (drac_addrs = 9) then 
+                DCS_LED_OFF     <= drac_wdata(0);
 			elsif (drac_addrs = 13) then
 				DCS_RESETFIFO	<= drac_wdata(0);
 			elsif (drac_addrs = 14) then
@@ -343,7 +343,7 @@ begin
             elsif (drac_addrs = 17) then
 				DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);
             elsif (drac_addrs = 18) then
-				err_req_reg    <= drac_wdata(1 downto 0);
+				err_req_reg    <= drac_wdata(2 downto 0);
             elsif (drac_addrs = 19) then
 				offset_reg_15_0   <= drac_wdata(15 downto 0);
             elsif (drac_addrs = 20) then
@@ -438,10 +438,10 @@ begin
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
  			elsif (drac_addrs = 18) then		 	 
-				DATA_OUT <= B"00" & err_req_reg & 
+				DATA_OUT <= DDR_ERROR_MASK(4) & err_req_reg & 
                             DCS_LANE_EMPTY & 
                             DCS_LANE_FULL  &
-                            DCS_DATA_ERR & DCS_HDR2_ERR & DCS_HDR1_ERR & DCS_EVT_ERR;	
+                            DDR_ERROR_MASK(3 downto 0);	
 			elsif (drac_addrs = 19) then	
 				DATA_OUT <= expc_reg_15_0;    
 			elsif (drac_addrs = 20) then

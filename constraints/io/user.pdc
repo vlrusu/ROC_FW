@@ -647,13 +647,6 @@ set_io -port_name ROC_HV_LVDS0_N  \
     -io_std LVDS25                \
     -DIRECTION OUTPUT
 
-set_io -port_name ROC_HV_LVDS0_N  \
-    -pin_name A3                  \
-    -fixed true                   \
-    -io_std LVDS25                \
-    -DIRECTION OUTPUT
-
-
 
 set_io -port_name ROC_HV_LVDS0_P  \
     -pin_name A2                  \

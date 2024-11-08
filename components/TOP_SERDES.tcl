@@ -13,12 +13,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_LAST_WORD} -port_d
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_PACKETS_OVFL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DATAREQ_TAG_ERROR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_DATA_ERR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_DREQ_FIFO_EMPTY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_DREQ_FIFO_FULL} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_EVT_ERR} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_HDR1_ERR} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_HDR2_ERR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_EMPTY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {IN}
@@ -52,6 +48,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_ENABLE_CLOCK} -port_di
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_ENABLE_MARKER} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_FORCE_FULL} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_INT_EVM_EN} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_LED_OFF} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_TYPE} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RESETFIFO} -port_direction {OUT}
@@ -101,6 +98,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_STORE_CNT} -port_directio
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_STORE_POS} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {IN} -port_range {[10:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DDR_ERROR_MASK} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {address_counter} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {data_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {data_seen} -port_direction {IN} -port_range {[63:0]}
@@ -135,6 +133,8 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {skipped_DREQ_tag} -port_direc
 sd_create_bus_port -sd_name ${sd_name} -port_name {spilltag_full_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {start_fetch_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_error_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_expc} -port_direction {IN} -port_range {[63:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_seen} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_valid_counter} -port_direction {IN} -port_range {[15:0]}
 
@@ -198,8 +198,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSClkReset:FABRIC_RESET_N}
 
 # Add DCSProcessor_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DCSProcessor} -hdl_file {hdl\DCSProcessor.vhd} -instance_name {DCSProcessor_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
 
 
 
@@ -235,8 +235,9 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 
 # Add DRACRegisters_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DRACRegisters} -hdl_file {hdl\DRACRegisters.vhd} -instance_name {DRACRegisters_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:SEL_RST}
 
 
 
@@ -370,6 +371,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:retrmarker}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:EVT_MODE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:RF_MARKER}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:retr_seq}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:dcsreq_start_count}
 
 
 
@@ -438,7 +440,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:reset_dcs_logic"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:write_proc" "DCSWriteCMDProcessor_0:WRITE_CMD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:write_reg" "DRACRegisters_0:WRITE_REG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSReadCMDProcessor_0:DCS_TX_RE" "DCS_TX_RE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DATA_ERR" "DRACRegisters_0:DCS_DATA_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DDRRESET" "DRACRegisters_0:DCS_DDRRESET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DIGI_SIM_EN" "DRACRegisters_0:DCS_DIGI_SIM_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DLYD_EVM_EN" "DRACRegisters_0:DCS_DLYD_EVM_EN" }
@@ -446,11 +447,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DREQ_FIFO_EMPTY" "DRACRegis
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_DREQ_FIFO_FULL" "DRACRegisters_0:DCS_DREQ_FIFO_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_ENABLE_CLOCK" "DRACRegisters_0:DCS_ENABLE_CLOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_ENABLE_MARKER" "DRACRegisters_0:DCS_ENABLE_MARKER" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_EVT_ERR" "DRACRegisters_0:DCS_EVT_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_FORCE_FULL" "DRACRegisters_0:DCS_FORCE_FULL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_HDR1_ERR" "DRACRegisters_0:DCS_HDR1_ERR" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_HDR2_ERR" "DRACRegisters_0:DCS_HDR2_ERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_INT_EVM_EN" "DRACRegisters_0:DCS_INT_EVM_EN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_LED_OFF" "DRACRegisters_0:DCS_LED_OFF" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_PATTERN_EN" "DRACRegisters_0:DCS_PATTERN_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_PATTERN_TYPE" "DRACRegisters_0:DCS_PATTERN_TYPE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RESETFIFO" "DRACRegisters_0:DCS_RESETFIFO" }
@@ -560,6 +559,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_CNT" "DRACRegisters_0
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_POS" "DRACRegisters_0:DCS_STORE_POS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TAG_OFFSET" "DRACRegisters_0:DCS_TAG_OFFSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_USE_LANE" "DRACRegisters_0:DCS_USE_LANE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_ERROR_MASK" "DRACRegisters_0:DDR_ERROR_MASK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:BAD_MARKER_CNT" "ErrorCounter_0:bad_marker_cnt" "RxPacketReader_0:bad_marker_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DATAREQ_CNT" "RxPacketReader_0:datareq_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_ERROR_ADDR" "ErrorCounter_0:dcs_address" }
@@ -666,6 +666,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr1_expc" "req_err_switch_0:hd
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr1_seen" "req_err_switch_0:hdr1_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_expc" "req_err_switch_0:hdr2_expc" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"hdr2_seen" "req_err_switch_0:hdr2_seen" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"req_err_switch_0:tag_expc" "tag_expc" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"req_err_switch_0:tag_seen" "tag_seen" }
 
 
 # Re-enable auto promotion of pins of type 'pad'

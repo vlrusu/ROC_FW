@@ -17,7 +17,7 @@
 //`timescale <time_units> / <precision>
 
 module req_err_switch(
-   input [1:0] err_en,
+   input [2:0] err_en,
    input [63:0] evt_expc,
    input [63:0] evt_seen,
    input [63:0] hdr1_expc,
@@ -26,6 +26,8 @@ module req_err_switch(
    input [63:0] hdr2_seen,
    input [63:0] data_expc,
    input [63:0] data_seen,
+   input [63:0] tag_expc,
+   input [63:0] tag_seen,
    
    output reg [63:0] expc_err,
    output reg [63:0] seen_err
@@ -34,37 +36,43 @@ module req_err_switch(
 //<statements>
    always @(err_en) begin
    
-      case(err_en)
-   
-      3'b00:
-         begin
+    case(err_en)
+        
+        3'b001:
+        begin
             expc_err = evt_expc;
             seen_err = evt_seen;
-         end
+        end
          
-      3'b01:
-         begin
+        3'b010:
+        begin
             expc_err = hdr1_expc;
             seen_err = hdr1_seen;
-         end
+        end
          
-      3'b10:
-         begin
+        3'b011:
+        begin
             expc_err = hdr2_expc;
             seen_err = hdr2_seen;
-         end
+        end
          
-      3'b11:
-         begin
+        3'b100:
+        begin
             expc_err = data_expc;
             seen_err = data_seen;
-         end
+        end
          
-      default:
-         begin
+        3'b101:
+        begin
+            expc_err = tag_expc;
+            seen_err = tag_seen;
+        end
+         
+        default:
+        begin
             expc_err = 64'b0;
             seen_err = 64'b0;
-         end
+        end
          
       endcase
    end
