@@ -207,6 +207,7 @@ begin
 		DCS_RESETFIFO   <= '0';
         DCS_ERROR_ADDR  <= (others => '0'); 
         IS_DRAC_REGISTER<= '0';
+        DCS_LED_OFF     <= '0';
             
         err_req_reg     <= (others => '0');
             
@@ -256,6 +257,7 @@ begin
 		DCS_RESETFIFO   <= '0';
         DCS_ERROR_ADDR  <= (others => '0'); 
         IS_DRAC_REGISTER<= '0';
+        DCS_LED_OFF     <= '0';
             
         err_req_reg     <= (others => '0');
          
