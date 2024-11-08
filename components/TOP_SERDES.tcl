@@ -198,8 +198,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSClkReset:FABRIC_RESET_N}
 
 # Add DCSProcessor_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DCSProcessor} -hdl_file {hdl\DCSProcessor.vhd} -instance_name {DCSProcessor_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
 
 
 
@@ -526,6 +526,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_data_in" "cr
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_data_out" "crc_0:DATA_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:data_reg" "DCSWriteCMDProcessor_0:DATA_IN" "DRACRegisters_0:DATA_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_error_count" "ErrorCounter_0:rx_crc_error" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_pkt_count" "DRACRegisters_0:dcs_pkt_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_state_count" "ErrorCounter_0:dcs_proc_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_in" "RxPacketFIFO_0:Q[15:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_out" "RxPacketFIFO_1:DATA[17:0]" }
@@ -586,6 +587,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_format_vrs"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_addr" "dcs_hv_addr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_data" "dcs_hv_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_data_out" "dcs_hv_data_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_data_pkt_count" "DREQProcessor_0:dreq_data_pkt_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_empty_pkt_count" "DREQProcessor_0:dreq_empty_pkt_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_hdr_pkt_count" "DREQProcessor_0:dreq_hdr_pkt_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_pkt_count" "DREQProcessor_0:dreq_pkt_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dtc_pkt_count" "TxPacketWriter_0:dtc_pkt_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:evm_lost_cnt" "RxPacketReader_0:evm_lost_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_dreq_err_cnt" "hb_dreq_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_lost_cnt" "RxPacketReader_0:hb_lost_cnt" }

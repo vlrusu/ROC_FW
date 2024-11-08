@@ -62,12 +62,12 @@ port (
     DCS_SIM_LANE_EMPTY  : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO_SIM {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} EMPTY  bus
     DCS_SIM_LANE_FULL   : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO_SIM {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} FULL bus
     DDR_ERROR_MASK      : IN std_logic_vector(7 DOWNTO 0);      -- DDR error mask (see EW_FIFO_controller for definition)
-    DCS_ERR_EXPC        : IN  std_logic_vector(63 DOWNTO 0);    -- one of four expected 64-bit with error
-    DCS_ERR_SEEN        : IN  std_logic_vector(63 DOWNTO 0);    -- one of four seen 64-bit with error
-    DCS_DREQ_FIFO_FULL  : IN  std_logic;                        -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
-    DCS_STORE_POS       : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
-    DCS_STORE_CNT       : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
-    DCS_DREQ_FIFO_EMPTY :IN  std_logic;                     -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
+    DCS_ERR_EXPC     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four expected 64-bit with error
+    DCS_ERR_SEEN     : IN  std_logic_vector(63 DOWNTO 0);   -- one of four seen 64-bit with error
+    DCS_DREQ_FIFO_FULL: IN  std_logic;                -- FULL signal for DREQ FIFO (40b x 65K) used to store event sizes (3 for each FIFO entry)
+    DCS_STORE_POS    : IN  std_logic_vector(1 DOWNTO 0);    -- number of sizes stored in a partially written DREQ FIFO entry (0 to 2)
+    DCS_STORE_CNT    : IN  std_logic_vector(19 DOWNTO 0);   -- number of fully written DREQ FIFO entries 
+    DCS_DREQ_FIFO_EMPTY:IN  std_logic;                -- EMPTY signal for DREQ FIFO (40b x 65K) used to save event sizes (3 for each FIFO entry)
     DCS_FETCH_POS   : IN  std_logic_vector(1 DOWNTO 0);     -- number of sizes fetched from a partially read FIFO entry (0 to 2)
     DCS_FETCH_CNT   : IN  std_logic_vector(19 DOWNTO 0);    -- number of fully read DREQ FIFO read entries
     DCS_EVMCNT      : IN  std_logic_vector(31 DOWNTO 0);    -- number of windows (between two EVMs)
@@ -90,7 +90,7 @@ port (
     DCS_ERR_REQ     : OUT std_logic_vector(2 downto 0);     -- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
     DCS_TAG_OFFSET  : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
 
-    DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 13
+    DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 13																				   
     DCS_DDRRESET    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
@@ -122,6 +122,13 @@ port (
     BAD_MARKER_CNT      : IN std_logic_vector(15 DOWNTO 0);       
     LOSS_OF_LOCK_CNT    : IN std_logic_vector(15 DOWNTO 0);
     tag_sync_err_cnt    : IN std_logic_vector(15 DOWNTO 0);
+    
+    dtc_pkt_count       : IN std_logic_vector(15 downto 0);
+    dcs_pkt_count       : IN std_logic_vector(15 downto 0);
+    dreq_pkt_count      : IN std_logic_vector(15 downto 0);
+    dreq_hdr_pkt_count  : IN std_logic_vector(15 downto 0);
+    dreq_data_pkt_count : IN std_logic_vector(15 downto 0);
+    dreq_empty_pkt_count: IN std_logic_vector(15 downto 0);
     
    -- added signals for DIGIRW via DCS: drive signals for TWIController inside SLOWCONTROLS/Registers module
     dcs_cal_init    : out std_logic;                        -- drive TWI CAL_INIT    via DCS write to addr=23: must toggle 1->0 after DATA and ADDR have been set
@@ -168,7 +175,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
     signal force_full_reg       : std_logic;
     signal haltrun_en_reg       : std_logic;
 
-    signal err_req_reg		    : std_logic_vector(2 downto 0);
+    signal err_req_reg		: std_logic_vector(2 downto 0);
     signal expc_reg_15_0,   expc_reg_31_16,   expc_reg_47_32,   expc_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
     signal seen_reg_15_0,   seen_reg_31_16,   seen_reg_47_32,   seen_reg_63_48 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
     signal offset_reg_15_0, offset_reg_31_16, offset_reg_47_32                 : std_logic_vector(gAPB_DWIDTH-1 downto 0); 
@@ -544,13 +551,6 @@ begin
 				DATA_OUT <= DCS_FULLTAG(31 downto 16);
 			elsif (drac_addrs = 68) then		 	 
 				DATA_OUT <= DCS_FULLTAG(47 downto 32);
--- MT July'24: repurpose for reading back TWI data for now
-			--elsif (drac_addrs = 69) then		 	 
-				--DATA_OUT <= DCS_TAG_LOST(15 downto 0);
-			--elsif (drac_addrs = 70) then		 	 
-				--DATA_OUT <= DCS_TAG_LOST(31 downto 16);
-			--elsif (drac_addrs = 71) then		 	 
-				--DATA_OUT <= DCS_TAG_LOST(47 downto 32);
             elsif (drac_addrs = 69) then		 	 
 				DATA_OUT <= X"00" & B"000" & dcs_hv_busy & B"000" & dcs_cal_busy;
 			elsif (drac_addrs = 70) then		 	 
@@ -576,6 +576,26 @@ begin
 				DATA_OUT <= '0' & DCS_RX_FULL & '0' & DCS_RX_EMPTY & '0' & DCS_RX_WRCNT;
 			elsif (drac_addrs = 255) then		-- 0xFF 	 
 				DATA_OUT <= DCS_DIAG_DATA;
+                
+            elsif (drac_addrs = 144) then	 -- 0x90	 	 
+                DATA_OUT <= dtc_pkt_count;
+			elsif (drac_addrs = 145) then	 -- 0x91		 	 
+                DATA_OUT <= dcs_pkt_count;
+			elsif (drac_addrs = 146) then	 -- 0x92		 	 
+                DATA_OUT <= dreq_pkt_count;
+			elsif (drac_addrs = 147) then	 -- 0x93		 	 
+                DATA_OUT <= dreq_hdr_pkt_count;
+			elsif (drac_addrs = 148) then	 -- 0x94		 	 
+                DATA_OUT <= dreq_data_pkt_count;
+			elsif (drac_addrs = 149) then	 -- 0x95		 	 
+                DATA_OUT <= dreq_empty_pkt_count;	
+			elsif (drac_addrs = 160) then	 -- 0xA0	 	 
+				DATA_OUT <= DCS_TAG_LOST(15 downto 0);
+			elsif (drac_addrs = 161) then	 -- 0xA1		 	 
+				DATA_OUT <= DCS_TAG_LOST(31 downto 16);
+			elsif (drac_addrs = 162) then	 -- 0xA2		 	 
+				DATA_OUT <= DCS_TAG_LOST(47 downto 32);
+                
 			else	
 				DATA_OUT            <= drac_addrs;		  --Unmapped Addresses
                 IS_DRAC_REGISTER    <= '0';               -- unrecognized DRACRegister address
