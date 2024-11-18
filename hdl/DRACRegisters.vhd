@@ -111,6 +111,10 @@ port (
     DCS_ERROR_DATA  : IN  std_logic_vector(15 DOWNTO 0);    -- read error counter content for address DCS_ERROR_ADDRESS
     DCS_ERROR_ADDR  : OUT std_logic_vector(7 DOWNTO 0);     -- set address of ErrorCounter to be read
 
+    DCS_FORMAT_VERSION  : OUT std_logic_vector(7 downto 0);  -- pass Packer Format Version to Data Packer Header
+    DCS_DTC_ID          : OUT std_logic_vector(7 downto 0);  -- pass DTC_ID to Data Packer Header
+    DCS_SUBSYSTEM_ID    : OUT std_logic_vector(2 downto 0);  -- pass SubSysem ID (0=TRK, 1=CAL, 2=CRV, 4=STM, 5=ExtMon) to Data Packer Header
+
     hb_tag_err_cnt  : IN std_logic_vector(15 DOWNTO 0);    
     hb_dreq_err_cnt : IN std_logic_vector(15 DOWNTO 0);    
     hb_lost_cnt     : IN std_logic_vector(15 DOWNTO 0);    
@@ -140,9 +144,7 @@ port (
     dcs_cal_busy    : in std_logic;                        -- read TWI CAL_BUSY      via  addr=69, bit([0]
     dcs_hv_busy     : in std_logic;                        -- read TWI HV_BUSY       via  addr=69, bit([4]
     dcs_cal_data_out: in std_logic_vector(15 downto 0);    -- read TWI CAL_DATA_OUT  via addr=70
-    dcs_hv_data_out : in std_logic_vector(15 downto 0);    -- read TWI CAL_DATA_OUT  via addr=71
-    dcs_format_vrs  : out std_logic_vector(7 downto 0)     -- pass Packer Format Version to Data Packer Header
-
+    dcs_hv_data_out : in std_logic_vector(15 downto 0)    -- read TWI CAL_DATA_OUT  via addr=71
 );
 end DRACRegisters;
 
@@ -232,9 +234,12 @@ begin
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
         force_full_reg      <= '0';
+        enable_sim_digi_reg <= '0';
         haltrun_en_reg      <= '0';
         
-        dcs_format_vrs      <= (others => '0');
+        DCS_FORMAT_VERSION  <= (others => '0');
+        DCS_DTC_ID          <= (others => '0');
+        DCS_SUBSYSTEM_ID    <= (others => '0');  -- 0 is the TRK Subsystem ID
         
         expc_reg_15_0   <= (others => '0');      
         expc_reg_31_16  <= (others => '0');      
@@ -372,7 +377,11 @@ begin
             elsif (drac_addrs = 28) then
                 dcs_hv_addr <= drac_wdata(8 downto 0);
             elsif (drac_addrs = 29) then   -- 0x1D
-                dcs_format_vrs <= drac_wdata(7 downto 0);
+                DCS_FORMAT_VERSION <= drac_wdata(7 downto 0);
+            elsif (drac_addrs = 30) then   -- 0x1E
+                DCS_DTC_ID <= drac_wdata(7 downto 0);
+            elsif (drac_addrs = 31) then   -- 0x1F
+                DCS_SUBSYSTEM_ID <= drac_wdata(2 downto 0);
                 
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';

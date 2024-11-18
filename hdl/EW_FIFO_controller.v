@@ -13,7 +13,8 @@
 //      v7.0: <Feb.,2024>: added ET_PKTS_OVFL output to be used in data header status 
 //      v8.0: <Feb.,2024>: added HB_TAG_IN to and DREQ_TAG_IN to second DDR header word 
 //      v9.0: <Jul.,2024>: added TAG_ERROR (tag sync or inconsistent tag accross serdes lanes) and passed it to ET_PKTS_ERR output to be used in data header status  
-//      v10.0:<Nov.5,2024>: changed some internal signals names and changed definition of EVENT/HEADER1/HEADER2/DATA_ERROR (set on first error onset)
+//      v10.0:<Nov.5,2024>: changed some internal signals names and changed definition of EVENT/HEADER1/HEADER2/DATA_ERROR (set on first error onset).
+//      v11.0:<Nov.5,2024>: added DDR_WRITE_ON condition in logic avoiding writing and reasding from same DDR address
 //
 //
 // Description:
@@ -206,7 +207,8 @@ reg	    [7:0]   ew_pckt_to_do;      // max value is 127
 reg	    [`EVENT_SIZE_BITS-1:0] 	ew_left_to_do;
 reg	    [`DDR_ADDRESS_BITS-1:0]	next_write_addr;
 
-reg	    first_axi_read, first_write_done;
+reg	    first_axi_read;
+reg     DDR_write_on;
 reg     start_read, start_read_reg;
 reg	    prev_read_done;
 reg     axi_read_done;
@@ -875,7 +877,7 @@ begin
     if(resetn_sysclk == 1'b0)
     begin
 		DDR_to_write	<= 0;
-        first_write_done<= 0;
+        DDR_write_on    <= 0;
         
         awaddr_o        <=	0;
         awvalid_o  		<=	0;
@@ -908,13 +910,9 @@ begin
         ddr_write_done	<= 0;
         hb_tag_err      <= 0;
         
-        // on FIRST write done, generate condition to start read
-        if (ddr_write_done == 1)    first_write_done <= 1;
-        
         if (newspill_on_sysclk)
         begin   
             DDR_to_write    <= 0;
-            first_write_done<= 0;
         end
         
         case(waddr_state)
@@ -965,6 +963,8 @@ begin
         // Set length of remaining write burst
         SET:
         begin
+            DDR_write_on    <= 1;
+                
             // must leave space for header words!!!
             if (ew_left_to_do > 126)	ew_pckt_to_do <= 126;
             else						ew_pckt_to_do <= ew_left_to_do[7:0];	
@@ -1004,6 +1004,8 @@ begin
             awvalid_o	<=	1'b0;
             if(bvalid_i)
             begin
+                DDR_write_on    <= 0;
+                
                 // commented after moving zeroeing of write address to NEXT state
                 // Address for next AXI write 
                 //if(ew_DDRwrap_to_store == 1)    awaddr_o	<= 0;
@@ -1240,12 +1242,12 @@ begin
         end
         
         // wait until the write to that address is done
-        // make exception for wrap around condition
         WAIT:
         begin
-            // this condition can fail when DR wraps around
-            //if (araddr_o != awaddr_o) raddr_state	<=	VALID;
-            if (first_write_done) raddr_state	<=	VALID;
+            // this condition can halt the state machine if write to DDR is MUCH FASTER than read
+            // and AWADDR_O catches up to ARADDR_O after wrapping
+            // if (araddr_o != awaddr_o) raddr_state	<=	VALID;
+            if (araddr_o != awaddr_o || DDR_write_on == 1'b0) raddr_state	<=	VALID;
         end
         
         //monitor read memory count
@@ -1396,30 +1398,34 @@ begin
                     // Save seen and expected ONLY for first error occurence.
                     if (hdr_cnt == 1)   begin
                     
-                        if (event_error == 0 && first_rd_hdr[`EVENT_TAG_BITS-1:0] != current_evt) begin
+                        if (first_rd_hdr[`EVENT_TAG_BITS-1:0] != current_evt) begin
                             event_error         <= 1;
-                            DDR_error_mask[0]   <= 1'b1;
-                            evt_expc    <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                            evt_seen    <= first_rd_hdr;
+                            // save only first occurence
+                            if (DDR_error_mask[0] == 1'b0)  begin
+                                DDR_error_mask[0]   <= 1'b1;
+                                evt_expc    <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                evt_seen    <= first_rd_hdr;
+                            end
                         end
                         
-                        if  (header1_error == 0 && 
-                                (first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
-                                //(   first_rd_hdr[63] != et_err || 
-                                    //first_rd_hdr[62] != et_ovfl ||	
-                                    //first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) ) begin
+                        if  (first_rd_hdr[48+`EVENT_SIZE_BITS-1 : 48] != et_size) begin
                             header1_error       <= 1;
-                            DDR_error_mask[1]   <= 1'b1;
-                            hdr1_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                            hdr1_seen   <= first_rd_hdr;
+                            // save only first occurence
+                            if (DDR_error_mask[1] == 1'b0) begin
+                                DDR_error_mask[1]   <= 1'b1;
+                                hdr1_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                hdr1_seen   <= first_rd_hdr;
+                            end
                         end
                         
-                        if  ( data_error == 0 && 
-                                (first_rd_hdr[63] != et_err || first_rd_hdr[62] != et_ovfl ) ) begin
+                        if  (first_rd_hdr[63] != et_err || first_rd_hdr[62] != et_ovfl ) begin
                             data_error          <= 1;
-                            DDR_error_mask[3]   <= 1'b1;
-                            data_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                            data_seen   <= first_rd_hdr;
+                            // save only first occurence
+                            if (DDR_error_mask[3] == 1'b0) begin
+                                DDR_error_mask[3]   <= 1'b1;
+                                data_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                data_seen   <= first_rd_hdr;
+                            end
                         end
                     end
                     
@@ -1428,22 +1434,25 @@ begin
                         if (second_rd_hdr[39:0] != dreq_tag_in[39:0] ) begin
                             hb_dreq_error   <= 1'b1;
                             hb_dreq_error_cnt <= hb_dreq_error_cnt + 1;
-                            if (dtctag_error == 0)  begin
-                                dtctag_error        <= 1;
+                            dtctag_error        <= 1;
+                            // save only first occurence
+                            if (DDR_error_mask[4] == 1'b0) begin
                                 DDR_error_mask[4]   <= 1'b1;
                                 tag_expc    <= {16'b0, dreq_tag_in};
                                 tag_seen    <= second_rd_hdr;
                             end
                         end;
                         
-                        if  (header2_error == 0 && 
-                                (   second_rd_hdr[63:56] != et_pckt_to_do   ||  
-                                    second_rd_hdr[55:48] != et_blk          || 
-                                    second_rd_hdr[47:40] != (rdburst_cnt+1)) ) begin
+                        if  (   second_rd_hdr[63:56] != et_pckt_to_do  ||  
+                                second_rd_hdr[55:48] != et_blk  || 
+                                second_rd_hdr[47:40] != (rdburst_cnt+1) ) begin
                             header2_error       <= 1;
-                            DDR_error_mask[2]   <= 1'b1;
-                            hdr2_expc      <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
-                            hdr2_seen      <= second_rd_hdr;
+                            // save only first occurence
+                            if (DDR_error_mask[2] == 1'b0) begin
+                                DDR_error_mask[2]   <= 1'b1;
+                                hdr2_expc   <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
+                                hdr2_seen   <= second_rd_hdr;
+                            end
                         end
                     end
                     

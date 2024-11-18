@@ -571,6 +571,13 @@ set_io -port_name KEY_IO5  \
     -DIRECTION OUTPUT
 
 
+set_io -port_name EXT_LVTTL0    \
+    -pin_name F15               \
+    -fixed true                 \
+    -io_std LVCMOS25            \
+    -DIRECTION INPUT
+
+    
 set_io -port_name ROC_ACCEL_CLK0_N  \
     -pin_name E16                   \
     -fixed true                     \
@@ -623,14 +630,14 @@ set_io -port_name ROC_CAL_LVDS0_P  \
 set_io -port_name ROC_CAL_LVDS1_N  \
     -pin_name B15                  \
     -fixed true                    \
-    -io_std LVCMOS25               \
+    -io_std LVDS25                \
     -DIRECTION OUTPUT
 
 
 set_io -port_name ROC_CAL_LVDS1_P  \
     -pin_name B14                  \
     -fixed true                    \
-    -io_std LVCMOS25               \
+    -io_std LVDS25                \
     -DIRECTION OUTPUT
 
 
@@ -658,14 +665,14 @@ set_io -port_name ROC_HV_LVDS0_P  \
 set_io -port_name ROC_HV_LVDS1_N  \
     -pin_name B1                  \
     -fixed true                   \
-    -io_std LVCMOS25              \
+    -io_std LVDS25                \
     -DIRECTION OUTPUT
 
 
 set_io -port_name ROC_HV_LVDS1_P  \
     -pin_name C1                  \
     -fixed true                   \
-    -io_std LVCMOS25              \
+    -io_std LVDS25                \
     -DIRECTION OUTPUT
 
 
@@ -1055,5 +1062,33 @@ set_io -port_name TMS  \
 set_io -port_name TRSTB  \
     -pin_name G7         \
     -DIRECTION INPUT
+
+# Nov/2024 Monica added to resolve reported error during Place and Route AFTER adding ILA
+#     Error: [19137989]:  PDCPF-01: Port name doesn't exist in the netlist or is not connected to an IoCell macro. 
+#       [set_io -port_name TCK -pin_name F8 -DIRECTION INPUT][[C:\Users\tecchio\Desktop\ROC_FW\ROC\constraint\io\io_constraints.pdc][187]]
+#
+#set_io -port_name atck  \
+    #-pin_name F8       \
+    #-DIRECTION INPUT
+#
+#
+#set_io -port_name atdi  \
+    #-pin_name G8       \
+    #-DIRECTION INPUT
+#
+#
+#set_io -port_name atdo  \
+    #-pin_name F6       \
+    #-DIRECTION OUTPUT
+#
+#
+#set_io -port_name atms  \
+    #-pin_name F7       \
+    #-DIRECTION INPUT
+#
+#
+#set_io -port_name atrstb  \
+    #-pin_name G7         \
+    #-DIRECTION INPUT
 
 

@@ -25,32 +25,12 @@ entity Registers is
     SERDES_EMPTY : in  std_logic;
     DIGIDEVICE_RESETN : out std_logic;
     SERDES_RDCNT : in std_logic_vector(16 downto 0);
-    SERDES_HOWMANY : out std_logic_vector(12 downto 0);
-    serdes_aligned : in std_logic_vector(3 downto 0);
 		
     INVERTCALSPICLCK : out std_logic;
     DDR_RESETN 		: out std_logic;
     DTCALIGN_RESETN 	: out std_logic;
     TVS_RESETN 		: out std_logic;
       
-    DDRPTTREN     : out std_logic;
-    DDRERROR      : in  std_logic_vector(3 downto 0);
-    DDRSIZEWR     : in  std_logic_vector(31 downto 0);
-    DDRSIZERD     : in  std_logic_vector(31 downto 0);
-    --DDRHBCNT      : in  std_logic_vector(31 downto 0);
-    --DDRNULLHBCNT  : in  std_logic_vector(31 downto 0);
-    --DDRHBONHOLD   : in  std_logic_vector(31 downto 0);
-    --DDRPREFCNT    : in  std_logic_vector(31 downto 0);
-    --DDRDREQCNT    : in  std_logic_vector(31 downto 0);
-    --DDRDREQREAD   : in  std_logic_vector(31 downto 0);
-    --DDRDREQSENT   : in  std_logic_vector(31 downto 0);
-    --DDRDREQNULL   : in  std_logic_vector(31 downto 0);
-    --DDRSPILLCNT   : in  std_logic_vector(19 downto 0);
-    --DDRHBTAG      : in  std_logic_vector(31 downto 0);
-    --DDRPRETAG     : in  std_logic_vector(31 downto 0);
-    --DDRFETCHTAG   : in  std_logic_vector(31 downto 0);
-    --DDRDREQTAG    : in  std_logic_vector(31 downto 0);
-    --DDROFFSETTAG  : in  std_logic_vector(31 downto 0);
     DDRCTRLREADY  : in  std_logic;
 
     hvscl   : out std_logic;
@@ -62,34 +42,9 @@ entity Registers is
     ewm_50mhz : out std_logic;
     ewm_enable_50mhz : out std_logic;
     ewm_delay : out std_logic_vector(15 downto 0);
-    event_window_early_cut : out std_logic_vector(15 downto 0);
-    event_window_late_cut : out std_logic_vector(15 downto 0);
-    
-    
+
     reset_fifo_n : out std_logic;
-    write_to_fifo : out std_logic;
-    remote_token0 : in std_logic_vector(7 downto 0);
-    remote_token1 : in std_logic_vector(7 downto 0);
-    remote_token2 : in std_logic_vector(7 downto 0);
-    remote_token3 : in std_logic_vector(7 downto 0);
-    dummy_status_address : out std_logic_vector(3 downto 0);
-    dummy_status_out0 : in std_logic_vector(7 downto 0);
-    dummy_status_out1 : in std_logic_vector(7 downto 0);
-    dummy_status_out2 : in std_logic_vector(7 downto 0);
-    dummy_status_out3 : in std_logic_vector(7 downto 0);
     
-    serdes_re0 : out std_logic;
-    serdes_re1 : out std_logic;
-    serdes_re2 : out std_logic;
-    serdes_re3 : out std_logic;
-    serdes_rdcnt0 : in std_logic_vector(12 downto 0);
-    serdes_rdcnt1 : in std_logic_vector(12 downto 0);
-    serdes_rdcnt2 : in std_logic_vector(12 downto 0);
-    serdes_rdcnt3 : in std_logic_vector(12 downto 0);
-    serdes_data0 : in std_logic_vector(31 downto 0);
-    serdes_data1 : in std_logic_vector(31 downto 0);
-    serdes_data2 : in std_logic_vector(31 downto 0);
-    serdes_data3 : in std_logic_vector(31 downto 0);
     use_lane : out std_logic_vector(3 downto 0);
     use_uart : out std_logic;
 
@@ -129,11 +84,7 @@ entity Registers is
     error_address : out std_logic_vector(7 downto 0);
     error_counter : in std_logic_vector(15 downto 0);
     
-    cal_serdes_reset_n : out std_logic;
-    hv_serdes_reset_n : out std_logic;
     dtc_serdes_reset_n : out std_logic;
-    
-    event_window_expected : out std_logic_vector(15 downto 0);
     
     cal_busy    : out std_logic;
     cal_data_out: out std_logic_vector(15 downto 0);
@@ -550,41 +501,6 @@ begin
         when CRPRBS_ERRORCNT =>
           DataOut(31 downto 0)  <= PRBS_ERRORCNT;
             
-        when CRDDRERROR =>
-          DataOut(3 downto 0) <= DDRERROR;
-        when CRDDRSIZEWR =>
-          DataOut(31 downto 0) <= DDRSIZEWR;
-        --when CRDDRSIZERD =>
-          --DataOut(31 downto 0) <= DDRSIZERD;
-        --when CRDDRHBCNT =>
-          --DataOut(31 downto 0) <= DDRHBCNT;
-        --when CRDDRHBONHOLD =>
-          --DataOut(31 downto 0) <= DDRHBONHOLD;
-        --when CRDDRPREFCNT =>
-          --DataOut(31 downto 0) <= DDRPREFCNT;
-        --when CRDDRDREQCNT =>
-          --DataOut(31 downto 0) <= DDRDREQCNT;
-        --when CRDDRDREQREAD =>
-          --DataOut(31 downto 0) <= DDRDREQREAD;
-        --when CRDDRDREQSENT =>
-          --DataOut(31 downto 0) <= DDRDREQSENT;
-        --when CRDDRDREQNULL =>
-          --DataOut(31 downto 0) <= DDRDREQNULL;
-        --when CRDDRSPILLCNT =>
-          --DataOut(19 downto 0) <= DDRSPILLCNT;
-        --when CRDDRNULLHBCNT =>
-          --DataOut(31 downto 0) <= DDRNULLHBCNT;
-        --when CRDDRHBTAG =>
-          --DataOut(31 downto 0) <= DDRHBTAG;
-        --when CRDDRPRETAG =>
-          --DataOut(31 downto 0) <= DDRPRETAG;
-        --when CRDDRFETCHTAG =>
-          --DataOut(31 downto 0) <= DDRFETCHTAG;
-        --when CRDDRDREQTAG =>
-          --DataOut(31 downto 0) <= DDRDREQTAG;
-        --when CRDDROFFSETTAG =>
-          --DataOut(31 downto 0) <= DDROFFSETTAG;
-
         when CRDDRCTRLREADY =>
           DataOut(0) <= DDRCTRLREADY;
           
@@ -596,8 +512,6 @@ begin
           DataOut(31 downto 0) <= SERDES_DATA;
        when CRSERDESRDCNT =>
           DataOut(16 downto 0) <= SERDES_RDCNT;
-        when CRSERDESALIGNMENT =>
-          DataOut(3 downto 0 ) <= serdes_aligned;
 
        when CRCALSPIBUSY =>
           DataOut(0) <= cal_busy;
@@ -611,37 +525,6 @@ begin
         when CRROCTVS_VAL =>
           DataOut(15 downto 0) <= ROCTVS_VAL;
 
-        when CR_LANE_ALIGNED =>
-            DataOut(3 downto 0) <= serdes_aligned;
-        when CR_REMOTE_TOKEN0 =>
-            DataOut(7 downto 0) <= remote_token0;
-        when CR_REMOTE_TOKEN1 =>
-            DataOut(7 downto 0) <= remote_token1;
-        when CR_REMOTE_TOKEN2 =>
-            DataOut(7 downto 0) <= remote_token2;
-        when CR_REMOTE_TOKEN3 =>
-            DataOut(7 downto 0) <= remote_token3;
-
-        when CR_DUMMY_STATUS_OUT =>
-            DataOut <= dummy_status_out0 & dummy_status_out1 & dummy_status_out2 & dummy_status_out3;
-            
-        when CRSERDES_RDCNT0 =>
-            DataOut(12 downto 0) <= serdes_rdcnt0;
-        when CRSERDES_RDCNT1 =>
-            DataOut(12 downto 0) <= serdes_rdcnt1;
-        when CRSERDES_RDCNT2 =>
-            DataOut(12 downto 0) <= serdes_rdcnt2;
-        when CRSERDES_RDCNT3 =>
-            DataOut(12 downto 0) <= serdes_rdcnt3;
-        when CRSERDES_DATA0 =>
-            DataOut <= serdes_data0;
-        when CRSERDES_DATA1 =>
-            DataOut <= serdes_data1;
-        when CRSERDES_DATA2 =>
-            DataOut <= serdes_data2;
-        when CRSERDES_DATA3 =>
-            DataOut <= serdes_data3;
-            
         when CR_DIGI_SERDES_ALIGNED =>
             DataOut(0) <= cal_lane0_aligned;
             DataOut(1) <= cal_lane1_aligned;
@@ -701,14 +584,7 @@ begin
 		PRBS_ERROROUT 	  <= '0';
 		PRBS_ERRORCLR	  <= '0';
         
-        DDRPTTREN         <= '0';
-
         SERDES_RE   <= '0';
-        serdes_re0  <= '0';
-        serdes_re1  <= '0';
-        serdes_re2  <= '0';
-        serdes_re3  <= '0';
-        --use_lane    <= b"0000";
         serial_use_lane <= b"0000";
       
         cal_lane0_pcs_reset_n <= '1';
@@ -720,8 +596,6 @@ begin
         hv_lane0_pma_reset_n <= '1';
         hv_lane1_pma_reset_n <= '1';
       
-        cal_serdes_reset_n <= '1';
-        hv_serdes_reset_n <= '1';
         dtc_serdes_reset_n <= '1';
       
         dtc_enable_reset <= '0';
@@ -736,9 +610,7 @@ begin
         serial_ewm_enable_50mhz <= '0';
         use_uart <= '0';
       
-        write_to_fifo <= '0';
         reset_fifo_n <= '1';
-        dummy_status_address <= (others => '0');
         --force_full <= '0';
         serial_force_full <= '0';
         align_roc_to_digi <= '0';
@@ -757,10 +629,6 @@ begin
 		DDR_RESETN  <= '1';
 		
         SERDES_RE <= '0';
-        serdes_re0 <= '0';
-        serdes_re1 <= '0';
-        serdes_re2 <= '0';
-        serdes_re3 <= '0';
       
         --DIGI_RESET  <= '1';
         --reset_fifo_n <= '1';
@@ -791,7 +659,7 @@ begin
 				
             when CRTIMERENABLE =>
                 TIMERENABLE <= PWDATA(0);
-                            
+                
 			when CRPRBS_EN =>
                 PRBS_EN <= PWDATA(0);
 			when CRPRBS_ERROROUT =>
@@ -799,18 +667,13 @@ begin
 			when CRPRBS_ERRORCLR =>
                 PRBS_ERRORCLR<= '1';
                 
-            when CRDDRPTTREN =>
-                DDRPTTREN <= PWDATA(0);
             when CRSERDESRE =>
                 SERDES_RE <= '1';
-   
+                
             when CRSERDESRESET =>
                 DIGIDEVICE_RESETN	<= PWDATA(0);
-         
-            when CRSERDESHOWMANY =>
-                SERDES_HOWMANY <= PWDATA(12 downto 0);
-
-            when CRCALSPIINIT =>
+                
+                when CRCALSPIINIT =>
                 --cal_init <= '1';
                 serial_cal_init <= '1';
             when CRCALSPIADDRESS =>
@@ -837,28 +700,13 @@ begin
                 serial_ewm_enable_50mhz <= PWDATA(0);
             when CREWMDELAY =>
                 ewm_delay <= PWDATA(15 downto 0);
-            when CREWMEARLY =>
-                event_window_early_cut <= PWDATA(15 downto 0);
-            when CREWMLATE =>
-                event_window_late_cut <= PWDATA(15 downto 0);
             when CRROCTVS_ADDR =>
                 ROCTVS_ADDR <= PWDATA(1 downto 0);
             
             when CR_FIFO_RESET =>
                 reset_fifo_n <= PWDATA(0);
-         
-            when CR_SERDES_WRITE_FIFO =>
-                write_to_fifo <= PWDATA(0);
-
-            when CR_DUMMY_ADDRESS =>
-                dummy_status_address <= PWDATA(3 downto 0);
             
             when CRSERDES_RE =>
-                serdes_re0 <= PWDATA(0);
-                serdes_re1 <= PWDATA(1);
-                serdes_re2 <= PWDATA(2);
-                serdes_re3 <= PWDATA(3);
-                --use_lane   <= PWDATA(3 downto 0);
                 serial_use_lane   <= PWDATA(3 downto 0);
             
             when CR_ENABLE_FIBER_CLOCK =>
@@ -885,14 +733,10 @@ begin
             when X"EE" =>
                 align_roc_to_digi <= PWDATA(0);
             when X"ED" =>
-                cal_serdes_reset_n <= PWDATA(0);
-                hv_serdes_reset_n <= PWDATA(1);
                 dtc_serdes_reset_n <= PWDATA(2);
             
             when CR_ERROR_ADDRESS =>
                 error_address <= PWDATA(7 downto 0);
-            when X"F0" =>
-                event_window_expected <= PWDATA(15 downto 0);
             --when X"F1" =>
             when CR_USE_UART  =>
                 use_uart <= PWDATA(0);

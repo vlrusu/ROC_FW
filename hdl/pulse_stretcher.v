@@ -4,7 +4,7 @@
 // File: pulse_stretcher.v
 // File history:
 //      v1 : 06/21	Added polarity input to deal with negative logic signals
-//      <Revision number>: <Date>: <Comments>
+//      v2 : 11/24	Added negative polarity output
 //      <Revision number>: <Date>: <Comments>
 //
 // Description: 
@@ -25,7 +25,8 @@ module pulse_stretcher(
  input  polarity_i,		// if 1/0, input is positive/negative logic
  input  resetn_i, 
  input  pulse_i,	 
- output gate_o							
+ output gate_o,							
+ output ngate_o							
 );
 ///////////////////////////////////////////////////////////////////////////////
 // Parameters
@@ -50,10 +51,10 @@ always@(posedge clk_i, negedge resetn_i)
 begin
     if(resetn_i == 1'b0)
     begin
-		wait_after_rst  <= 1;
-		wait_cnt	    <= 0;
+		wait_after_rst  <= 1'b1;
+		wait_cnt	    <= 1'b0;
         
-        pulse_seen      <= 0;
+        pulse_seen      <= 1'b0;
         pulse_cnt       <= { N {1'b0} };;
     end
     else
@@ -64,8 +65,8 @@ begin
 		if (wait_cnt > WAIT_FOR_RST) begin
             wait_after_rst	<=	0;
             
-            if  (pulse) pulse_seen <= 1; 
-            else if (pulse_cnt[N])	pulse_seen <= 0;
+            if  (pulse) pulse_seen <= 1'b1; 
+            else if (pulse_cnt[N])	pulse_seen <= 1'b0;
             
             if(pulse_seen)	pulse_cnt <= pulse_cnt + 1'b1;
             else			pulse_cnt <= { N {1'b0} };;
@@ -73,6 +74,7 @@ begin
     end
 end
 
-assign gate_o = pulse_seen;   
+assign gate_o   = pulse_seen;   
+assign ngate_o  = !pulse_seen;   
 
 endmodule

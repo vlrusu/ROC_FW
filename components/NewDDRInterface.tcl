@@ -21,7 +21,6 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {MEM_CLK} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWRUN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RXCLK_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RX_CLK} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {SERIAL_pattern_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dreqclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {end_evm_seen} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_re} -port_direction {IN}
@@ -128,11 +127,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DQS_N} -port_direction {INOUT
 sd_create_bus_port -sd_name ${sd_name} -port_name {DQS} -port_direction {INOUT} -port_range {[3:0]} -port_is_pad {1}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DQ} -port_direction {INOUT} -port_range {[31:0]} -port_is_pad {1}
 
-# Add AND2_0 instance
-sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
-
-
-
 # Add AXI4_Interconnect_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {AXI4_Interconnect} -instance_name {AXI4_Interconnect_0}
 
@@ -145,7 +139,6 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {DDR4_Cntrl} -insta
 
 # Add DREQ_FIFO_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DREQ_FIFO} -instance_name {DREQ_FIFO_1}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DREQ_FIFO_1:WRCNT}
 
 
 
@@ -169,7 +162,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_2:fallingEdge
 
 # Add edge_generator_3 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {edge_generator} -hdl_file {hdl\edge_generator.v} -instance_name {edge_generator_3}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_3:fallingEdge}
 
 
 
@@ -192,11 +184,6 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ew_size_store_an
 
 # Add ewtag_cntrl_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ewtag_cntrl} -hdl_file {hdl\ewtag_cntrl.v} -instance_name {ewtag_cntrl_0}
-
-
-
-# Add OR2_1 instance
-sd_instantiate_macro -sd_name ${sd_name} -macro_name {OR2} -instance_name {OR2_1}
 
 
 
@@ -229,9 +216,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SYSCLKReset:PLL_POWERDOWN_B}
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ACT_N" "DDR4_Cntrl_0:ACT_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "DDR_BANK_CALIB" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "DREQ_FIFO_1:RRESET_N" "DREQ_FIFO_1:WRESET_N" "EW_FIFO_controller_0:resetn_dreqclk" "EW_FIFO_controller_0:resetn_fifo" "EW_FIFO_controller_0:resetn_serdesclk" "EXT_RST_N" "SYSCLKReset:EXT_RST_N" "edge_generator_0:resetn" "edge_generator_1:resetn" "ew_size_store_and_fetch_controller_0:resetn_dreqclk" "ewtag_cntrl_0:resetn_dreqclk" "ewtag_cntrl_0:resetn_fifo" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "pattern_switch_0:resetn_serdesclk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "DDR4_Cntrl_0:SYS_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ACLK" "DDR4_Cntrl_0:SYS_CLK" "DREQ_FIFO_1:WCLOCK" "EW_FIFO_controller_0:sysclk" "SYSCLKReset:CLK" "edge_generator_2:clk" "ew_size_store_and_fetch_controller_0:sysclk" "ewtag_cntrl_0:sysclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ARESETN" "EW_FIFO_controller_0:resetn_sysclk" "SYSCLKReset:FABRIC_RESET_N" "edge_generator_2:resetn" "ew_size_store_and_fetch_controller_0:resetn_sysclk" "ewtag_cntrl_0:resetn_sysclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BG" "DDR4_Cntrl_0:BG" }
@@ -241,7 +225,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CK0_N" "DDR4_Cntrl_0:CK0_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CKE" "DDR4_Cntrl_0:CKE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CS_N" "DDR4_Cntrl_0:CS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRLR_READY" "DDR4_Cntrl_0:CTRLR_READY" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_pattern_en" "OR2_1:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_pattern_en" "pattern_switch_0:pattern_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:ODT" "ODT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:PLL_LOCK" "SYSCLKReset:PLL_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:PLL_REF_CLK" "MEM_CLK" }
@@ -251,6 +235,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:SHIELD0" "SHIELD0"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:SHIELD1" "SHIELD1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:SHIELD2" "SHIELD2" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:SHIELD3" "SHIELD3" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:SYS_RESET_N" "DDR_BANK_CALIB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:WE_N" "WE_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGI_curr_ewfifo_wr" "pattern_switch_0:DIGI_curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGI_ew_done" "pattern_switch_0:DIGI_ew_done" }
@@ -262,6 +247,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:EMPTY" "DREQ_FIFO_E
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:FULL" "DREQ_FIFO_FULL" "ewtag_cntrl_0:dreq_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:RCLOCK" "EW_FIFO_controller_0:dreqclk" "dreqclk" "edge_generator_0:clk" "ew_size_store_and_fetch_controller_0:dreqclk" "ewtag_cntrl_0:dreqclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:RE" "ew_size_store_and_fetch_controller_0:fetch_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:RRESET_N" "DREQ_FIFO_1:WRESET_N" "EW_FIFO_controller_0:resetn_dreqclk" "EW_FIFO_controller_0:resetn_fifo" "EW_FIFO_controller_0:resetn_serdesclk" "EXT_RST_N" "SYSCLKReset:EXT_RST_N" "edge_generator_0:resetn" "edge_generator_1:resetn" "ew_size_store_and_fetch_controller_0:resetn_dreqclk" "ewtag_cntrl_0:resetn_dreqclk" "ewtag_cntrl_0:resetn_fifo" "ewtag_cntrl_0:resetn_serdesclk" "pattern_FIFO_filler_0:resetn_serdesclk" "pattern_switch_0:resetn_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:WE" "ew_size_store_and_fetch_controller_0:store_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:axi_start_on_serdesclk" "pattern_switch_0:axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:curr_ewfifo_wr" "pattern_switch_0:curr_ewfifo_wr" }
@@ -296,8 +282,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_valid"
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FPGA_POR_N" "SYSCLKReset:FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INIT_DONE" "SYSCLKReset:INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NEWRUN" "edge_generator_0:gate" "edge_generator_1:gate" "edge_generator_2:gate" "edge_generator_3:gate" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_1:A" "SERIAL_pattern_en" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_1:Y" "pattern_switch_0:pattern_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_2:A" "pattern_switch_0:ew_tag_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_2:B" "pattern_switch_0:tag_sync_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RXCLK_RESETN" "edge_generator_3:resetn" "ewtag_cntrl_0:resetn_xcvrclk" }

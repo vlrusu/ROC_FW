@@ -10,6 +10,8 @@
 --      <v4>: <02/2024>: MT Add timeout for automatic State Machine reset when garbage data comes in during DTC Flashing or DTC Reset
 --      <v5>: <07/2024>: MT Add DATAREQ_PACKETS_OVFL and DATAREQ_TAG_ERROR as Data Header status bit (4) and (5), respectively 
 --      <v6>: <10/2024>: MT Add EMPTY_EVENT flag and DTC header/data packet counters
+--      <v7>: <11/2024>: MT Fixed Data Header packer by adding DATAREQ_SUBSYSTEM_ID, fixing "dataReqPktCnt" size and
+--                          addinn DATAREQ_EVT_MODE, DATAREQ_SUBRUN, DATAREQ_ONSPILL and DATAREQ_DTC_ID
 --
 -- Description: 
 --
@@ -56,10 +58,15 @@ port (
 		
     --Data Request (Reply Side) 	
     DATAREQ_DATA_READY		: IN  STD_LOGIC;
-    DATAREQ_LAST_WORD		: IN  STD_LOGIC;			   
+    DATAREQ_LAST_WORD		: IN  STD_LOGIC;
+    DATAREQ_ONSPILL         : IN  STD_LOGIC;
+    DATAREQ_EVT_MODE        : IN  STD_LOGIC_VECTOR(4 DOWNTO 0);
+    DATAREQ_SUBRUN          : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
+    DATAREQ_DTC_ID	        : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_FORMAT_VRS	    : IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_STATUS			: IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
     DATAREQ_DATA			: IN  STD_LOGIC_VECTOR(DATAREQ_DWIDTH-1 downto 0);		   	--Data Reply
+    DATAREQ_SUBSYSTEM_ID    : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
     DATAREQ_PACKETS_IN_EVT  : IN  STD_LOGIC_VECTOR(EVENT_SIZE_BITS-1 DOWNTO 0);
     DATAREQ_PACKETS_OVFL    : IN  STD_LOGIC;
     DATAREQ_TAG_ERROR       : IN  STD_LOGIC;
@@ -111,8 +118,9 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal dataReq_FIFOReadyState	: unsigned(1 downto 0);
     signal dataReq_dataReady		: std_logic;
     signal dataReqDataReadCnt		: unsigned(15 downto 0);
-    signal dataReqStatus            : std_logic_vector(7 downto 0);                 -- hold status to pass to DATA HEADER packet
-    signal dataReqPktCnt            : std_logic_vector(EVENT_SIZE_BITS-2 DOWNTO 0); -- hold packet count to pass to DATA HEADER packet
+    signal dataReqStatus            : std_logic_vector(7 downto 0);     -- hold status to pass to DATA HEADER packet
+    --signal dataReqPktCnt            : std_logic_vector(EVENT_WINDOW_TAG_SIZE-2 DOWNTO 0);    -- hold packet count to pass to DATA HEADER packet
+    signal dataReqPktCnt            : std_logic_vector(10 DOWNTO 0);    -- hold packet count to pass to DATA HEADER packet
     signal dataReqPktOvfl           : std_logic;
     signal dataReqTagErr            : std_logic;
     signal firstDone				: std_logic; 
@@ -340,7 +348,8 @@ begin
                     dataReqPktOvfl      <= DATAREQ_PACKETS_OVFL;
                     dataReqTagErr       <= DATAREQ_TAG_ERROR;
                     dataReqDataReadCnt  <= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
-                    dataReqPktCnt       <= DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
+                    --dataReqPktCnt       <= DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
+                    dataReqPktCnt       <= b"00" & DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
                     dreq_state          <= SENDHEADER;
                 end if;
 					
@@ -378,11 +387,14 @@ begin
                     crc_en <= '1';
                 elsif word_count = 3 then
                     -- this is all in units of DTC packets 
-                    dreq_fifo_out <= "00" & b"0000000" & dataReqPktCnt; 
-                    crc_data_out <= b"0000000" & dataReqPktCnt;
+                    --dreq_fifo_out <= "00" & b"0000000" & dataReqPktCnt; 
+                    --crc_data_out <= b"0000000" & dataReqPktCnt;
+                    dreq_fifo_out <= "00" & DATAREQ_SUBSYSTEM_ID & b"00" & dataReqPktCnt; 
+                    crc_data_out <= DATAREQ_SUBSYSTEM_ID & b"00" & dataReqPktCnt;
                     crc_rst <= '0';
                     crc_en <= '1';
-                    if  dataReqPktCnt = B"0_0000_0000"   then    
+                    --if  dataReqPktCnt = B"0_0000_0000"   then    
+                    if  dataReqPktCnt = B"000_0000_0000"   then    
                         empty_event <= '1';
                         dreq_empty_pkt_count  <= std_logic_vector(unsigned(dreq_empty_pkt_count) + 1);
                     end if;
@@ -407,8 +419,10 @@ begin
                     crc_rst <= '0';
                     crc_en <= '1';
                 elsif word_count = 8 then
-                    dreq_fifo_out <= (others => '0');	  -- Event Window Mode (15:11) | Subrub[10:9] On-spill FLAG | DTC ID (7:0)	
-                    crc_data_out <= (others => '0');
+                    --dreq_fifo_out <= (others => '0');	  -- Event Window Mode (15:11) | Subrub[10:9] On-spill FLAG | DTC ID (7:0)	
+                    --crc_data_out <= (others => '0');
+                    dreq_fifo_out <= "00" & DATAREQ_EVT_MODE & DATAREQ_SUBRUN & DATAREQ_ONSPILL & DATAREQ_DTC_ID;	  -- Event Window Mode (15:11) | Subrub[10:9] On-spill FLAG | DTC ID (7:0)	
+                    crc_data_out <= DATAREQ_EVT_MODE & DATAREQ_SUBRUN & DATAREQ_ONSPILL & DATAREQ_DTC_ID;
                     crc_rst <= '0';
                     crc_en <= '1';
                     dataReq_dataReady			<= '0';
