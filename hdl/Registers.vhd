@@ -86,16 +86,12 @@ entity Registers is
     
     dtc_serdes_reset_n : out std_logic;
     
-    cal_busy    : out std_logic;
-    cal_data_out: out std_logic_vector(15 downto 0);
-    hv_busy     : out std_logic;
-    hv_data_out : out std_logic_vector(15 downto 0);
-
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
     TIMERCOUNTER : in std_logic_vector(31 downto 0);
 
     -- DIGIs commands driven by DTC via DRACRegisters
+    dcs_digirw_sel  : in std_logic;
     dcs_cal_init : in std_logic;
     dcs_cal_data : in std_logic_vector(15 downto 0);
     dcs_cal_addr : in std_logic_vector(8 downto 0);
@@ -104,6 +100,11 @@ entity Registers is
     dcs_hv_data : in std_logic_vector(15 downto 0);
     dcs_hv_addr : in std_logic_vector(8 downto 0);
     
+    cal_busy    : out std_logic;
+    cal_data_out: out std_logic_vector(15 downto 0);
+    hv_busy     : out std_logic;
+    hv_data_out : out std_logic_vector(15 downto 0);
+
     dcs_enable_fiber_clock  : in std_logic;    
     dcs_enable_fiber_marker : in std_logic;  
   
@@ -125,16 +126,6 @@ entity Registers is
     PRBS_ERROROUT   : out std_logic;
     PRBS_ERRORCLR   : out std_logic
     
-    --cal_ss_n : out std_logic;
-    --cal_sclk : out std_logic;
-    --cal_mosi : out std_logic;
-    --cal_miso : in std_logic;
---
-    --hv_ss_n : out std_logic;
-    --hv_sclk : out std_logic;
-    --hv_mosi : out std_logic;
-    --hv_miso : in std_logic
-
     );
 end Registers;
 
@@ -325,15 +316,15 @@ architecture synth of Registers is
             init : in std_logic;
             data_in : in std_logic_vector(15 downto 0);
             address : in std_logic_vector(8 downto 0);
-
+            
             -- Outputs
             busy : out std_logic;
             data_out : out std_logic_vector(15 downto 0);
             scl : out std_logic;
-
+            
             -- Inouts
             sda : inout std_logic
-
+            
         );
     end component;
 
@@ -357,20 +348,14 @@ architecture synth of Registers is
     --end component;
 --
     signal cal_init : std_logic;
---    signal cal_busy : std_logic;                          -- July'24: MT changes to module output to be available for fiber read
     signal cal_data_in : std_logic_vector(15 downto 0);
---    signal cal_data_out : std_logic_vector(15 downto 0);  -- July'24: MT changes to module output to be available for fiber read
     signal cal_address_in : std_logic_vector(8 downto 0);
   
     signal hv_init : std_logic;
---    signal hv_busy : std_logic;                           -- July'24: MT changes to module output to be available for fiber read
     signal hv_data_in : std_logic_vector(15 downto 0);
---    signal hv_data_out : std_logic_vector(15 downto 0);   -- July'24: MT changes to module output to be available for fiber read
     signal hv_address_in : std_logic_vector(8 downto 0);
 
-
--- added signals to deal with DIGI_RW commands via DCS packets from fiber
-    signal  digirw_sel      : std_logic;    -- if 0 (default) registers are driven by fiber; if 1, registers are driven by serial
+    signal  digirw_sel      : std_logic;    -- if 0 (default) some registers are set by fiber; if 1, they are set by serial
 
     signal serial_cal_init  : std_logic;
     signal serial_cal_data  : std_logic_vector(15 downto 0);
@@ -393,14 +378,15 @@ architecture synth of Registers is
     
 begin
 
- -- added logic to deal with DIGI commands via DTC
+    -- the default is "digirw_sel = 0". Need to set HIGH when taking data in serial mode
     enable_fiber_clock  <=  dcs_enable_fiber_clock  when digirw_sel = '0'    else   serial_enable_fiber_clock;    
     enable_fiber_marker <=  dcs_enable_fiber_marker when digirw_sel = '0'    else   serial_enable_fiber_marker; 
     ewm_enable_50mhz    <=  dcs_ewm_enable_50mhz    when digirw_sel = '0'    else   serial_ewm_enable_50mhz;
     use_lane            <=  dcs_use_lane            when digirw_sel = '0'    else   serial_use_lane;
     force_full          <=  dcs_force_full          when digirw_sel = '0'    else   serial_force_full;
     
-  -- Synchronize DTC signals for DIGI_RW on PCLK 
+
+    -- Synchronize DTC signals for DIGI_RW on PCLK 
     p_DIGIRW : process (PRESETn, PCLK)
     begin
         if (PRESETn = '0') then
@@ -423,14 +409,22 @@ begin
             else
                 syncd_hv_init  <= '0';
             end if;
-
-            cal_init        <= syncd_cal_init   when digirw_sel = '0'    else serial_cal_init;
-            cal_data_in     <= dcs_cal_data     when digirw_sel = '0'    else serial_cal_data;
-            cal_address_in  <= dcs_cal_addr     when digirw_sel = '0'    else serial_cal_addr;
-
-            hv_init         <= syncd_hv_init    when digirw_sel = '0'    else serial_hv_init;
-            hv_data_in      <= dcs_hv_data      when digirw_sel = '0'    else serial_hv_data;
-            hv_address_in   <= dcs_hv_addr      when digirw_sel = '0'    else serial_hv_addr;
+            
+            --cal_init        <= syncd_cal_init   when digirw_sel = '0'    else serial_cal_init;
+            --cal_data_in     <= dcs_cal_data     when digirw_sel = '0'    else serial_cal_data;
+            --cal_address_in  <= dcs_cal_addr     when digirw_sel = '0'    else serial_cal_addr;
+            --  
+            --hv_init         <= syncd_hv_init    when digirw_sel = '0'    else serial_hv_init;
+            --hv_data_in      <= dcs_hv_data      when digirw_sel = '0'    else serial_hv_data;
+            --hv_address_in   <= dcs_hv_addr      when digirw_sel = '0'    else serial_hv_addr;
+            
+            cal_init        <= serial_cal_init  when dcs_digirw_sel = '0'   else syncd_cal_init;
+            cal_data_in     <= serial_cal_data  when dcs_digirw_sel = '0'   else dcs_cal_data;
+            cal_address_in  <= serial_cal_addr  when dcs_digirw_sel = '0'   else dcs_cal_addr;
+            
+            hv_init         <= serial_hv_init   when dcs_digirw_sel = '0'   else syncd_hv_init ;
+            hv_data_in      <= serial_hv_data   when dcs_digirw_sel = '0'   else dcs_hv_data;
+            hv_address_in   <= serial_hv_addr   when dcs_digirw_sel = '0'   else dcs_hv_addr;
             
         end if;
     end process p_DIGIRW;
@@ -445,18 +439,18 @@ begin
             init => hv_init,
             data_in => hv_data_in,
             address => hv_address_in,
-
+            
             -- Outputs
             busy =>  hv_busy,
             data_out => hv_data_out,
             scl =>  hvscl,
-
+            
             -- Inouts
             sda =>  hvsda
-
+            
         );
-
-  calTWIController_0 : TWIController
+        
+    calTWIController_0 : TWIController
         -- port map
         port map( 
             -- Inputs
@@ -465,114 +459,117 @@ begin
             init => cal_init,
             data_in => cal_data_in,
             address => cal_address_in,
-
+            
             -- Outputs
             busy =>  cal_busy,
             data_out => cal_data_out,
             scl =>  calscl,
-
+            
             -- Inouts
             sda =>  calsda
-
+            
         );
-
         
-  PREADY  <= '1';
-  PSLVERR <= '0';
+        
+    PREADY  <= '1';
+    PSLVERR <= '0';
 -------------------------------------------------------------------------------
 -- Code for APB transactions
 -------------------------------------------------------------------------------
-  -- Generate PRDATA on falling edge
-  p_PRDATA : process (PWRITE, PSEL, PADDR)
-  begin
-    DataOut <= (others => '0');
-    if PWRITE = '0' and PSEL = '1' then
-      case PADDR(9 downto 2) is
-        when CRINVERTCALSPICLCK =>
-          DataOut(0) <= INVERTCALSPICLCK;
+    -- Generate PRDATA on falling edge
+    p_PRDATA : process (PWRITE, PSEL, PADDR)
+    begin
+        DataOut <= (others => '0');
+        if PWRITE = '0' and PSEL = '1' then
             
-        when CRTIMERCOUNTER =>
-            DataOut(31 downto 0) <= TIMERCOUNTER;
+            case PADDR(9 downto 2) is
             
-        when CRPRBS_LOCK =>
-          DataOut(0)            <= PRBS_LOCK;
-        when CRPRBS_ON =>
-          DataOut(0)            <= PRBS_ON;
-        when CRPRBS_ERRORCNT =>
-          DataOut(31 downto 0)  <= PRBS_ERRORCNT;
-            
-        when CRDDRCTRLREADY =>
-          DataOut(0) <= DDRCTRLREADY;
+            when CRINVERTCALSPICLCK =>
+                DataOut(0) <= INVERTCALSPICLCK;
+                
+            when CRTIMERCOUNTER =>
+                DataOut(31 downto 0) <= TIMERCOUNTER;
+                
+            when CRPRBS_LOCK =>
+                DataOut(0)            <= PRBS_LOCK;
+            when CRPRBS_ON =>
+                DataOut(0)            <= PRBS_ON;
+            when CRPRBS_ERRORCNT =>
+                DataOut(31 downto 0)  <= PRBS_ERRORCNT;
+                
+            when CRDDRCTRLREADY =>
+                DataOut(0) <= DDRCTRLREADY;
+                
+            when CRSERDESFULL =>
+                DataOut(0) <= SERDES_FULL;
+            when CRSERDESEMPTY =>
+                DataOut(0) <= SERDES_EMPTY;
+            when CRSERDESDATA =>
+                DataOut(31 downto 0) <= SERDES_DATA;
+            when CRSERDESRDCNT =>
+                DataOut(16 downto 0) <= SERDES_RDCNT;
+                
+            when CRCALSPIBUSY =>
+                DataOut(0) <= cal_busy;
+            when CRCALSPIDATA =>
+                DataOut(15 downto 0) <= cal_data_out;
+                
+            when CRHVSPIBUSY =>
+                DataOut(0) <= hv_busy;
+            when CRHVSPIDATA =>
+                DataOut(15 downto 0) <= hv_data_out;
+            when CRROCTVS_VAL =>
+                DataOut(15 downto 0) <= ROCTVS_VAL;
+                
+            when CR_DIGI_SERDES_ALIGNED =>
+                DataOut(0) <= cal_lane0_aligned;
+                DataOut(1) <= cal_lane1_aligned;
+                DataOut(2) <= hv_lane0_aligned;
+                DataOut(3) <= hv_lane1_aligned;
+            when CR_DIGI_SERDES_ALIGNMENT =>
+                DataOut(3 downto 0) <= cal_lane0_alignment;
+                DataOut(7 downto 4) <= cal_lane1_alignment;
+                DataOut(11 downto 8) <= hv_lane0_alignment;
+                DataOut(15 downto 12) <= hv_lane1_alignment;
+            when CR_CAL_SERDES_ERRORS =>
+                DataOut(7 downto 0) <= cal_lane0_error_count;
+                DataOut(15 downto 8) <= cal_lane1_error_count;
+            when CR_HV_SERDES_ERRORS =>
+                DataOut(7 downto 0) <= hv_lane0_error_count;
+                DataOut(15 downto 8) <= hv_lane1_error_count;
+            when CR_ERROR_COUNTER =>
+                DataOut(15 downto 0) <= error_counter;
+            when CR_LEAK_SDA =>
+                DataOut(0) <= leak_sdi;
+                
+            when others =>
+                DataOut <= (others => '0');
           
-        when CRSERDESFULL =>
-          DataOut(0) <= SERDES_FULL;
-        when CRSERDESEMPTY =>
-          DataOut(0) <= SERDES_EMPTY;
-        when CRSERDESDATA =>
-          DataOut(31 downto 0) <= SERDES_DATA;
-       when CRSERDESRDCNT =>
-          DataOut(16 downto 0) <= SERDES_RDCNT;
+            end case;
+        else
+            DataOut <= (others => '0');
+        end if;
+    end process p_PRDATA;
 
-       when CRCALSPIBUSY =>
-          DataOut(0) <= cal_busy;
-        when CRCALSPIDATA =>
-          DataOut(15 downto 0) <= cal_data_out;
-
-       when CRHVSPIBUSY =>
-          DataOut(0) <= hv_busy;
-        when CRHVSPIDATA =>
-          DataOut(15 downto 0) <= hv_data_out;
-        when CRROCTVS_VAL =>
-          DataOut(15 downto 0) <= ROCTVS_VAL;
-
-        when CR_DIGI_SERDES_ALIGNED =>
-            DataOut(0) <= cal_lane0_aligned;
-            DataOut(1) <= cal_lane1_aligned;
-            DataOut(2) <= hv_lane0_aligned;
-            DataOut(3) <= hv_lane1_aligned;
-        when CR_DIGI_SERDES_ALIGNMENT =>
-            DataOut(3 downto 0) <= cal_lane0_alignment;
-            DataOut(7 downto 4) <= cal_lane1_alignment;
-            DataOut(11 downto 8) <= hv_lane0_alignment;
-            DataOut(15 downto 12) <= hv_lane1_alignment;
-        when CR_CAL_SERDES_ERRORS =>
-            DataOut(7 downto 0) <= cal_lane0_error_count;
-            DataOut(15 downto 8) <= cal_lane1_error_count;
-        when CR_HV_SERDES_ERRORS =>
-            DataOut(7 downto 0) <= hv_lane0_error_count;
-            DataOut(15 downto 8) <= hv_lane1_error_count;
-        when CR_ERROR_COUNTER =>
-            DataOut(15 downto 0) <= error_counter;
-        when CR_LEAK_SDA =>
-            DataOut(0) <= leak_sdi;
+    -- Generate PRDATA on falling edge
+    p_PRDATA_out : process (PRESETn, PCLK)
+    begin
+        if (PRESETn = '0') then
+            PRDATA <= (others => '0');
             
-        when others =>
-          DataOut <= (others => '0');
-      end case;
-    else
-      DataOut <= (others => '0');
-    end if;
-  end process p_PRDATA;
-
-  -- Generate PRDATA on falling edge
-  p_PRDATA_out : process (PRESETn, PCLK)
-  begin
-    if (PRESETn = '0') then
-      PRDATA <= (others => '0');
-
-    elsif (PCLK'event and PCLK = '1') then
-
-      if (PWRITE = '0' and PSEL = '1') then
-        PRDATA <= DataOut;
-      end if;
-
-    end if;
-  end process p_PRDATA_out;
+        elsif (PCLK'event and PCLK = '1') then
+            
+            if (PWRITE = '0' and PSEL = '1') then
+                PRDATA <= DataOut;
+            end if;
+        end if;
+    end process p_PRDATA_out;
 
 --*****************************************************************************************
-  -- Control registers writing
-p_reg_seq : process (PRESETn, PCLK, PSEL, PENABLE, PWRITE)
-begin
+    -- Control registers writing
+    p_reg_seq : process (PRESETn, PCLK, PSEL, PENABLE, PWRITE)
+    begin
+    
     if (PRESETn = '0') then
         DDR_RESETN 		    <= '1';
         DTCALIGN_RESETN	    <= '1';
@@ -600,27 +597,24 @@ begin
       
         dtc_enable_reset <= '0';
       
-        --cal_init <= '0';
-        --hv_init <= '0';
         serial_cal_init <= '0';
         serial_hv_init <= '0';
         
+        
+        digirw_sel  <= '0';
         ewm_50mhz <= '0';
         --ewm_enable_50mhz <= '0';
         serial_ewm_enable_50mhz <= '0';
         use_uart <= '0';
       
         reset_fifo_n <= '1';
-        --force_full <= '0';
         serial_force_full <= '0';
         align_roc_to_digi <= '0';
       
-        --enable_fiber_clock <= '0';
-        --enable_fiber_marker <= '0';
         serial_enable_fiber_clock <= '0';
         serial_enable_fiber_marker <= '0';
       
-      leak_muxselect <= '0';
+        leak_muxselect <= '0';
         leak_sdir <= '0';
       
         error_address <= (others => '0');
@@ -630,11 +624,6 @@ begin
 		
         SERDES_RE <= '0';
       
-        --DIGI_RESET  <= '1';
-        --reset_fifo_n <= '1';
-     
-        --cal_init <= '0';
-        --hv_init <= '0';
         serial_cal_init <= '0';
         serial_hv_init <= '0';
         
@@ -674,25 +663,19 @@ begin
                 DIGIDEVICE_RESETN	<= PWDATA(0);
                 
                 when CRCALSPIINIT =>
-                --cal_init <= '1';
                 serial_cal_init <= '1';
             when CRCALSPIADDRESS =>
-                --cal_address_in <= PWDATA(8 downto 0);
                 serial_cal_addr <= PWDATA(8 downto 0);
             when CRCALSPIDATA =>
-                --cal_data_in <= PWDATA(15 downto 0);
                 serial_cal_data <= PWDATA(15 downto 0);
-
+                
             when CRHVSPIINIT =>
-                --hv_init <= '1';
                 serial_hv_init <= '1';
             when CRHVSPIADDRESS =>
-                --hv_address_in <= PWDATA(8 downto 0);
                 serial_hv_addr <= PWDATA(8 downto 0);
             when CRHVSPIDATA =>
-                --hv_data_in <= PWDATA(15 downto 0);
                 serial_hv_data <= PWDATA(15 downto 0);
-
+                
             when CREWM =>
                 ewm_50mhz <= PWDATA(0);
             when CREWMENABLE =>
@@ -702,10 +685,10 @@ begin
                 ewm_delay <= PWDATA(15 downto 0);
             when CRROCTVS_ADDR =>
                 ROCTVS_ADDR <= PWDATA(1 downto 0);
-            
+                
             when CR_FIFO_RESET =>
                 reset_fifo_n <= PWDATA(0);
-            
+                
             when CRSERDES_RE =>
                 serial_use_lane   <= PWDATA(3 downto 0);
             
@@ -757,10 +740,7 @@ begin
         end case;
         end if;
     end if;
-  end process p_reg_seq;
-
-
-
+    end process p_reg_seq;
 
 end synth;
 

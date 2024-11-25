@@ -246,15 +246,6 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {EWMaker} -hdl_fi
 
 
 
-# Add HCLKReset instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET} -instance_name {HCLKReset}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {HCLKReset:BANK_x_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {HCLKReset:BANK_y_VDDI_STATUS} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {HCLKReset:SS_BUSY} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {HCLKReset:FF_US_RESTORE} -value {GND}
-
-
-
 # Add INBUF_DIFF_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {INBUF_DIFF} -instance_name {INBUF_DIFF_0}
 
@@ -408,14 +399,12 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {PF_SRAM} -instance
 # Add pulse_stretcher_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_0:polarity_i} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pulse_stretcher_0:gate_o}
 
 
 
 # Add pulse_stretcher_1 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_1}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_1:polarity_i} -value {VCC}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pulse_stretcher_1:gate_o}
 
 
 
@@ -461,13 +450,13 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:B" "SLOWCONTROLS_0:dtc_s
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:Y" "DigiInterface_0:CTRL_ARST_N" "TOP_SERDES_0:CTRL_ARST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:A" "INIT_component_0:BANK_0_CALIB_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:B" "INIT_component_0:BANK_1_CALIB_STATUS" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:C" "CORERESET_2_LOCK_0:INIT_DONE" "CORERESET_2_LOCK_1:INIT_DONE" "DigiClkReset_0:INIT_DONE" "DigiFIFOReset_0:INIT_DONE" "DigiInterface_0:INIT_DONE" "DigiReset_0:INIT_DONE" "HCLKReset:INIT_DONE" "INIT_component_0:DEVICE_INIT_DONE" "NewDDRInterface_0:INIT_DONE" "Reset50MHz:INIT_DONE" "TOP_SERDES_0:INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:C" "CORERESET_2_LOCK_0:INIT_DONE" "CORERESET_2_LOCK_1:INIT_DONE" "DigiClkReset_0:INIT_DONE" "DigiFIFOReset_0:INIT_DONE" "DigiInterface_0:INIT_DONE" "DigiReset_0:INIT_DONE" "INIT_component_0:DEVICE_INIT_DONE" "NewDDRInterface_0:INIT_DONE" "Reset50MHz:INIT_DONE" "TOP_SERDES_0:INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_0:Y" "NewDDRInterface_0:DDR_BANK_CALIB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:A" "Blinking_LED_driver_0:RESETN" "MIV_RV32IMC_C0_0:RESETN" "PF_SRAM_0:HRESETN" "Reset50MHz:FABRIC_RESET_N" "SLOWCONTROLS_0:PRESETN" "TOP_SERDES_0:HRESETN" "pulse_stretcher_0:resetn_i" "pulse_stretcher_1:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:B" "pulse_stretcher_0:ngate_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:C" "pulse_stretcher_1:ngate_o" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:Y" "DigiInterface_0:EXT_RST_N" "HCLKReset:EXT_RST_N" "NewDDRInterface_0:EXT_RST_N" "SLOWCONTROLS_0:DCS_CLK_RESETN" "TOP_SERDES_0:EXT_RST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:CLK" "DigiInterface_0:serialfifo_rclk" "HCLKReset:CLK" "MIV_RV32IMC_C0_0:CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" "PF_SRAM_0:HCLK" "Reset50MHz:CLK" "SLOWCONTROLS_0:PCLK" "pulse_stretcher_0:clk_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:Y" "DigiInterface_0:EXT_RST_N" "NewDDRInterface_0:EXT_RST_N" "SLOWCONTROLS_0:EXT_RST_N" "TOP_SERDES_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:CLK" "DigiInterface_0:serialfifo_rclk" "MIV_RV32IMC_C0_0:CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" "PF_SRAM_0:HCLK" "Reset50MHz:CLK" "SLOWCONTROLS_0:PCLK" "pulse_stretcher_0:clk_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:LED_OFF" "TOP_SERDES_0:DCS_LED_OFF" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGIN" "TOP_SERDES_0:CLOCK_ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGOUT" "ROC_SC_GOLDENn" }
@@ -504,8 +493,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"COREJTAGDEBUG_C0_0:TMS" "TMS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"COREJTAGDEBUG_C0_0:TRSTB" "TRSTB" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:BANK_y_VDDI_STATUS" "CORERESET_2_LOCK_1:BANK_y_VDDI_STATUS" "DigiClkReset_0:BANK_y_VDDI_STATUS" "DigiFIFOReset_0:BANK_y_VDDI_STATUS" "DigiReset_0:BANK_y_VDDI_STATUS" "INIT_component_0:BANK_2_VDDI_STATUS" "Reset50MHz:BANK_y_VDDI_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:CLK" "PF_CCC_C0_0:OUT0_FABCLK_0" "PF_NGMUX_C0_0:CLK0" "SLOWCONTROLS_0:DCS_CLK" "TOP_SERDES_0:DCS_CLK" "pulse_stretcher_1:clk_i" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:FPGA_POR_N" "CORERESET_2_LOCK_1:FPGA_POR_N" "DigiClkReset_0:FPGA_POR_N" "DigiFIFOReset_0:FPGA_POR_N" "DigiInterface_0:FPGA_POR_N" "DigiReset_0:FPGA_POR_N" "HCLKReset:FPGA_POR_N" "INIT_component_0:FABRIC_POR_N" "NewDDRInterface_0:FPGA_POR_N" "Reset50MHz:FPGA_POR_N" "TOP_SERDES_0:FPGA_POR_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:PLL_LOCK" "DigiFIFOReset_0:PLL_LOCK" "HCLKReset:PLL_LOCK" "PF_CCC_C0_0:PLL_LOCK_0" "Reset50MHz:PLL_LOCK" "TOP_SERDES_0:PLL_LOCK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:FPGA_POR_N" "CORERESET_2_LOCK_1:FPGA_POR_N" "DigiClkReset_0:FPGA_POR_N" "DigiFIFOReset_0:FPGA_POR_N" "DigiInterface_0:FPGA_POR_N" "DigiReset_0:FPGA_POR_N" "INIT_component_0:FABRIC_POR_N" "NewDDRInterface_0:FPGA_POR_N" "Reset50MHz:FPGA_POR_N" "TOP_SERDES_0:FPGA_POR_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:PLL_LOCK" "DigiFIFOReset_0:PLL_LOCK" "PF_CCC_C0_0:PLL_LOCK_0" "Reset50MHz:PLL_LOCK" "TOP_SERDES_0:PLL_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_0:PLL_POWERDOWN_B" "PF_CCC_C0_0:PLL_POWERDOWN_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_1:CLK" "PF_CCC_111_0:OUT0_FABCLK_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_2_LOCK_1:PLL_LOCK" "PF_CCC_111_0:PLL_LOCK_0" }
@@ -586,7 +575,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:ewm_enable_50mhz" "SL
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:external_ewm_50mhz" "SLOWCONTROLS_0:ewm_50mhz" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EXT_LVTTL0" "OUTBUF_DIFF_7:D" "OUTBUF_DIFF_8:D" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"FLASH" "SLOWCONTROLS_0:FLASH" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"HCLKReset:FABRIC_RESET_N" "SLOWCONTROLS_0:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HVPROGSPISCLKO" "SLOWCONTROLS_0:HVPROGSPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HVPROGSPISDI" "SLOWCONTROLS_0:HVPROGSPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"HVPROGSPISDO" "SLOWCONTROLS_0:HVPROGSPISDO" }
@@ -694,6 +682,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_ON" "TOP_SE
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:SS" "SS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_busy" "TOP_SERDES_0:dcs_cal_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_cal_init" "TOP_SERDES_0:dcs_cal_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_digirw_sel" "TOP_SERDES_0:dcs_digirw_sel" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_enable_fiber_clock" "TOP_SERDES_0:DCS_ENABLE_CLOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_enable_fiber_marker" "TOP_SERDES_0:DCS_ENABLE_MARKER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_ewm_enable_50mhz" "TOP_SERDES_0:DCS_INT_EVM_EN" }

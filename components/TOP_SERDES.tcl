@@ -71,6 +71,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_ON} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RXCLK_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TAG_SYNC} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_cal_init} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_digirw_sel} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_hv_init} -port_direction {OUT}
 
 
@@ -198,8 +199,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSClkReset:FABRIC_RESET_N}
 
 # Add DCSProcessor_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DCSProcessor} -hdl_file {hdl\DCSProcessor.vhd} -instance_name {DCSProcessor_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
 
 
 
@@ -235,8 +236,9 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 
 # Add DRACRegisters_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DRACRegisters} -hdl_file {hdl\DRACRegisters.vhd} -instance_name {DRACRegisters_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:SEL_RST}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 
 
 
@@ -270,14 +272,12 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {PRBS_generator} 
 # Add pulse_stretcher_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_0:polarity_i} -value {VCC}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pulse_stretcher_0:gate_o}
 
 
 
 # Add pulse_stretcher_1 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_stretcher} -hdl_file {hdl\pulse_stretcher.v} -instance_name {pulse_stretcher_1}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {pulse_stretcher_1:polarity_i} -value {VCC}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {pulse_stretcher_1:gate_o}
 
 
 
@@ -365,6 +365,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:retrmarker}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:EVT_MODE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:RF_MARKER}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:retr_seq}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketReader_0:dcsreq_start_count}
 
 
 
@@ -454,6 +455,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_ERROR_EN" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:HALTRUN_EN" "HALTRUN_EN" "RxPacketReader_0:haltrun_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_busy" "dcs_cal_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_init" "dcs_cal_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_digirw_sel" "dcs_digirw_sel" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_busy" "dcs_hv_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_init" "dcs_hv_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:FETCH_START" "FETCH_START" }

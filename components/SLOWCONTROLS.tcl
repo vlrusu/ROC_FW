@@ -9,7 +9,6 @@ auto_promote_pad_pins -promote_all 0
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISDI} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CAL_PREAMP_MISO} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CMD_IN_WE} -port_direction {IN}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_RE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DDRCTRLREADY} -port_direction {IN}
@@ -35,6 +34,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {SPI2_MISO} -port_direction
 sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane0_aligned} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {cal_lane1_aligned} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_cal_init} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_digirw_sel} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_enable_fiber_clock} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_enable_fiber_marker} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dcs_ewm_enable_50mhz} -port_direction {IN}
@@ -415,7 +415,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "CAL_SPI_P
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "Registers_0:TVS_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "TVS_Interface_0:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "EXT_RST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:Y" "CMD_TO_PROC_BUFFER_0:RRESET_N" "DCSRegisters_0:PRESETn" "DCS_RX_BUFFER_0:RESET_N" "DCS_TX_BUFFER_0:WRESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:Y" "CMD_TO_PROC_BUFFER_0:RRESET_N" "CMD_TO_PROC_BUFFER_0:WRESET_N" "DCSRegisters_0:PRESETn" "DCS_RX_BUFFER_0:RESET_N" "DCS_TX_BUFFER_0:RRESET_N" "DCS_TX_BUFFER_0:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISCLKO" "CAL_SPI_PROG_0:SPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDI" "CAL_SPI_PROG_0:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISDO" "CAL_SPI_PROG_0:SPISDO" }
@@ -436,7 +436,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:EMPTY" "DC
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:FULL" "DCSRegisters_0:PROC_CMD_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RE" "DCSRegisters_0:PROC_CMD_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WCLOCK" "DCS_CLK" "DCS_TX_BUFFER_0:RCLOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:WRESET_N" "DCS_CLK_RESETN" "DCS_TX_BUFFER_0:RRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPICLKI" "PF_SPI_0:CLK_I" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPIOEN" "PF_SPI_0:D_OE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISCLKO" "PF_SPI_0:CLK_O" }
@@ -500,6 +499,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:cal_lane1_pma_reset
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calscl" "calscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:calsda" "calsda" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dcs_cal_init" "dcs_cal_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dcs_digirw_sel" "dcs_digirw_sel" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dcs_enable_fiber_clock" "dcs_enable_fiber_clock" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dcs_enable_fiber_marker" "dcs_enable_fiber_marker" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:dcs_ewm_enable_50mhz" "dcs_ewm_enable_50mhz" }

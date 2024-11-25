@@ -135,6 +135,7 @@ port (
     dreq_empty_pkt_count: IN std_logic_vector(15 downto 0);
     
    -- added signals for DIGIRW via DCS: drive signals for TWIController inside SLOWCONTROLS/Registers module
+    dcs_digirw_sel  : out std_logic;                        -- drive TWI inputs via fiber: set 1 for duration of TWI transation, drive low to go back to TWI via uProc
     dcs_cal_init    : out std_logic;                        -- drive TWI CAL_INIT    via DCS write to addr=23: must toggle 1->0 after DATA and ADDR have been set
     dcs_cal_data    : out std_logic_vector(15 downto 0);    -- drive TWI CAL_DATA_IN via DCS write to addr=24
     dcs_cal_addr    : out std_logic_vector(8 downto 0);     -- drive TWI CAL_ADDRESS via DCS write to addr=25: bit[7:0] is address, bit[9]=1/0 for RD/WR
@@ -229,14 +230,15 @@ begin
 		pattern_en_reg	<= '0';	
         pattern_type_reg<= '0';
         error_en_reg    <= '0';
-		dlyd_evm_en_reg	<= '0';	
+		dlyd_evm_en_reg	<= '0';
+        enable_sim_digi_reg <= '0'; 
         enable_internal_ewm <= '0';
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
         force_full_reg      <= '0';
-        enable_sim_digi_reg <= '0';
         haltrun_en_reg      <= '0';
         
+        dcs_digirw_sel      <= '0';
         DCS_FORMAT_VERSION  <= (others => '0');
         DCS_DTC_ID          <= (others => '0');
         DCS_SUBSYSTEM_ID    <= (others => '0');  -- 0 is the TRK Subsystem ID
@@ -330,8 +332,8 @@ begin
 			--elsif (drac_addrs = 5) then
 				--evtstart_delay_en_reg	<= drac_wdata(14);				  
 				--evtstart_delay_fine_reg	<= "00" & drac_wdata(13 downto 0);	
-			--elsif (drac_addrs = 6) then
-				--RESET_XCVR_ERRORS			<= '1';	-- self clearing			  
+			elsif (drac_addrs = 6) then
+                dcs_digirw_sel <= drac_wdata(0);     
             
    -- 8...255 are reserved for DRAC controls and registers
 			elsif (drac_addrs = 8) then
@@ -364,6 +366,7 @@ begin
 				offset_reg_31_16  <= drac_wdata(15 downto 0);
             elsif (drac_addrs = 21) then
 				offset_reg_47_32  <= drac_wdata(15 downto 0);
+                
             elsif (drac_addrs = 23) then
                 dcs_cal_init <= drac_wdata(0);
             elsif (drac_addrs = 24) then
@@ -423,7 +426,7 @@ begin
 			--elsif (drac_addrs = 5) then		 	 
 				--DATA_OUT 	<= XCVR_LOSS_COUNTER;			
 			elsif (drac_addrs = 6) then		 	 
-				DATA_OUT 	<= BAD_MARKER_CNT;			
+                DATA_OUT    <= B"000_0000_0000_0000" & dcs_digirw_sel;
 			elsif (drac_addrs = 7) then		 	 
 				DATA_OUT 	<= LOSS_OF_LOCK_CNT;			
 					
@@ -574,6 +577,8 @@ begin
 				DATA_OUT <= hb_lost_cnt;
 			elsif (drac_addrs = 75) then		 	 
 				DATA_OUT <= evm_lost_cnt;
+			elsif (drac_addrs = 76) then		 	 
+				DATA_OUT 	<= BAD_MARKER_CNT;			
                 
             -- CALO uses 77 to 126                
             -- DCS CMD Registers
