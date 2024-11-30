@@ -90,7 +90,7 @@ port (
     DCS_ERR_REQ     : OUT std_logic_vector(2 downto 0);     -- set which error to read: 0-> EVT; 1->HDR1; 2->HDR2; 3-> DATA
     DCS_TAG_OFFSET  : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
 
-    DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 13																				   
+    DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 9																				   
     DCS_DDRRESET    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])

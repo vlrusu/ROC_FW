@@ -14,7 +14,8 @@
 //      v8.0: <Feb.,2024>: added HB_TAG_IN to and DREQ_TAG_IN to second DDR header word 
 //      v9.0: <Jul.,2024>: added TAG_ERROR (tag sync or inconsistent tag accross serdes lanes) and passed it to ET_PKTS_ERR output to be used in data header status  
 //      v10.0:<Nov.5,2024>: changed some internal signals names and changed definition of EVENT/HEADER1/HEADER2/DATA_ERROR (set on first error onset).
-//      v11.0:<Nov.5,2024>: added DDR_WRITE_ON condition in logic avoiding writing and reasding from same DDR address
+//      v11.0:<Nov.5,2024>: added DDR_WRITE_ON condition in logic avoiding writing and reading from same DDR address.
+//      v12.0:<Nov.29,2024>: removed DDR_WRITE_ON condition in logic avoiding writing and reading from same DDR address (see WAIT state of raddr_state SM)
 //
 //
 // Description:
@@ -1246,8 +1247,8 @@ begin
         begin
             // this condition can halt the state machine if write to DDR is MUCH FASTER than read
             // and AWADDR_O catches up to ARADDR_O after wrapping
-            // if (araddr_o != awaddr_o) raddr_state	<=	VALID;
-            if (araddr_o != awaddr_o || DDR_write_on == 1'b0) raddr_state	<=	VALID;
+            if (araddr_o != awaddr_o) raddr_state	<=	VALID;
+            //if (araddr_o != awaddr_o || DDR_write_on == 1'b0) raddr_state	<=	VALID;
         end
         
         //monitor read memory count

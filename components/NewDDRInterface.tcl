@@ -139,6 +139,7 @@ sd_instantiate_component -sd_name ${sd_name} -component_name {DDR4_Cntrl} -insta
 
 # Add DREQ_FIFO_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {DREQ_FIFO} -instance_name {DREQ_FIFO_1}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DREQ_FIFO_1:WRCNT}
 
 
 
@@ -162,6 +163,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_2:fallingEdge
 
 # Add edge_generator_3 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {edge_generator} -hdl_file {hdl\edge_generator.v} -instance_name {edge_generator_3}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_3:fallingEdge}
 
 
 
