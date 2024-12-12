@@ -221,7 +221,8 @@ begin
 		pattern_en_reg	<= '0';	
         pattern_type_reg<= '0';
         error_en_reg    <= '0';
-		dlyd_evm_en_reg	<= '0';	
+		dlyd_evm_en_reg	<= '0';
+        enable_sim_digi_reg <= '0';
         enable_internal_ewm <= '0';
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
