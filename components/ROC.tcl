@@ -310,6 +310,11 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {NewDDRInterface_0:ew_DDR_wra
 
 
 
+# Add OR2_0 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {OR2} -instance_name {OR2_0}
+
+
+
 # Add OUTBUF_DIFF_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {OUTBUF_DIFF} -instance_name {OUTBUF_DIFF_0}
 
@@ -457,7 +462,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:B" "pulse_stretcher_0:ng
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:C" "pulse_stretcher_1:ngate_o" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND3_1:Y" "DigiInterface_0:EXT_RST_N" "NewDDRInterface_0:EXT_RST_N" "SLOWCONTROLS_0:EXT_RST_N" "TOP_SERDES_0:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:CLK" "DigiInterface_0:serialfifo_rclk" "MIV_RV32IMC_C0_0:CLK" "PF_CCC_C0_0:OUT3_FABCLK_0" "PF_SRAM_0:HCLK" "Reset50MHz:CLK" "SLOWCONTROLS_0:PCLK" "pulse_stretcher_0:clk_i" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:LED_OFF" "TOP_SERDES_0:DCS_LED_OFF" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:LED_OFF" "OR2_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGIN" "TOP_SERDES_0:CLOCK_ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Blinking_LED_driver_0:SIGOUT" "ROC_SC_GOLDENn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CALPROGSPISCLKO" "SLOWCONTROLS_0:CALPROGSPISCLKO" }
@@ -621,6 +626,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:first_hb_seen
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:hb_seen" "TOP_SERDES_0:HEARTBEAT_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:last_word" "TOP_SERDES_0:DATAREQ_LAST_WORD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:start_fetch" "TOP_SERDES_0:FETCH_START" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_0:A" "TOP_SERDES_0:DCS_LED_OFF" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"OR2_0:B" "SLOWCONTROLS_0:led_off" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_0:PADN" "ROC_HV_LVDS0_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_0:PADP" "ROC_HV_LVDS0_P" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"OUTBUF_DIFF_1:PADN" "ROCtoCAL_CLK0_N" }
@@ -716,6 +723,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane0_alignm
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane0_error_count" "SLOWCONTROLS_0:hv_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane1_alignment" "SLOWCONTROLS_0:hv_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:hv_lane1_error_count" "SLOWCONTROLS_0:hv_lane1_error_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:lane_empty_seen" "TOP_SERDES_0:LANE_EMPTY_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:rocfifocntrl_state" "TOP_SERDES_0:rocfifocntrl_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_data" "SLOWCONTROLS_0:SERDES_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_rdcnt" "SLOWCONTROLS_0:SERDES_RDCNT" }
@@ -778,6 +786,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:CMD_IN_DATA" "TO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_CMD_STATUS" "TOP_SERDES_0:DCS_CMD_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_DIAG_DATA" "TOP_SERDES_0:DCS_DIAG_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_RX_WRCNT" "TOP_SERDES_0:DCS_RX_WRCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TO_SERIAL_TEST" "TOP_SERDES_0:DCS_TO_SERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TX_Q" "TOP_SERDES_0:DCS_TX_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TX_WRCNT" "TOP_SERDES_0:DCS_TX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:PRBS_ERRORCNT" "TOP_SERDES_0:PRBS_ERROR_COUNT" }

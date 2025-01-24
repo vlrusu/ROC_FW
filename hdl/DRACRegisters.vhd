@@ -7,8 +7,7 @@
 --      <v2>: <June,2024>: Clean up registers. Add "dcs_newspill_cntrl"
 --      <v3>: <July,2024>: Remove "dcs_newspill_cntrl". Add "DCS_PATTERN_TYPE".
 --      <v4>: <Aug,2024>:  Add HALTRUN_EN.
---      <Revision number>: <Date>: <Comments>
---      <Revision number>: <Date>: <Comments>
+--      <v5>: <Jan,2025>:  Add LANE_EMPTY_SEEN input and DCS_TO_SERIAL output (def = 0x1234).
 --
 -- Description: 
 --
@@ -57,6 +56,7 @@ port (
     DCS_RX_WRCNT	    : IN  std_logic_vector(10 downto 0);     -- DCS_RX_BUFFER WRCNT
 
     -- DRAC specific registers
+    LANE_EMPTY_SEEN     : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} EMPTY  has been seen
     DCS_LANE_EMPTY      : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} EMPTY  bus
     DCS_LANE_FULL       : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} FULL bus
     DCS_SIM_LANE_EMPTY  : IN std_logic_vector(3 DOWNTO 0);      -- ROCFIFO_SIM {HV_lane1, HV_lane0,CAL_lane1,CAL_lane0} EMPTY  bus
@@ -107,6 +107,7 @@ port (
 
     DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(10 downto 0);		-- coarse Event Window Marker delay (addr=4)
     DCS_SIM_HIT     : OUT std_logic_vector(9 downto 0);		-- number of simulated hit per lane 
+    DCS_TO_SERIAL   : OUT std_logic_vector(15 downto 0);    -- diagnostic RW register to be sent to serial (addr=5)
 
     DCS_ERROR_DATA  : IN  std_logic_vector(15 DOWNTO 0);    -- read error counter content for address DCS_ERROR_ADDRESS
     DCS_ERROR_ADDR  : OUT std_logic_vector(7 DOWNTO 0);     -- set address of ErrorCounter to be read
@@ -261,6 +262,7 @@ begin
         
         DCS_LOOPBACK_COARSE_DELAY <= B"000_0000_0000";   -- default delay is zero 5 ns clock
         DCS_SIM_HIT     <= B"00_0000_0010";
+        DCS_TO_SERIAL   <= X"1234";             -- default delay is 0x1234
         
     elsif EXT_RST_N = '0' then
 			
@@ -325,10 +327,12 @@ begin
 				--algo_addr_sig <= drac_wdata;
 			--elsif (drac_addrs = 3) then			 -- reserved to drive ALGO_WDATA in module write/read
 				--algo_wdata_sig <= drac_wdata;
-            elsif (drac_addrs = 4) then  -- 2
+            elsif (drac_addrs = 4) then  
                 DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(10 downto 0);
 			--elsif (drac_addrs = 4) then
 				--DCS_ALIGNMENT_REQ <= '1';   		-- self clearing	  
+            elsif (drac_addrs = 5) then  
+                DCS_TO_SERIAL <= drac_wdata(15 downto 0);
 			--elsif (drac_addrs = 5) then
 				--evtstart_delay_en_reg	<= drac_wdata(14);				  
 				--evtstart_delay_fine_reg	<= "00" & drac_wdata(13 downto 0);	
@@ -423,6 +427,8 @@ begin
 				--DATA_OUT <=   "00" &  RX_K_CHAR & 
 									--"00" & ALIGNED & TX_CLK_STABLE & 
 									--INVALID_K & RD_ERR & B_CERR & CODE_ERR_N;
+			elsif (drac_addrs = 5) then	 
+				DATA_OUT 	<=  DCS_TO_SERIAL; 	
 			--elsif (drac_addrs = 5) then		 	 
 				--DATA_OUT 	<= XCVR_LOSS_COUNTER;			
 			elsif (drac_addrs = 6) then		 	 
@@ -452,17 +458,25 @@ begin
  			elsif (drac_addrs = 15) then
                 DATA_OUT 	<= B"00_0000" & DCS_SIM_HIT;
  			elsif (drac_addrs = 16) then		 	 
-				DATA_OUT <= B"0000" & 
+				--DATA_OUT <= B"0000" & 
+                            --DCS_SIM_LANE_EMPTY  & 
+                            --DCS_SIM_LANE_FULL   &
+                            --B"0000";	
+				DATA_OUT <= DDR_ERROR_MASK(4) & err_req_reg &  
                             DCS_SIM_LANE_EMPTY  & 
                             DCS_SIM_LANE_FULL   &
-                            B"0000";	
+                            DDR_ERROR_MASK(3 downto 0);		
 			elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
  			elsif (drac_addrs = 18) then		 	 
-				DATA_OUT <= DDR_ERROR_MASK(4) & err_req_reg & 
+				--DATA_OUT <= DDR_ERROR_MASK(4) & err_req_reg & 
+                            --DCS_LANE_EMPTY & 
+                            --DCS_LANE_FULL  &
+                            --DDR_ERROR_MASK(3 downto 0);	
+				DATA_OUT    <= B"0000" & 
                             DCS_LANE_EMPTY & 
                             DCS_LANE_FULL  &
-                            DDR_ERROR_MASK(3 downto 0);	
+                            LANE_EMPTY_SEEN;
 			elsif (drac_addrs = 19) then	
 				DATA_OUT <= expc_reg_15_0;    
 			elsif (drac_addrs = 20) then

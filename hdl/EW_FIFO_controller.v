@@ -1540,6 +1540,8 @@ EW_FIFO	ew_fifo1 (
 	.RE		    (ew_fifo1_re),
 	// Outputs
 	.EMPTY	    (ew_fifo1_empty),
+	//.FULL		(ew_fifo1_full),
+	//.AFULL	    ( ),
 	.FULL		( ),
 	.AFULL	    (ew_fifo1_full),
 	.Q			(ew_fifo1_rdata)

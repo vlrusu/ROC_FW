@@ -32,7 +32,9 @@ entity Registers is
     TVS_RESETN 		: out std_logic;
       
     DDRCTRLREADY  : in  std_logic;
-
+        
+    DCS_TO_SERIAL_TEST : in std_logic_vector(15 downto 0);
+        
     hvscl   : out std_logic;
     calscl  : out std_logic;
 
@@ -89,7 +91,9 @@ entity Registers is
     TIMERENABLE : out std_logic;
     TIMERRESET: out std_logic;
     TIMERCOUNTER : in std_logic_vector(31 downto 0);
-
+    
+    led_off     : out std_logic;
+    
     -- DIGIs commands driven by DTC via DRACRegisters
     dcs_digirw_sel  : in std_logic;
     dcs_cal_init : in std_logic;
@@ -112,12 +116,11 @@ entity Registers is
     dcs_use_lane            : in std_logic_vector(3 downto 0);
     dcs_force_full          : in std_logic;
 
-    leak_muxselect : out std_logic;
-    leak_scl : out std_logic;
-    leak_sdo : out std_logic;
-    leak_sdi : in std_logic;
-    leak_sdir : out std_logic;
-    
+    leak_muxselect  : out std_logic;
+    leak_scl        : out std_logic;
+    leak_sdo        : out std_logic;
+    leak_sdi        : in std_logic;
+    leak_sdir       : out std_logic;
     
     PRBS_LOCK		: in  std_logic;
     PRBS_ON		    : in  std_logic;
@@ -143,6 +146,12 @@ architecture synth of Registers is
   --  Invert the spi clock for CAL, multiplexer enable
   ------------------------------------------------------------------------------
    constant CRINVERTCALSPICLCK : std_logic_vector(7 downto 0) := x"11";
+
+  ------------------------------------------------------------------------------
+  --  Turn Key LED OFF
+  ------------------------------------------------------------------------------
+   constant CRLEDOFF : std_logic_vector(7 downto 0) := x"17";
+   constant CRDCSTEST: std_logic_vector(7 downto 0) := x"18";
 
 -------------------------------------------------------------------------------
 -- DDR signals with Monica updates in "flowcontrol"
@@ -490,6 +499,9 @@ begin
             when CRTIMERCOUNTER =>
                 DataOut(31 downto 0) <= TIMERCOUNTER;
                 
+            when CRDCSTEST =>
+                DataOut(15 downto 0) <= DCS_TO_SERIAL_TEST;
+                
             when CRPRBS_LOCK =>
                 DataOut(0)            <= PRBS_LOCK;
             when CRPRBS_ON =>
@@ -600,7 +612,6 @@ begin
         serial_cal_init <= '0';
         serial_hv_init <= '0';
         
-        
         digirw_sel  <= '0';
         ewm_50mhz <= '0';
         --ewm_enable_50mhz <= '0';
@@ -618,6 +629,8 @@ begin
         leak_sdir <= '0';
       
         error_address <= (others => '0');
+        
+        led_off <= '0';
 		
     elsif (PCLK'event and PCLK = '1') then
 		DDR_RESETN  <= '1';
@@ -648,6 +661,9 @@ begin
 				
             when CRTIMERENABLE =>
                 TIMERENABLE <= PWDATA(0);
+                
+            when CRLEDOFF =>
+                led_off <= PWDATA(0);
                 
 			when CRPRBS_EN =>
                 PRBS_EN <= PWDATA(0);

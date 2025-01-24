@@ -100,6 +100,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_STORE_POS} -port_directio
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {IN} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DDR_ERROR_MASK} -port_direction {IN} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {LANE_EMPTY_SEEN} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {address_counter} -port_direction {IN} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {data_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {data_seen} -port_direction {IN} -port_range {[63:0]}
@@ -143,6 +144,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DATAREQ_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_SIM_HIT} -port_direction {OUT} -port_range {[9:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TAG_OFFSET} -port_direction {OUT} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TO_SERIAL} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_USE_LANE} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {FETCH_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {HEARTBEAT_EVENT_WINDOW_TAG} -port_direction {OUT} -port_range {[47:0]}
@@ -236,9 +238,9 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 
 # Add DRACRegisters_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DRACRegisters} -hdl_file {hdl\DRACRegisters.vhd} -instance_name {DRACRegisters_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:SEL_RST}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 
 
 
@@ -552,6 +554,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_SIM_LANE_FULL" "DRACRegiste
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_CNT" "DRACRegisters_0:DCS_STORE_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_POS" "DRACRegisters_0:DCS_STORE_POS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TAG_OFFSET" "DRACRegisters_0:DCS_TAG_OFFSET" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TO_SERIAL" "DRACRegisters_0:DCS_TO_SERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_USE_LANE" "DRACRegisters_0:DCS_USE_LANE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_ERROR_MASK" "DRACRegisters_0:DDR_ERROR_MASK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:BAD_MARKER_CNT" "ErrorCounter_0:bad_marker_cnt" "RxPacketReader_0:bad_marker_cnt" }
@@ -575,6 +578,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_SUBSYSTEM_I
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_TAG_LOST" "RxPacketReader_0:TAG_LOST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:EVENT_MARKER_CNT" "RxPacketReader_0:event_marker_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:IS_SKIPPED_DREQ_CNT" "ErrorCounter_0:is_skipped_dreq_cnt" "RxPacketReader_0:is_skipped_dreq_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:LANE_EMPTY_SEEN" "LANE_EMPTY_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:LOSS_OF_LOCK_CNT" "XCVR_Block_0:ALIGNMENT_LOSS_COUNTER" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_addr" "dcs_cal_addr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_data" "dcs_cal_data" }

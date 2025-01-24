@@ -88,28 +88,29 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_alignment} -port_dir
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane0_error_count} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_alignment} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {lane_empty_seen} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {rocfifocntrl_state} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_data} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {serialfifo_rdcnt} -port_direction {OUT} -port_range {[16:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_cnt} -port_direction {OUT} -port_range {[15:0]}
 
 
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[0:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[1:1]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[2:2]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[3:3]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_EMPTY} -pin_slices {[0:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_EMPTY} -pin_slices {[1:1]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_EMPTY} -pin_slices {[2:2]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_EMPTY} -pin_slices {[3:3]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[0:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[1:1]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[2:2]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[3:3]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[0:0]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[1:1]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[2:2]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_FULL} -pin_slices {[3:3]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_EMPTY} -pin_slices {[0:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_EMPTY} -pin_slices {[1:1]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_EMPTY} -pin_slices {[2:2]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_EMPTY} -pin_slices {[3:3]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[0:0]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[1:1]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[2:2]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {LANE_SIM_FULL} -pin_slices {[3:3]}
 # Add AND2_0 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_0}
 
@@ -276,6 +277,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane3_data" "RO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_data" "ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_size" "ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_tag" "ew_tag" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:lane_empty_seen" "lane_empty_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:state_count" "rocfifocntrl_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:tag_sync_err_cnt" "tag_sync_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:use_lane" "use_lane" }

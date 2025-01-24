@@ -107,6 +107,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane0_pma_reset_n} -por
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pcs_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hv_lane1_pma_reset_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hvscl} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {led_off} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {reset_fifo_n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {use_uart} -port_direction {OUT}
 
@@ -118,6 +119,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {hvsda} -port_direction {IN
 
 # Create top level Bus Ports
 sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TO_SERIAL_TEST} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PADDR} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_ERRORCNT} -port_direction {IN} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PWDATA} -port_direction {IN} -port_range {[31:0]}
@@ -521,6 +523,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane1_pcs_reset_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hv_lane1_pma_reset_n" "hv_lane1_pma_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvscl" "hvscl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:hvsda" "hvsda" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:led_off" "led_off" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:reset_fifo_n" "reset_fifo_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:use_uart" "use_uart" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SPI0_0:SPISCLKO" "SPI0_SCLK" }
@@ -551,6 +554,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_IN" "DCS_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_OUT" "DCS_RX_BUFFER_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_TX_BUFFER_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_BUFFER_0:WRCNT" "DCS_RX_WRCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TO_SERIAL_TEST" "Registers_0:DCS_TO_SERIAL_TEST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }

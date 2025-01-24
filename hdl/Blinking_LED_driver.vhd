@@ -3,16 +3,19 @@
 --
 -- File: Blinking_LED_driver.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
---      <Revision number>: <Date>: <Comments>
---      <Revision number>: <Date>: <Comments>
+--      <v0>: <10/24>: first version
+--      <v1>: <11/24>: Add external LED_OFF input to stop blinking
+--      <v2>: <01/25>: Change logic so LED_OFF is always turning LED OFF. Add serial driver to LED_OFF.
+--                     Also changed SIGOUT defaul to LOW 
 --
 -- Description: 
 --
 -- <Description here>
+--      Driver for LED on Key: blinks when fiber link is established, OFF otherwise
+--      External LED_OFF can 
 --
 -- Targeted device: <Family::PolarFire> <Die::MPF300TS> <Package::FCG484>
--- Author: <Name>
+-- Author: <Monica>
 --
 --------------------------------------------------------------------------------
 
@@ -41,25 +44,36 @@ begin
     process(CLK, RESETN)
     begin
     if RESETN = '0' then
-        SIGOUT          <= '1';
+        SIGOUT          <= '0';
         clk_counter     <= (others => '0');
     elsif rising_edge(CLK) then
-        if  SIGIN = '1' then
-            if (LED_OFF = '0') then
-                clk_counter <= clk_counter + 1;
+        if LED_OFF = '1' or SIGIN = '0' then
+            SIGOUT      <= '0';
+            clk_counter <= (others => '0');
+        else -- meaning LED_OFF = '0' and SIGIN = '1'
+            clk_counter <= clk_counter + 1;
                 
-                if  clk_counter(26) = '1'   then
-                    SIGOUT      <= not(SIGOUT);
-                    clk_counter <= (others => '0');
-                end if;
-            else
-                SIGOUT  <= '0';
+            if  clk_counter(26) = '1'   then
+                SIGOUT      <= not(SIGOUT);
                 clk_counter <= (others => '0');
             end if;
-        else
-            SIGOUT  <= '1';
-            clk_counter <= (others => '0');
         end if;
+        --if  SIGIN = '1' then
+            --if (LED_OFF = '0') then
+                --clk_counter <= clk_counter + 1;
+                --
+                --if  clk_counter(26) = '1'   then
+                    --SIGOUT      <= not(SIGOUT);
+                    --clk_counter <= (others => '0');
+                --end if;
+            --else
+                --SIGOUT  <= '0';
+                --clk_counter <= (others => '0');
+            --end if;
+        --else
+            --SIGOUT  <= '1';
+            --clk_counter <= (others => '0');
+        --end if;
     end if;
     end process;
 

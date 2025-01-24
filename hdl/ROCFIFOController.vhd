@@ -45,6 +45,8 @@ port (
     lane2_empty : in std_logic;
     lane3_empty : in std_logic;
     
+    lane_empty_seen : out std_logic_vector(3 downto 0);
+    
     lane0_data : in std_logic_vector(DIGI_BITS-1 downto 0);
     lane1_data : in std_logic_vector(DIGI_BITS-1 downto 0);
     lane2_data : in std_logic_vector(DIGI_BITS-1 downto 0);
@@ -113,6 +115,9 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
     
     signal want_ew_fifo_we : std_logic;
     signal want_uart_fifo_we : std_logic;
+    
+    signal count0_wait : unsigned(3 downto 0);    -- this counts words read from ROCFIFO in units of 32-bit words
+    signal count0_error : std_logic;
         
 begin
 
@@ -195,6 +200,10 @@ begin
         active_lane     <= (others => '0');
         use_lane_reg    <= (others => '0');
         
+        lane_empty_seen <= (others => '0');
+        count0_error   <= '0';
+        count0_wait    <= (others => '0'); 
+        
     elsif rising_edge(clk) then
     
         want_re             <= (others => '0');
@@ -225,6 +234,8 @@ begin
             -- find next lane in use
             when IDLE => 
                 state_count <= X"02";
+                count0_error <= '0';
+                count0_wait  <= (others => '0'); 
                 if  first_used_lane < 4 then
                     if  use_lane_reg(current_lane) = '1'    then 
                         state <= START;
@@ -240,6 +251,7 @@ begin
                 
                 if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
                     want_re(current_lane) <= '1';
+                    lane_empty_seen(current_lane) <= '1';
                     state <= START1;
                 end if;
                 
@@ -307,11 +319,16 @@ begin
                     want_re(current_lane) <= '1';
                     rd_cnt <= rd_cnt + 1;
                     state <= COUNT1;
+                else
+                    count0_wait <= count0_wait + 1;
                 end if;
+                if count0_wait = X"F"   then    count0_error <= '1';    end if;
                 
             -- wait for next word to settle
             when COUNT1 =>
                 state_count <= X"13";
+                count0_error <= '0';
+                count0_wait  <= (others => '0'); 
                 state <= COUNT2;
                 
             -- write out previous word, unless overflow condition is seen
@@ -406,6 +423,7 @@ begin
                     ew_ovfl     <= '0';
                     ew_tag_error    <= '0';
                     tag_sync_error  <= '0';
+                    lane_empty_seen <= (others => '0');
                     state <= IDLE;
                 end if;
                 
