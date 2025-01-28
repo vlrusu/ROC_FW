@@ -110,6 +110,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_hv_data_out} -port_direct
 sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_full_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {evt_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {evt_seen} -port_direction {IN} -port_range {[63:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ew_done_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_fifo_emptied_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewm_out_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewtag_state} -port_direction {IN} -port_range {[2:0]}
@@ -238,9 +239,9 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {delay_sreg_1bit}
 
 # Add DRACRegisters_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DRACRegisters} -hdl_file {hdl\DRACRegisters.vhd} -instance_name {DRACRegisters_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:PREREAD_PULSE}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DRACRegisters_0:SEL_RST}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {DRACRegisters_0:DEBUG_REG_0} -value {0001001000110100}
 
 
 
@@ -615,6 +616,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:comma_error_coun
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:datareq_state" "datareq_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dcs_counter" "RxPacketReader_0:dcsreq_end_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dreq_full_counter" "dreq_full_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ew_done_counter" "ew_done_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ew_fifo_emptied_counter" "ew_fifo_emptied_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewm_out_counter" "ewm_out_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewtag_state" "ewtag_state" }

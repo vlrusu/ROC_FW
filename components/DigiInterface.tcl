@@ -81,6 +81,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_alignment} -port_di
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane0_error_count} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_alignment} -port_direction {OUT} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {cal_lane1_error_count} -port_direction {OUT} -port_range {[7:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ew_done_cnt} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_fifo_data} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_size} -port_direction {OUT} -port_range {[9:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_tag} -port_direction {OUT} -port_range {[19:0]}
@@ -274,6 +275,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane0_data" "RO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane1_data" "ROCFIFOController_0:lane1_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane2_data" "ROCFIFOController_0:lane2_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane3_data" "ROCFIFOController_0:lane3_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_done_cnt" "ew_done_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_data" "ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_size" "ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_tag" "ew_tag" }

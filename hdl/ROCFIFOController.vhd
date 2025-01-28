@@ -68,6 +68,7 @@ port (
     tag_sync_error  : out std_logic;
     ew_tag_error    : out std_logic;
     tag_sync_err_cnt: out std_logic_vector(15 downto 0);
+    ew_done_cnt     : out std_logic_vector(15 downto 0);
     
     state_count : out std_logic_vector(7 downto 0);
 
@@ -181,6 +182,7 @@ begin
         ew_tag_error    <= '0';
         tag_sync_error  <= '0';
         tag_sync_err_cnt<= (others => '0');
+        ew_done_cnt     <= (others => '0');
         lane_size <= (others => '0');
         full_size <= (others => '0');
         rd_cnt <= (others => '0');
@@ -277,7 +279,9 @@ begin
                 end if;
                 
                 tag_sync_error      <= tag_sync_error or current_data(31);
-                tag_sync_err_cnt    <= std_logic_vector(unsigned(tag_sync_err_cnt) + 1);
+                if  tag_sync_error = '1'    then    
+                    tag_sync_err_cnt    <= std_logic_vector(unsigned(tag_sync_err_cnt) + 1);
+                end if;
                      
                 -- assume header word from Richie is in unit of 128-bit (ie number of DTC packets == 2*(no. of hits) )
                 --  LANE_SIZE is in units of 32-bits and use to save the number of hits in the current lane
@@ -406,10 +410,11 @@ begin
                     end if;
                     STATE <= IDLE;
                 else
-                    current_lane <= 0;
+                    current_lane<= 0;
                     active_lane <= (others => '0');
-                    wr_cnt <= (others => '0');
-                    ew_done <= '1';
+                    wr_cnt      <= (others => '0');
+                    ew_done     <= '1';
+                    ew_done_cnt <= std_logic_vector(unsigned(ew_done_cnt) + 1);
                     state <= HOLD;
                 end if;
                 

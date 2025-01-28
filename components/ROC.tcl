@@ -714,6 +714,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_align
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_error_count" "SLOWCONTROLS_0:cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_alignment" "SLOWCONTROLS_0:cal_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_error_count" "SLOWCONTROLS_0:cal_lane1_error_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_done_cnt" "TOP_SERDES_0:ew_done_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_fifo_data" "NewDDRInterface_0:DIGI_ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_size" "NewDDRInterface_0:DIGI_ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_tag" "NewDDRInterface_0:DIGI_ew_tag" }
