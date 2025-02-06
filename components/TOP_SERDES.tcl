@@ -110,7 +110,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {dcs_hv_data_out} -port_direct
 sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_full_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {evt_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {evt_seen} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {ew_done_counter} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ew_done_cnt} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_fifo_emptied_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewm_out_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewtag_state} -port_direction {IN} -port_range {[2:0]}
@@ -138,7 +138,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {start_fetch_counter} -port_di
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_error_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_expc} -port_direction {IN} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_seen} -port_direction {IN} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_cnt} -port_direction {IN} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sync_err_counter} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_valid_counter} -port_direction {IN} -port_range {[15:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {CMD_IN_DATA} -port_direction {OUT} -port_range {[15:0]}
@@ -593,10 +593,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_hdr_pkt_co
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dreq_pkt_count" "DREQProcessor_0:dreq_pkt_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dtc_pkt_count" "TxPacketWriter_0:dtc_pkt_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:evm_lost_cnt" "RxPacketReader_0:evm_lost_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:ew_done_cnt" "ew_done_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_dreq_err_cnt" "hb_dreq_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_lost_cnt" "RxPacketReader_0:hb_lost_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:hb_tag_err_cnt" "hb_tag_err_cnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:tag_sync_err_cnt" "tag_sync_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_data_in" "crc_1:CRC_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_data_out" "crc_1:DATA_IN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:dreq_error_count" "ErrorCounter_0:dreq_crc_error" }
@@ -616,7 +616,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:comma_error_coun
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:datareq_state" "datareq_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dcs_counter" "RxPacketReader_0:dcsreq_end_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:dreq_full_counter" "dreq_full_counter" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ew_done_counter" "ew_done_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ew_fifo_emptied_counter" "ew_fifo_emptied_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewm_out_counter" "ewm_out_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:ewtag_state" "ewtag_state" }
@@ -647,6 +646,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:skipped_DREQ_tag
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:spilltag_full_counter" "spilltag_full_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:start_fetch_counter" "start_fetch_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:tag_error_counter" "tag_error_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:tag_sync_err_counter" "tag_sync_err_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ErrorCounter_0:tag_valid_counter" "tag_valid_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:CHAR_IN" "RxPacketReader_0:rx_kchar_in" "XCVR_Block_0:RX_K_CHAR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:DATA_IN" "RxPacketReader_0:rx_data_in" "XCVR_Block_0:RX_DATA" }

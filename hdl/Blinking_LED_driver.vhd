@@ -47,17 +47,33 @@ begin
         SIGOUT          <= '0';
         clk_counter     <= (others => '0');
     elsif rising_edge(CLK) then
-        if LED_OFF = '1' or SIGIN = '0' then
+        if LED_OFF = '1' then
             SIGOUT      <= '0';
             clk_counter <= (others => '0');
-        else -- meaning LED_OFF = '0' and SIGIN = '1'
-            clk_counter <= clk_counter + 1;
-                
-            if  clk_counter(26) = '1'   then
-                SIGOUT      <= not(SIGOUT);
+        else -- meaning LED_OFF = '0' (default at power up)
+            if SIGIN = '0' then
+                SIGOUT      <= '1';
                 clk_counter <= (others => '0');
+            else
+                clk_counter <= clk_counter + 1;
+                
+                if  clk_counter(25) = '1'   then
+                    SIGOUT      <= not(SIGOUT);
+                    clk_counter <= (others => '0');
+                end if;
             end if;
         end if;
+        --if LED_OFF = '1' or SIGIN = '0' then
+            --SIGOUT      <= '0';
+            --clk_counter <= (others => '0');
+        --else -- meaning LED_OFF = '0' and SIGIN = '1'
+            --clk_counter <= clk_counter + 1;
+                --
+            --if  clk_counter(26) = '1'   then
+                --SIGOUT      <= not(SIGOUT);
+                --clk_counter <= (others => '0');
+            --end if;
+        --end if;
         --if  SIGIN = '1' then
             --if (LED_OFF = '0') then
                 --clk_counter <= clk_counter + 1;

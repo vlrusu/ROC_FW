@@ -54,7 +54,7 @@ port (
     hb_bad_crc_counter : in std_logic_vector(15 downto 0);
     hb_tag_full_counter : in std_logic_vector(15 downto 0);
     spilltag_full_counter : in std_logic_vector(15 downto 0);
-    ew_done_counter : in std_logic_vector(15 downto 0);
+    tag_sync_err_counter : in std_logic_vector(15 downto 0);
    
     dreq_timeout_counter : in std_logic_vector(15 downto 0);
     hb_empty_overlap_counter : in std_logic_vector(15 downto 0);
@@ -298,7 +298,7 @@ begin
         elsif address = X"47" then      -- 71
             counter_out <= fetch_missing_counter;
         elsif address = X"48" then      -- 72
-            counter_out <= ew_done_counter;
+            counter_out <= tag_sync_err_counter;
             
         else
             counter_out <= (others => '0');

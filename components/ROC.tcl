@@ -714,7 +714,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_align
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane0_error_count" "SLOWCONTROLS_0:cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_alignment" "SLOWCONTROLS_0:cal_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:cal_lane1_error_count" "SLOWCONTROLS_0:cal_lane1_error_count" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_done_cnt" "TOP_SERDES_0:ew_done_counter" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_done_cnt" "TOP_SERDES_0:ew_done_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_fifo_data" "NewDDRInterface_0:DIGI_ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_size" "NewDDRInterface_0:DIGI_ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:ew_tag" "NewDDRInterface_0:DIGI_ew_tag" }
@@ -728,7 +728,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:lane_empty_seen
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:rocfifocntrl_state" "TOP_SERDES_0:rocfifocntrl_state" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_data" "SLOWCONTROLS_0:SERDES_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_rdcnt" "SLOWCONTROLS_0:SERDES_RDCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:tag_sync_err_cnt" "TOP_SERDES_0:tag_sync_err_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:tag_sync_err_cnt" "TOP_SERDES_0:tag_sync_err_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:use_lane" "SLOWCONTROLS_0:use_lane" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EWMaker_0:ewm_period_5ns" "SLOWCONTROLS_0:ewm_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:DDR_error_mask" "TOP_SERDES_0:DDR_ERROR_MASK" }

@@ -126,7 +126,7 @@ port (
     IS_SKIPPED_DREQ_CNT : IN std_logic_vector(15 DOWNTO 0);  
     BAD_MARKER_CNT      : IN std_logic_vector(15 DOWNTO 0);       
     LOSS_OF_LOCK_CNT    : IN std_logic_vector(15 DOWNTO 0);
-    tag_sync_err_cnt    : IN std_logic_vector(15 DOWNTO 0);
+    ew_done_cnt         : IN std_logic_vector(15 DOWNTO 0);
     
     dtc_pkt_count       : IN std_logic_vector(15 downto 0);
     dcs_pkt_count       : IN std_logic_vector(15 downto 0);
@@ -454,7 +454,7 @@ begin
 			elsif (drac_addrs = 13) then		 	 
 				DATA_OUT 	<= IS_SKIPPED_DREQ_CNT;			
             elsif (drac_addrs = 14) then		 	 
-				DATA_OUT 	<= tag_sync_err_cnt;                
+				DATA_OUT 	<= ew_done_cnt;                
  			elsif (drac_addrs = 15) then
                 DATA_OUT 	<= B"00_0000" & DCS_SIM_HIT;
  			elsif (drac_addrs = 16) then		 	 
