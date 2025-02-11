@@ -857,6 +857,26 @@ set_io -port_name ROCtoHV_LVTTL3  \
     -io_std LVCMOS33              \
     -DIRECTION OUTPUT
 
+set_io -port_name rs485_rx  \
+    -pin_name J1            \
+    -fixed true             \
+    -io_std LVCMOS33        \
+    -DIRECTION INPUT
+
+
+set_io -port_name rs485_tx  \
+    -pin_name H1            \
+    -fixed true             \
+    -io_std LVCMOS33        \
+    -DIRECTION OUTPUT
+
+
+set_io -port_name rs485_tx_enable  \
+    -pin_name H2                   \
+    -fixed true                    \
+    -io_std LVCMOS33               \
+    -DIRECTION OUTPUT
+
 
 
 # 

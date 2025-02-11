@@ -121,6 +121,14 @@ entity Registers is
     leak_sdo        : out std_logic;
     leak_sdi        : in std_logic;
     leak_sdir       : out std_logic;
+
+    rs485_data_in : out std_logic_vector(7 downto 0);
+    rs485_tx_start : out std_logic;
+    rs485_my_address : out std_logic_vector(7 downto 0);
+    rs485_rx_data : in std_logic_vector(7 downto 0);
+    rs485_tx_err : in std_logic;
+    rs485_tx_busy : in std_logic;
+    rs485_rx_ready : in std_logic;    
     
     PRBS_LOCK		: in  std_logic;
     PRBS_ON		    : in  std_logic;
@@ -384,6 +392,9 @@ architecture synth of Registers is
     signal serial_ewm_enable_50mhz      : std_logic;
     signal serial_force_full: std_logic;
     signal serial_use_lane  : std_logic_vector(3 downto 0);
+
+    signal rs485_rx_done : std_logic;
+    signal rs485_rx_ready_1Q : std_logic;
     
 begin
 
@@ -553,6 +564,16 @@ begin
                 DataOut(15 downto 0) <= error_counter;
             when CR_LEAK_SDA =>
                 DataOut(0) <= leak_sdi;
+
+            when x"C0" =>
+                DataOut(7 downto 0) <= rs485_rx_data;
+            when x"C1" =>
+                DataOut(1 downto 0) <= rs485_tx_err & rs485_tx_busy;
+            when x"C2" =>
+                DataOut(1 downto 0) <= rs485_rx_ready & rs485_rx_done;
+            when x"C3" =>
+                DataOut(7 downto 0) <= rs485_my_address;
+
                 
             when others =>
                 DataOut <= (others => '0');
@@ -568,11 +589,20 @@ begin
     begin
         if (PRESETn = '0') then
             PRDATA <= (others => '0');
+            rs485_rx_done <= '0';
+            rs485_rx_ready_1Q <= '0';
             
         elsif (PCLK'event and PCLK = '1') then
+            if rs485_rx_ready = '1' and rs485_rx_ready_1Q = '0' then
+                rs485_rx_done <= '1';
+            end if;
+            rs485_rx_ready_1Q <= rs485_rx_ready;
             
             if (PWRITE = '0' and PSEL = '1') then
                 PRDATA <= DataOut;
+                if PADDR(9 downto 2) = x"C0" then
+                    rs485_rx_done <= '0';
+                end if;
             end if;
         end if;
     end process p_PRDATA_out;
@@ -631,6 +661,10 @@ begin
         error_address <= (others => '0');
         
         led_off <= '0';
+
+        rs485_data_in <= (others => '0');
+        rs485_my_address <= (others => '0');
+        rs485_tx_start <= '0';
 		
     elsif (PCLK'event and PCLK = '1') then
 		DDR_RESETN  <= '1';
@@ -643,6 +677,8 @@ begin
         -- this are meant to be pulses 
 		PRBS_ERROROUT	<= '0';
 		PRBS_ERRORCLR	<= '0';
+
+         rs485_tx_start <= '0';
         
         if (PWRITE = '1' and PSEL = '1' and PENABLE = '1') then
         case PADDR(9 downto 2) is
@@ -751,6 +787,13 @@ begin
                 leak_sdir <= PWDATA(0);
             when CR_LEAK_SDA =>
                 leak_sdo <= PWDATA(0);
+
+            when x"C0" =>
+                rs485_data_in <= PWDATA(7 downto 0);
+            when x"C1" =>
+                rs485_tx_start <= '1';
+            when x"C3" =>
+                rs485_my_address <= PWDATA(7 downto 0);
 				            
             when others =>
         end case;

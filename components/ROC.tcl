@@ -40,6 +40,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {TCK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TDI} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TMS} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TRSTB} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {rs485_rx} -port_direction {IN}
+
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISCLKO} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CALPROGSPISDO} -port_direction {OUT}
@@ -128,6 +130,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD1} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD2} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {TDO} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {rs485_tx_enable} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {rs485_tx} -port_direction {OUT}
+
 
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CLK} -port_direction {INOUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_MOSI} -port_direction {INOUT}
@@ -698,6 +703,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_busy" "TO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dcs_hv_init" "TOP_SERDES_0:dcs_hv_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:dtc_enable_reset" "TOP_SERDES_0:ENABLE_ALIGNMENT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"TOP_SERDES_0:DCS_DDRRESET" "pulse_stretcher_1:pulse_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:rs485_rx" "rs485_rx" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:rs485_tx" "rs485_tx" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:rs485_tx_enable" "rs485_tx_enable" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_ADDR" "NewDDRInterface_0:A" }
