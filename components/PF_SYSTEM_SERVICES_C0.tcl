@@ -23,8 +23,8 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_SYSTEM_SERVICES:3.0.101} -
 "RDDEBUGINFO:false"  \
 "RDDIGEST:false"  \
 "RDENVMPARAMETERS:false"  \
-"SECNVMRD:false"  \
-"SECNVMWR:false"  \
+"SECNVMRD:true"  \
+"SECNVMWR:true"  \
 "SNSERVICE:true"  \
 "UCSERVICE:false"   }
 # Exporting Component Description of PF_SYSTEM_SERVICES_C0 to TCL done
