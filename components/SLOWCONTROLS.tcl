@@ -350,8 +350,17 @@ sd_configure_core_instance -sd_name ${sd_name} -instance_name {Registers_0} -par
 sd_save_core_instance_config -sd_name ${sd_name} -instance_name {Registers_0}
 sd_update_instance -sd_name ${sd_name} -instance_name {Registers_0}
 
-# Add RS485_MultiDevice_0 instance
-sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {RS485_MultiDevice} -hdl_file {hdl\RS485_MultiDevice.vhd} -instance_name {RS485_MultiDevice_0}
+
+
+# Add RS485Registers_0 instance
+sd_instantiate_hdl_core -sd_name ${sd_name} -hdl_core_name {RS485Registers} -instance_name {RS485Registers_0}
+# Exporting Parameters of instance RS485Registers_0
+sd_configure_core_instance -sd_name ${sd_name} -instance_name {RS485Registers_0} -params {\
+"APB_ADDRESS_WIDTH:32" \
+"APB_DATA_WIDTH:32" }\
+-validate_rules 0
+sd_save_core_instance_config -sd_name ${sd_name} -instance_name {RS485Registers_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {RS485Registers_0}
 
 
 
@@ -419,7 +428,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "CAL_SPI_PROG_0:PRESETN" "CAL_SPI_PROG_1:PRESETN" "CORESPI_IAP_0:PRESETN" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "RS485_MultiDevice_0:PRESETn" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "CAL_SPI_PROG_0:PRESETN" "CAL_SPI_PROG_1:PRESETN" "CORESPI_IAP_0:PRESETN" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "RS485Registers_0:PRESETn" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "Registers_0:TVS_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "TVS_Interface_0:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "EXT_RST_N" }
@@ -433,7 +442,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE1n" "PREAMPSPI_1:S
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MISO" "PREAMPSPI_1:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MOSI" "PREAMPSPI_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_SCLK" "MX2_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485_MultiDevice_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485Registers_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISCLKO" "HVPROGSPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDI" "HVPROGSPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDO" "HVPROGSPISDO" }
@@ -490,13 +499,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_LOCK" "Registers_0:PRBS_LO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_ON" "Registers_0:PRBS_ON" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[2:2]" "SENSOR_MCP_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PWM0" "pwm_0:PWM[0:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:rx" "rs485_rx" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:rx_ready" "Registers_0:rs485_rx_ready" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:tx" "rs485_tx" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:tx_busy" "Registers_0:rs485_tx_busy" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:tx_enable" "rs485_tx_enable" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:tx_err" "Registers_0:rs485_tx_err" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:tx_start" "Registers_0:rs485_tx_start" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:rx" "rs485_rx" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:tx" "rs485_tx" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:tx_enable" "rs485_tx_enable" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX" "UARTapb_0:RX" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_EMPTY" "SERDES_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_FULL" "SERDES_FULL" }
@@ -572,9 +577,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:Q" "DCS_TX_Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:WRCNT" "DCS_TX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_ERRORCNT" "Registers_0:PRBS_ERRORCNT" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:data_in" "Registers_0:rs485_data_in" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:my_address" "Registers_0:rs485_my_address" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485_MultiDevice_0:rx_data" "Registers_0:rs485_rx_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:my_address" "Registers_0:rs485_my_address" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:my_delay" "Registers_0:rs485_my_delay" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_VAL" "TVS_Interface_0:R_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_DATA" "SERDES_DATA" }
@@ -608,6 +612,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave10" "DCSRegiste
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave11" "CORESPI_IAP_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave12" "CAL_SPI_PROG_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave13" "CAL_SPI_PROG_1:APB_bif" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave14" "RS485Registers_0:BIF_1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave2" "Registers_0:BIF_1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave3" "UARTapb_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave4" "SPI0_0:APB_bif" }

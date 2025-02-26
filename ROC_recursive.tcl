@@ -7,6 +7,7 @@ build_design_hierarchy
 #Sourcing the Tcl files in which HDL+ core definitions are created for HDL modules
 source components/EW_FIFO_controller.tcl 
 source components/DCSRegisters.tcl 
+source components/RS485Registers.tcl 
 source components/Registers.tcl 
 build_design_hierarchy
 
