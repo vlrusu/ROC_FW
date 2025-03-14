@@ -1,4 +1,4 @@
-# Creating SmartDesign XCVR_Block
+# Creating SmartDesign "XCVR_Block"
 set sd_name {XCVR_Block}
 create_smartdesign -sd_name ${sd_name}
 
@@ -6,13 +6,16 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Scalar Ports
-sd_create_scalar_port -sd_name ${sd_name} -port_name {ALIGN_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DTC_ALIGN_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ENABLE_ALIGNMENT} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {FPGA_POR_N} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {MARKER_EN} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {PLL_LOCK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_EN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {REF_CLK_PAD_P} -port_direction {IN} -port_is_pad {1}
@@ -52,6 +55,11 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 
 
+# Add ASYNC_RESET_N instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {ASYNC_RESET_N}
+
+
+
 # Add ClockAligner_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ClockAligner} -hdl_file {hdl\ClockAligner.vhd} -instance_name {ClockAligner_0}
 
@@ -65,6 +73,15 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:EPCS_TxRS
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {Core_PCS_0:EPCS_TxVAL}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:FORCE_DISP} -value {GND}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {Core_PCS_0:DISP_SEL} -value {GND}
+
+
+
+# Add CORERESET_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {CORERESET} -instance_name {CORERESET_0}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_0:BANK_x_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_0:BANK_y_VDDI_STATUS} -value {VCC}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_0:SS_BUSY} -value {GND}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {CORERESET_0:FF_US_RESTORE} -value {GND}
 
 
 
@@ -109,17 +126,21 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {XCVR_PLL_0:PLL_LOCK}
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGN_RESETN" "AND2_0:A" "ClockAligner_0:RX_RESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "ASYNC_RESET_N:A" "DTC_ALIGN_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "ClockAligner_0:ALIGNMENT_RESET_N" "Core_PCS_0:WA_RSTn" "XCVR_IF_0:LANE0_PCS_ARST_N" "XCVR_IF_0:LANE0_PMA_ARST_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "Core_PCS_0:RESET_N" "WordAligner_0:reset_n" "resetn_align" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "CORERESET_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ASYNC_RESET_N:B" "CORERESET_0:FPGA_POR_N" "FPGA_POR_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ASYNC_RESET_N:Y" "ClockAligner_0:RX_RESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CLOCK_ALIGNED" "ClockAligner_0:CLOCK_ALIGNED" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:CLK" "ClockAligner_0:RX_CLK" "Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "WordAligner_0:clk" "XCVR_IF_0:LANE0_RX_CLK_R" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:FABRIC_RESET_N" "Core_PCS_0:RESET_N" "WordAligner_0:reset_n" "resetn_align" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:INIT_DONE" "INIT_DONE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:PLL_LOCK" "Core_PCS_0:EPCS_READY" "LANE0_RX_READY" "XCVR_IF_0:LANE0_RX_READY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_ARST_N" "ClockAligner_0:CTRL_RESET_N" "XCVR_IF_0:CTRL_ARST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CTRL_CLK" "ClockAligner_0:CTRL_CLK" "XCVR_IF_0:CTRL_CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:ENABLE_ALIGNMENT" "ENABLE_ALIGNMENT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:PCS_ALIGNED" "Core_PCS_0:ALIGNED" "PCS_ALIGNED" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_CLK" "Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "WordAligner_0:clk" "XCVR_IF_0:LANE0_RX_CLK_R" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_VAL" "Core_PCS_0:EPCS_RxRSTn" "Core_PCS_0:EPCS_RxVAL" "LANE0_RX_VAL" "XCVR_IF_0:LANE0_RX_VAL" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_READY" "LANE0_RX_READY" "XCVR_IF_0:LANE0_RX_READY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxERR" "EPCS_RxERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_RxIDLE" "XCVR_IF_0:LANE0_RX_IDLE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Core_PCS_0:EPCS_TxCLK" "LANE0_TX_CLK_R" "MUX_TX_0:TX_CLK" "XCVR_IF_0:LANE0_TX_CLK_R" }
@@ -164,7 +185,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_IF_0:CLKS_FROM_TXPLL_0" "X
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1
-# Save the smartDesign
+# Save the SmartDesign 
 save_smartdesign -sd_name ${sd_name}
-# Generate SmartDesign XCVR_Block
+# Generate SmartDesign "XCVR_Block"
 generate_component -component_name ${sd_name}

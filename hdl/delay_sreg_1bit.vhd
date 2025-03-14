@@ -39,15 +39,15 @@ end delay_sreg_1bit;
 
 architecture slicing_with_rst of delay_sreg_1bit is
 
-    signal sr_depth : integer range 2 to 2047;
-    signal sr       : std_logic_vector(2047 downto 0);
+    signal sr_depth : integer range 2 to 31;
+    signal sr       : std_logic_vector(31 downto 0);
     
     signal delay_sel: std_logic;
     signal sr_temp  : std_logic;
     
 begin
   
-    sr_depth <= to_integer(unsigned(sr_delay));
+    sr_depth <= to_integer(unsigned(sr_delay(5 downto 0)));
 
     -- MUX for undelayed outout if so desired
     delay_sel <= '0' when  sr_depth = 0   else '1';
@@ -66,7 +66,7 @@ begin
             if sr_depth < 2 then
                 sr_temp <= sr_in;
             else
-                sr      <= sr(2046 downto 0) & sr_in;
+                sr      <= sr(30 downto 0) & sr_in;
                 sr_temp <= sr(sr_depth-2);
             end if;
         end if;

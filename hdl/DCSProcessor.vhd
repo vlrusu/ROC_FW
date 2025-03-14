@@ -56,7 +56,7 @@ port (
     reset_n : in std_logic;
     clk : in std_logic;
     
-    reset_dcs_logic : out std_logic;
+    reset_dcs_logic_n : out std_logic;
 
     fifo_rdcnt : in std_logic_vector(10 downto 0);
     fifo_data_in : in std_logic_vector(15 downto 0);
@@ -109,7 +109,7 @@ port (
 end DCSProcessor;
 architecture architecture_DCSProcessor of DCSProcessor is
 
-    type state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, SEND_ADDR, SEND_DATA, CHECK_FOR_ACK, WAIT_DATA_READY, SET_DATA,
+    type state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, SEND_ADDR, SEND_ADDR2, SEND_DATA, CHECK_FOR_ACK, WAIT_DATA_READY, SET_DATA,
                         SENDPACKET, CALCULATECRC, WRITECRC, SENDFIRSTPACKET, WAITTOSENDNEXT, SENDNEXTPACKET, PRE_IDLE,
                         BLK_WRD1, CHECK_WRD1, BLK_WRD2, CHECK_WRD2, BLK_WRD3, CHECK_WRD3, BLKIDLE, NEXT_BLK_WR, CHECK_BLK_WR);
     signal dcs_state    : state_type;
@@ -242,7 +242,7 @@ begin
         blkreadTimeout	<= (others => '1');
         
         dcsTimeout	    <= (others => '1');
-        reset_dcs_logic <= '0';
+        reset_dcs_logic_n <= '1';
         
         first_dcs_seen  <= '1';
         roc_id          <= (others => '1');
@@ -283,8 +283,8 @@ begin
                 
                 if unsigned(fifo_rdcnt) > 0 then
                     dcsTimeout	<= dcsTimeout - 1;  
-                    if      dcsTimeout =  1     then    reset_dcs_logic <= '1'; 
-                    elsif   dcsTimeout =  0     then    reset_dcs_logic <= '0';  end if;
+                    if      dcsTimeout =  1     then    reset_dcs_logic_n <= '0'; 
+                    elsif   dcsTimeout =  0     then    reset_dcs_logic_n <= '1';  end if;
                 end if;
                 if unsigned(fifo_rdcnt) > 9 then
                     dcsTimeout	<= (others => '1');
@@ -357,7 +357,9 @@ begin
             when SEND_ADDR =>
                 dcs_state_count <= X"04";
                 address_reg     <= op_address;
-                    
+                dcs_state <= SEND_ADDR2;
+            
+            when SEND_ADDR2 =>
                 -- set parameters for any BLOCK operation meant for uProcessor
                 if  is_blk_rw = '1'    then
                     blk_reg     <= '1';

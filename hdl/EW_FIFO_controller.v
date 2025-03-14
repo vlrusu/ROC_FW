@@ -184,6 +184,8 @@ reg     [`AXI_BITS-1:0] et_fifo_wdata;
 wire    [`AXI_BITS-1:0] et_fifo0_wdata, et_fifo1_wdata;	    // data to EVT_FIFOs
 
 reg     hb_dreq_error, hb_tag_err;
+reg     check_hb, check_hb2, hb_tag_err2;
+reg     [`EVENT_TAG_BITS-1:0]  hb_tag_in_latch;
 
 // EVTFIFOs signals on DREQCLK time domain     
 reg     curr_etfifo_rd;                 // when 0/1, when EVT_fifo0/1 is being read
@@ -297,6 +299,8 @@ reg     [`EVENT_TAG_BITS-1:0] ewtag_offset_sync;
 reg	    header1_error, header2_error;
 reg	    data_error, event_error, dtctag_error;
 
+reg [`EVENT_TAG_BITS-1:0]   dreq_tag_in_latch;
+reg check_dreq_tag;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AXI Internal signals
@@ -899,6 +903,10 @@ begin
         
         hb_tag_err      <= 1'b0;
         hb_tag_err_cnt  <= 16'b0;
+        hb_tag_in_latch <= 0;
+        check_hb <= 0;
+        check_hb2 <= 0;
+        hb_tag_err2 <= 1'b0;
     end
         
     else
@@ -910,6 +918,28 @@ begin
         ew_fifo1_clr	<=	0;
         ddr_write_done	<= 0;
         hb_tag_err      <= 0;
+        hb_tag_err2      <= 0;
+        check_hb <= 0;
+        check_hb2 <= 0;
+            
+        if (check_hb == 1 ) begin
+            if ( ew_tag_to_store[31:0]  != hb_tag_in_latch[31:0] ) begin
+                hb_tag_err2 <= 1;
+            end
+            check_hb2 <= 1;
+        end
+        if (check_hb2 == 1 ) begin
+            if ( ew_tag_to_store[`EVENT_TAG_BITS-1:32] != hb_tag_in_latch[`EVENT_TAG_BITS-1:32] ) begin
+                hb_tag_err <= 1;
+            end
+            if (hb_tag_err2 == 1) begin
+                hb_tag_err <= 1;
+            end
+                
+        end
+        if (hb_tag_err == 1) begin
+            hb_tag_err_cnt <= hb_tag_err_cnt + 1;
+        end
         
         if (newspill_on_sysclk)
         begin   
@@ -981,10 +1011,8 @@ begin
 //            second_wr_hdr	<=	{16'b0, 8'b0, ew_pckt_to_do,	8'b0,	ew_blk_to_store, 8'b0, (wburst_cnt + 1'b1)}; 
             second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, (wburst_cnt + 1'b1), hb_tag_in[39:0]}; 
             
-            if ( ew_tag_to_store != hb_tag_in ) begin
-                hb_tag_err <= 1;
-                hb_tag_err_cnt <= hb_tag_err_cnt + 1;
-            end
+            hb_tag_in_latch <= hb_tag_in;
+            check_hb <= 1;
             
             awvalid_o		<=	1'b1;
             if(awready_i)
@@ -1327,6 +1355,8 @@ begin
         
         hb_dreq_error  <= 1'b0;
         hb_dreq_error_cnt   <= 16'b0;
+        check_dreq_tag <= 0;
+        dreq_tag_in_latch <= 0;
       
         rdata_state		<=	IDLE;
     end
@@ -1335,7 +1365,24 @@ begin
 
         et_fifo_we		<=	1'b0; 
         axi_read_done	<= 1'b0;	
-        hb_dreq_error   <= 1'b0;      
+        hb_dreq_error   <= 1'b0;
+        check_dreq_tag <= 0;
+       
+        if (hb_dreq_error == 1) begin
+            hb_dreq_error_cnt <= hb_dreq_error_cnt + 1;
+        end
+        if (check_dreq_tag == 1) begin
+            if (second_rd_hdr[39:0] != dreq_tag_in_latch[39:0] ) begin
+                hb_dreq_error   <= 1'b1;
+                dtctag_error        <= 1;
+                // save only first occurence
+                if (DDR_error_mask[4] == 1'b0) begin
+                    DDR_error_mask[4]   <= 1'b1;
+                    //tag_expc    <= {16'b0, dreq_tag_in};
+                    //tag_seen    <= second_rd_hdr;
+                end
+            end;
+        end
         
         case(rdata_state)
         
@@ -1404,8 +1451,8 @@ begin
                             // save only first occurence
                             if (DDR_error_mask[0] == 1'b0)  begin
                                 DDR_error_mask[0]   <= 1'b1;
-                                evt_expc    <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                                evt_seen    <= first_rd_hdr;
+                                //evt_expc    <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                //evt_seen    <= first_rd_hdr;
                             end
                         end
                         
@@ -1414,8 +1461,8 @@ begin
                             // save only first occurence
                             if (DDR_error_mask[1] == 1'b0) begin
                                 DDR_error_mask[1]   <= 1'b1;
-                                hdr1_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                                hdr1_seen   <= first_rd_hdr;
+                                //hdr1_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                //hdr1_seen   <= first_rd_hdr;
                             end
                         end
                         
@@ -1424,25 +1471,15 @@ begin
                             // save only first occurence
                             if (DDR_error_mask[3] == 1'b0) begin
                                 DDR_error_mask[3]   <= 1'b1;
-                                data_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
-                                data_seen   <= first_rd_hdr;
+                                //data_expc   <= {2'b0, et_err, et_ovfl, 2'b0, et_size, current_evt};
+                                //data_seen   <= first_rd_hdr;
                             end
                         end
                     end
                     
                     if (hdr_cnt == 2) begin
-                        
-                        if (second_rd_hdr[39:0] != dreq_tag_in[39:0] ) begin
-                            hb_dreq_error   <= 1'b1;
-                            hb_dreq_error_cnt <= hb_dreq_error_cnt + 1;
-                            dtctag_error        <= 1;
-                            // save only first occurence
-                            if (DDR_error_mask[4] == 1'b0) begin
-                                DDR_error_mask[4]   <= 1'b1;
-                                tag_expc    <= {16'b0, dreq_tag_in};
-                                tag_seen    <= second_rd_hdr;
-                            end
-                        end;
+                        dreq_tag_in_latch <= dreq_tag_in;
+                        check_dreq_tag <= 1;
                         
                         if  (   second_rd_hdr[63:56] != et_pckt_to_do  ||  
                                 second_rd_hdr[55:48] != et_blk  || 
@@ -1451,8 +1488,8 @@ begin
                             // save only first occurence
                             if (DDR_error_mask[2] == 1'b0) begin
                                 DDR_error_mask[2]   <= 1'b1;
-                                hdr2_expc   <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
-                                hdr2_seen   <= second_rd_hdr;
+                                //hdr2_expc   <= {et_pckt_to_do, et_blk, rdburst_cnt+1, second_rd_hdr[39:0]};
+                                //hdr2_seen   <= second_rd_hdr;
                             end
                         end
                     end

@@ -183,8 +183,9 @@ architecture architecture_RxPacketReader of RxPacketReader is
     signal NULL_HEARTBEAT_SEEN  : std_logic;
     
     signal HB_TAG_SAVE      : unsigned(EVENT_TAG_BITS-1 downto 0); 
+    signal HB_TAG_SAVE_P1      : unsigned(EVENT_TAG_BITS-1 downto 0); 
 
-    signal SAVE_EVM_TAG     : unsigned(15 downto 0); 
+    signal SAVE_EVM_TAG_P1     : unsigned(15 downto 0); 
     signal EVM_TAG          : unsigned(15 downto 0); 
     signal is_loadtag       : std_logic;
     signal is_skipped_dreq  : std_logic;
@@ -204,6 +205,7 @@ architecture architecture_RxPacketReader of RxPacketReader is
     signal read_crc         : std_logic_vector(15 downto 0);
     
     signal spill_count 	    : std_logic_vector(15 downto 0);
+    signal event_marker_count_p1 : std_logic_vector(31 downto 0);
 
 begin
 	 
@@ -329,7 +331,8 @@ begin
 		is_marker_error	<= '0';
         
 		HB_TAG_SAVE	                <= (others => '0');	
-        SAVE_EVM_TAG    <= (others => '0');
+		HB_TAG_SAVE_P1	                <= (others => '0');	
+        SAVE_EVM_TAG_P1    <= (others => '0');
         EVM_TAG         <= (others => '0');
         is_loadtag      <= '0';
         is_skipped_dreq <= '0';
@@ -349,6 +352,7 @@ begin
         read_crc        <= (others => '0');
         
         spill_count     <= (others => '0');
+        event_marker_count_p1 <= (others => '0');
        
 	elsif rising_edge(clk) then
 	 
@@ -366,6 +370,7 @@ begin
         hb_lost     <= '0';
         evm_lost    <= '0';
         
+        event_marker_count_p1 <= std_logic_vector(unsigned(event_marker_count)+1);
         
         if aligned = '1' then
         
@@ -440,19 +445,29 @@ begin
         
         -- HB_COUNT has been updated on HEARTBEAT_REG1: can do checks on EVM vs HB counter now
         if  HEARTBEAT_SEEN = '1' then
-            if  hb_count > std_logic_vector(unsigned(event_marker_count)+1)   then    
+            if  hb_count > event_marker_count_p1   then    
                 evm_lost <= '1';   
-                evm_lost_cnt <= std_logic_vector(unsigned(evm_lost_cnt) + 1);  
             end if;
-            if  hb_count < std_logic_vector(unsigned(event_marker_count)+1)     then    
+            if  hb_count < event_marker_count_p1     then    
                 hb_lost<= '1';   
-                hb_lost_cnt <= std_logic_vector(unsigned(hb_lost_cnt) + 1);   
             end if;
+        end if;
+        
+        if evm_lost = '1' then
+            evm_lost_cnt <= std_logic_vector(unsigned(evm_lost_cnt) + 1);
             -- save TAG of first lost event
-            if  evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" and hb_count /= std_logic_vector(unsigned(event_marker_count)+1)   then
+            if evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" then
                 TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
             end if;
         end if;
+        if hb_lost = '1' then 
+            hb_lost_cnt <= std_logic_vector(unsigned(hb_lost_cnt) + 1);
+            -- save TAG of first lost event
+            if evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" then
+                TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
+            end if;
+        end if;
+            
         
         --
         -- use delayed EVENTMARKER to clear LAST_EWM
@@ -735,19 +750,21 @@ begin
                     crc_en  <= '1';
                         
 					if (word_count = 2) then 	
+                        HB_TAG_SAVE_P1 <= HB_TAG_SAVE + 1;
                         if (rx_data_prev3(15 downto 12) /= B"1000")  then  
                             HEARTBEAT_INVALID   <= '1'; 
-                            invalid_hb_count    <= std_logic_vector(unsigned(invalid_hb_count) + 1);
                         end if;
                     end if;
 					if (word_count = 3) then 	HEARTBEAT_EVENT_WINDOW_TAG(15 downto 0)  <= rx_data_prev3; end if;
 					if (word_count = 4) then 	HEARTBEAT_EVENT_WINDOW_TAG(31 downto 16) <= rx_data_prev3; end if;
 					if (word_count = 5) then 	HEARTBEAT_EVENT_WINDOW_TAG(47 downto 32) <= rx_data_prev3; end if;
                     if (word_count = 6  and  next_is_firstHB = '0') then
-                        if  unsigned(HEARTBEAT_EVENT_WINDOW_TAG) /= (HB_TAG_SAVE + 1)  then
+                        if  unsigned(HEARTBEAT_EVENT_WINDOW_TAG) /= HB_TAG_SAVE_P1  then
                             HEARTBEAT_INVALID   <= '1'; 
-                            invalid_hb_count    <= std_logic_vector(unsigned(invalid_hb_count) + 1);
                         end if;
+                    end if;
+                    if (word_count = 7 and HEARTBEAT_INVALID = '1') then
+                            invalid_hb_count    <= std_logic_vector(unsigned(invalid_hb_count) + 1);
                     end if;
                     -- as per Mu2e docDb 4914:  EVT_MODE[0] = Injection Data Source;  EVT_MODE[2:1] = Pattern Mode; EVT_MODE[7:3] = Byte 0-res; EVT_MODE[15:8] = Byte 1-res Trk
                     --                          EVT_MODE[16] = Calo Laser Injection;  EVT_MODE[23:17] = Byte 2-res Calo;                        EVT_MODE[31:24]= Byte 3-res CRV
@@ -805,15 +822,14 @@ begin
 					 
 				if (is_loadtag = '1') then
 					if (word_count = 1)     then 	is_skipped_dreq <= '0';     end if;
-					if (word_count = 2)     then 	SAVE_EVM_TAG <= EVM_TAG;    end if;
+					if (word_count = 2)     then 	SAVE_EVM_TAG_P1 <= EVM_TAG+1;    end if;
                     if (word_count = 3)     then 	EVM_TAG <= unsigned(rx_data_prev3);   end if;
 					if (word_count = 6)	    then	is_loadtag <= '0';	        end if;
 					if (word_count = 8)     then 	
-                        if  EVM_TAG  = (SAVE_EVM_TAG+1)     then  
+                        if  EVM_TAG  = SAVE_EVM_TAG_P1     then  
                             is_skipped_dreq <= '0';     
                         else  
-                            is_skipped_dreq     <= '1'; 
-                            is_skipped_dreq_cnt <=  std_logic_vector(unsigned(is_skipped_dreq_cnt) + 1);   
+                            is_skipped_dreq     <= '1';  
                         end if;
                     end if;
 				end if;
@@ -831,6 +847,9 @@ begin
                 end if;
 				
 				if word_count = 9 then
+                    if is_skipped_dreq = '1' then
+                        is_skipped_dreq_cnt <=  std_logic_vector(unsigned(is_skipped_dreq_cnt) + 1); 
+                    end if;
 					word_count  <= 0;
 				end if;
 				

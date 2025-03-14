@@ -3,7 +3,7 @@
 --
 -- File: DRACRegisters.vhd
 -- File history:
---      <v1>: <Feb. 17,2024>: Reset register 8 enables ONLY on POWER ON reset (HRESETN) and not on EXT_RST_N
+--      <v1>: <Feb. 17,2024>: Reset register 8 enables ONLY on POWER ON reset (POR_N) and not on DDRReset_N
 --      <v2>: <June,2024>: Clean up registers. Add "dcs_newspill_cntrl"
 --      <v3>: <July,2024>: Remove "dcs_newspill_cntrl". Add "DCS_PATTERN_TYPE".
 --      <v4>: <Aug,2024>:  Add HALTRUN_EN.
@@ -33,8 +33,8 @@ port (
 	READ_REG			: IN  std_logic;				
 	WRITE_REG			: IN  std_logic;				
     READY_REG 			: OUT  std_logic;					-- signal that requested data is on DATA_OUT
-    EXT_RST_N 			: IN  std_logic;				--
-    HRESETN 	        : IN  std_logic;				--
+    DDRReset_N 			: IN  std_logic;				--
+    POR_N 	        : IN  std_logic;				--
     ADDR_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_IN				: IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
     DATA_OUT			: OUT  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0);   
@@ -91,7 +91,7 @@ port (
     DCS_TAG_OFFSET  : OUT std_logic_vector(47 downto 0);	-- set EWTAG offset
 
     DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 9																				   
-    DCS_DDRRESET    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive EXT_RST_N)
+    DCS_DDRRESET_N    : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive DDRReset_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
     DCS_PATTERN_EN  : OUT std_logic;						-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[4])
@@ -207,9 +207,9 @@ begin
    -------------------------------------------------------------------------------
    -- Process Read/Write Commands
    -------------------------------------------------------------------------------
-	process(HRESETN, EXT_RST_N, DCS_CLK)
+	process(POR_N, DDRReset_N, DCS_CLK)
 	begin
-	if HRESETN = '0' then
+	if POR_N = '0' then
 			
 		--ALGO_RESET 	<= '1';	
 		writeCounter 	<= (others => '0');  
@@ -263,23 +263,8 @@ begin
         DCS_LOOPBACK_COARSE_DELAY <= B"000_0000_0000";   -- default delay is zero 5 ns clock
         DCS_SIM_HIT     <= B"00_0000_0010";
         DCS_TO_SERIAL   <= X"1234";             -- default delay is 0x1234
+		DCS_DDRRESET_N    <= '1';
         
-    elsif EXT_RST_N = '0' then
-			
-		--ALGO_RESET 	<= '1';	
-		writeCounter 	<= (others => '0');  
-		readCounter 	<= (others => '0'); 
-			
-		DCS_RESETFIFO   <= '0';
-        DCS_ERROR_ADDR  <= (others => '0'); 
-        IS_DRAC_REGISTER<= '0';
-        DCS_LED_OFF     <= '0';
-            
-        err_req_reg     <= (others => '0');
-         
-        offset_reg_15_0   <= (others => '0');
-        offset_reg_31_16  <= (others => '0');
-        offset_reg_47_32  <= (others => '0');
       
     elsif rising_edge(DCS_CLK) then
 			
@@ -294,7 +279,29 @@ begin
 		write_latch		<= '0';
 		SEL_RST			<= '0';
         
-		DCS_DDRRESET    <= '0';
+        
+        
+        if DDRReset_N = '0' then
+			
+            --ALGO_RESET 	<= '1';	
+            writeCounter 	<= (others => '0');  
+            readCounter 	<= (others => '0'); 
+                
+            DCS_RESETFIFO   <= '0';
+            DCS_ERROR_ADDR  <= (others => '0'); 
+            IS_DRAC_REGISTER<= '0';
+            DCS_LED_OFF     <= '0';
+                
+            err_req_reg     <= (others => '0');
+             
+            offset_reg_15_0   <= (others => '0');
+            offset_reg_31_16  <= (others => '0');
+            offset_reg_47_32  <= (others => '0');
+            
+            DCS_DDRRESET_N    <= '1';
+            
+        end if;
+        
             
         DCS_ERR_REQ     <= err_req_reg;
         DCS_TAG_OFFSET  <= offset_reg_47_32 & offset_reg_31_16 & offset_reg_15_0;
@@ -357,7 +364,7 @@ begin
 			elsif (drac_addrs = 13) then
 				DCS_RESETFIFO	<= drac_wdata(0);
 			elsif (drac_addrs = 14) then
-				DCS_DDRRESET		<= '1';	 -- self clearing
+				DCS_DDRRESET_N		<= '0';	 -- self clearing
            elsif (drac_addrs = 15) then   -- 0xF
                 DCS_SIM_HIT <= drac_wdata(9 downto 0);
             elsif (drac_addrs = 17) then

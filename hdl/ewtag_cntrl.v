@@ -176,13 +176,13 @@ wire    tag_rollover_full, tag_rollover_empty;
 // 3) feed-back REQ_SYNC as acknowlegde => ACK_SYNC 
 // 4) generate BUSY until ACKOWLEDGE is cleared
 reg     hb_on_serdesclk;   // unused
-reg     req, ack_req, ack_sync;
-reg     req_latch, req_sync;
+reg     req, ack_req, ack_sync, ack_sync2;
+reg     req_latch, req_sync, req_sync2;
 wire    busy;
 
 reg     evm_on_serdesclk;
-reg     reqE, ack_reqE, ack_syncE;
-reg     req_latchE, req_syncE;
+reg     reqE, ack_reqE, ack_syncE, ack_syncE2;
+reg     req_latchE, req_syncE, req_syncE2;
 wire    busyE;
 
 always@(posedge xcvrclk, negedge resetn_xcvrclk)
@@ -195,17 +195,19 @@ begin
     end
     else
     begin
-        ack_req	<= req_sync;
+        ack_req	    <= req_sync2;
         ack_sync	<=	ack_req;
+        ack_sync2   <=  ack_sync;
             
         if (hb_seen && !busy)	req <= 1'b1;
-        else if (ack_sync)		req <= 1'b0;
+        else if (ack_sync2)		req <= 1'b0;
 
-        ack_reqE	<= req_syncE;
+        ack_reqE	<= req_syncE2;
         ack_syncE	<=	ack_reqE;
+        ack_syncE2	<=	ack_syncE;
             
         if (end_evm_seen && !busyE)	reqE <= 1'b1;
-        else if (ack_syncE)		    reqE <= 1'b0;
+        else if (ack_syncE2)		reqE <= 1'b0;
         
         if (new_spill_on_xcvr && !haltrun_en) 
         begin
@@ -216,8 +218,8 @@ begin
     end
 end	
 
-assign 	busy    = req  || ack_sync;
-assign 	busyE   = reqE || ack_syncE;
+assign 	busy    = req  || ack_sync2;
+assign 	busyE   = reqE || ack_syncE2;
 
 // synchronize the request on slow clock
 always@(posedge serdesclk, negedge resetn_serdesclk)
@@ -229,15 +231,17 @@ begin
     end
 	else
 	begin
-        hb_on_serdesclk <=	req_latch && !req_sync;
+        hb_on_serdesclk <=	req_sync && !req_sync2;
 			
         req_latch   <=  req;
         req_sync    <=  req_latch;
+        req_sync2   <= req_sync;
             
-        evm_on_serdesclk <=	req_latchE && !req_syncE;
+        evm_on_serdesclk <=	req_syncE && !req_syncE2;
 			
         req_latchE   <=  reqE;
         req_syncE    <=  req_latchE;
+        req_syncE2   <= req_syncE;
  end
 end
 

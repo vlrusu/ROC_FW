@@ -35,7 +35,7 @@ port (
     reset_n : in std_logic;
     clk  : in std_logic;
 
-    reset_dreq_logic : out std_logic;
+    reset_dreq_logic_n : out std_logic;
     
     dreq_rdcnt : in std_logic_vector(10 downto 0);
     dreq_fifo_in : in std_logic_vector(15 downto 0);
@@ -200,7 +200,7 @@ begin
         
         readTimeout		<= (others => '1');
         dreqTimeout     <= (others => '1');
-        reset_dreq_logic<= '0';
+        reset_dreq_logic_n<= '1';
         
         reqType_debug               <= (others => '0');
         reqEventWindowTag_debug     <= (others => '0');
@@ -236,8 +236,8 @@ begin
                 dataReqStatus   <= DATAREQ_STATUS;
                 if unsigned(dreq_rdcnt) > 0 then
                     dreqTimeout	<= dreqTimeout - 1;  
-                    if      dreqTimeout =  1     then    reset_dreq_logic <= '1'; 
-                    elsif   dreqTimeout =  0     then    reset_dreq_logic <= '0';  end if;
+                    if      dreqTimeout =  1     then    reset_dreq_logic_n <= '0'; 
+                    elsif   dreqTimeout =  0     then    reset_dreq_logic_n <= '1';  end if;
                 end if;
                 if unsigned(dreq_rdcnt) > 9 then
                     dreqTimeout	<= (others => '1');

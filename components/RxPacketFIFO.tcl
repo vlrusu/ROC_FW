@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component RxPacketFIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {RxPacketFIFO} -params {\
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.1.101} -component_name {RxPacketFIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:false"  \

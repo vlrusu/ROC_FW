@@ -85,7 +85,7 @@ port (
 end ROCFIFOController;
 architecture architecture_ROCFIFOController of ROCFIFOController is
     
-    type state_type is (RESET, IDLE, START, START1 , START2, CHECK, COUNT0, COUNT1, COUNT2, COUNT3, UPDATE, HOLD);
+    type state_type is (RESET, IDLE, START, START1 , START1_2, START2, CHECK, COUNT0, COUNT1, COUNT1_2, COUNT2, COUNT3, UPDATE, HOLD);
     signal state            : state_type;
     
     signal current_lane : integer range 0 to NROCFIFO-1;
@@ -103,6 +103,7 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
     
     signal rocfifo_empty : std_logic_vector(NROCFIFO-1 downto 0);
     signal current_data : std_logic_vector(31 downto 0);
+    signal current_data_latch : std_logic_vector(31 downto 0);
     
     signal data_ready : std_logic;
     signal outfifo_we : std_logic;
@@ -206,6 +207,8 @@ begin
         count0_error   <= '0';
         count0_wait    <= (others => '0'); 
         
+        current_data_latch <= (others => '0');
+        
     elsif rising_edge(clk) then
     
         want_re             <= (others => '0');
@@ -213,6 +216,7 @@ begin
         want_uart_fifo_we   <= '0';
         
         use_lane_reg        <= use_lane;
+        current_data_latch <= current_data;
         
         ---- set LOWEST of enabled lanes
         --if    ( use_lane_reg(0) = '1') then     first_used_lane <= 0;        
@@ -260,6 +264,10 @@ begin
             -- wait for header word to settle
             when START1 =>
                 state_count <= X"10";
+                state <= START1_2;
+                
+            when START1_2 =>
+                state_count <= X"10";
                 state <= START2;
                
             -- check header word and flag EW_TAG inconsistencies between
@@ -273,12 +281,12 @@ begin
                 -- set EW_TAG for first enabled lane. Set an error if other enabled lanes don't agree
                 if current_lane = first_used_lane   then
                     curr_ewfifo_wr <= not curr_ewfifo_wr;
-                    ew_tag <= current_data(SPILL_TAG_BITS-1 downto 0);
-                elsif current_data(SPILL_TAG_BITS-1 downto 0) /= ew_tag then
+                    ew_tag <= current_data_latch(SPILL_TAG_BITS-1 downto 0);
+                elsif current_data_latch(SPILL_TAG_BITS-1 downto 0) /= ew_tag then
                     ew_tag_error <= '1';
                 end if;
                 
-                tag_sync_error      <= tag_sync_error or current_data(31);
+                tag_sync_error      <= tag_sync_error or current_data_latch(31);
                 if  tag_sync_error = '1'    then    
                     tag_sync_err_cnt    <= std_logic_vector(unsigned(tag_sync_err_cnt) + 1);
                 end if;
@@ -286,13 +294,13 @@ begin
                 -- assume header word from Richie is in unit of 128-bit (ie number of DTC packets == 2*(no. of hits) )
                 --  LANE_SIZE is in units of 32-bits and use to save the number of hits in the current lane
                 --  FULL_SIZE is in units of 64-bits (or AXI beats) and saves the total number of hits in the window
-                lane_size <= unsigned(current_data(30 downto 20) & "00");  
-                full_size <= full_size + unsigned(current_data(30 downto 20) & '0');
+                lane_size <= unsigned(current_data_latch(30 downto 20) & "00");  
+                full_size <= full_size + unsigned(current_data_latch(30 downto 20) & '0');
                     
                 -- write header word to DigiReaderFIFO (but not to DDR)
-                if (use_uart = '1' and unsigned(current_data(30 downto 20)) /= 0) then
+                if (use_uart = '1' and unsigned(current_data_latch(30 downto 20)) /= 0) then
                     want_uart_fifo_we   <= '1';
-                    uart_fifo_data 	    <= current_data;
+                    uart_fifo_data 	    <= current_data_latch;
                 end if;
                     
                 state <= CHECK;
@@ -333,7 +341,11 @@ begin
                 state_count <= X"13";
                 count0_error <= '0';
                 count0_wait  <= (others => '0'); 
-                state <= COUNT2;
+                state <= COUNT1_2;
+            
+            when COUNT1_2 =>
+                state_count <= X"13";
+                state <= COUNT2;                
                 
             -- write out previous word, unless overflow condition is seen
             when COUNT2 =>
@@ -344,11 +356,11 @@ begin
                     
                 if use_uart = '1' then
                     want_uart_fifo_we    <= '1';
-                    uart_fifo_data 	<= current_data;
+                    uart_fifo_data 	<= current_data_latch;
                 else
                     if  wr_cnt <= (2*unsigned(ew_size) - 1) then
                         want_ew_fifo_we <= '1';
-                        ew_fifo_data    <= current_data;
+                        ew_fifo_data    <= current_data_latch;
                     else
                         ew_ovfl <= '1';
                     end if;
@@ -377,10 +389,10 @@ begin
                     --if  wr_cnt <= (2*unsigned(ew_size) - 1)  then
                         --if use_uart then
                             --uart_fifo_we    <= '1';
-                            --uart_fifo_data 	<= current_data;
+                            --uart_fifo_data 	<= current_data_latch;
                         --else
                             --ew_fifo_we      <= '1';
-                            --ew_fifo_data    <= current_data;
+                            --ew_fifo_data    <= current_data_latch;
                         --end if;
                     --else
                         --ew_ovfl <= '1';

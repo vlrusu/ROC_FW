@@ -19,9 +19,7 @@ source components/PF_TX_PLL_0.tcl
 source components/PF_XCVR_0.tcl 
 source components/PF_XCVR_REF_CLK_0.tcl 
 source components/ROCFIFO.tcl 
-source components/ROCFIFO_SIM.tcl 
 source components/DigiLink.tcl 
-source components/DigiLink_sim.tcl 
 source components/DigiReaderFIFO.tcl 
 source components/DigiInterface.tcl 
 source components/INIT_component.tcl 
@@ -32,9 +30,9 @@ source components/DREQ_FIFO.tcl
 source components/CNT_FIFO.tcl 
 source components/EVT_FIFO.tcl 
 source components/EWTAG_FIFO.tcl 
-source components/LARGE_TAG_FIFO.tcl 
 source components/EW_FIFO.tcl 
 source components/SIZE_FIFO.tcl 
+source components/LARGE_TAG_FIFO.tcl 
 source components/SPILLTAG_FIFO.tcl 
 source components/SIM_ROC_FIFO.tcl 
 source components/pattern_FIFO_filler.tcl 

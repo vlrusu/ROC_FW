@@ -133,10 +133,11 @@ begin
      
         clk_counter     <= (others => '0');
         counter_out     <= (others => '0');
+        counter_out     <= (others => '0');
         event_window_seen   <= (others => '0');
         
     elsif rising_edge(clk) then
-     
+        
         -- latch DCS_ERROR_EN twice to help with Cross-Domain of 200 MHz clock 
         dcs_error_reg   <= dcs_error_en;
         dcs_error_latch <= dcs_error_reg;
@@ -144,165 +145,166 @@ begin
         if  (dcs_error_reg = '1' and dcs_error_latch = '0')then
             dcs_address_latch <= dcs_address;
         end if;
-        
-        if address = X"00" then  -- debug error counter
-            counter_out <= X"4321";
-        elsif address = X"01" then
-            counter_out <= std_logic_vector(rx_val_counter);
-        elsif address = X"02" then
-            counter_out <= std_logic_vector(rx_err_counter);
-        elsif address = X"03" then
-            counter_out <= std_logic_vector(b_cerr_counter);
-        elsif address = X"04" then
-            counter_out <= std_logic_vector(invalid_k_counter);
-        elsif address = X"05" then
-            counter_out <= std_logic_vector(code_err_n_counter);
-        elsif address = X"06" then
-            counter_out <= std_logic_vector(rd_err_counter);
-        elsif address = X"07" then
-            counter_out <= std_logic_vector(aligned_counter);
-        elsif address = X"08" then
-            counter_out <= std_logic_vector(clk_counter);
-        elsif address = X"09" then
-            counter_out <= rx_crc_error;
-        elsif address = X"0A" then -- 10
-            counter_out <= rx_packet_error;
-        elsif address = X"0B" then -- 11
-            counter_out <= std_logic_vector(event_window_seen);
-        elsif address = X"0C" then -- 12
-            counter_out <= dreq_crc_error;
-        elsif address = X"0D" then -- 13
-            counter_out <= seq_error_counter;
-        elsif address = X"0E" then -- 14
-            counter_out <= marker_error;
-        elsif address = X"0F" then -- 15
-            counter_out <= ewm_out_counter; -- this is a counter of EWM markers sent to the DIGIs (both internal and from DTC)
-        elsif address = X"10" then -- 16
-            counter_out <= any_marker_counter;            
-        elsif address = X"11" then -- 17
-            counter_out <= clock_marker_counter;
-        elsif address = X"12" then  -- 18
-            counter_out <= loop_marker_counter;
-        elsif address = X"13" then  -- 19
-            counter_out <= other_marker_counter;
-        elsif address = X"14" then  -- 20
-            counter_out <= retr_marker_counter;
-        elsif address = X"15" then  -- 21
-            counter_out <= dreq_timeout_counter;
-        elsif address = X"16" then  -- 22
-            counter_out <= tag_valid_counter;
-        elsif address = X"17" then  -- 23
-            counter_out <= skipped_DREQ_counter;
-        elsif address = X"18" then  -- 24
-            counter_out <= is_skipped_dreq_cnt;
-        elsif address = X"19" then  -- 25
-            counter_out <= bad_marker_cnt;
-        elsif address = X"1A" then      -- 26
-            counter_out <= hb_empty_overlap_counter;
-        elsif address = X"1B" then      -- 27
-            counter_out <= ew_fifo_emptied_counter;
-        elsif address = X"1C" then      -- 28
-            counter_out <= dcs_counter;            
-        elsif address = X"1D" then      -- 29
-            counter_out <= start_fetch_counter;
-        elsif address = X"1E" then      -- 30
-            counter_out <= tag_error_counter;
-        elsif address = X"1F" then      -- 31
-            counter_out <= comma_error_counter;
-            
-        elsif address = X"20" then      -- 32
-            counter_out <= fetch_event_tag(15 downto 0);
-        elsif address = X"21" then      -- 33
-            counter_out <= fetch_event_tag(31 downto 16);
-        elsif address = X"22" then      -- 34
-            counter_out <= fetch_event_tag(47 downto 32);
-        elsif address = X"23" then      -- 35
-            counter_out <= next_read_event_tag(15 downto 0);
-        elsif address = X"24" then      -- 36
-            counter_out <= next_read_event_tag(31 downto 16);
-        elsif address = X"25" then      -- 37
-            counter_out <= next_read_event_tag(47 downto 32);
-        elsif address = X"26" then      -- 38
-            counter_out(3 downto 0) <= reqType_debug(3 downto 0);
-            counter_out(15 downto 4) <= (others => '0');
-        elsif address = X"27" then      -- 39
-            counter_out <= reqEventWindowTag_debug(15 downto 0);
-        elsif address = X"28" then      -- 40
-            counter_out <= reqEventWindowTag_debug(31 downto 16);
-        elsif address = X"29" then      -- 41
-            counter_out <= reqEventWindowTag_debug(47 downto 32);
-        elsif address = X"2A" then      -- 42
-            counter_out <= fetchEventWindowTag_debug(15 downto 0);
-        elsif address = X"2B" then      -- 43
-            counter_out <= fetchEventWindowTag_debug(31 downto 16);
-        elsif address = X"2C" then      -- 44
-            counter_out <= fetchEventWindowTag_debug(47 downto 32);
-        elsif address = X"2D" then      -- 45
-            counter_out <= skipped_DREQ_tag(15 downto 0);
-        elsif address = X"2E" then      -- 46
-            counter_out <= skipped_DREQ_tag(31 downto 16);
-        elsif address = X"2F" then      -- 47
-            counter_out <= skipped_DREQ_tag(47 downto 32); 
-            
-        elsif address = X"30" then      -- 48
-            counter_out(7 downto 0) <= dcs_proc_state(7 downto 0);
-            counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"31" then      -- 49
-            counter_out(7 downto 0) <= dcs_rx_state(7 downto 0);
-            counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"32" then      -- 50
-            counter_out(7 downto 0) <= dcs_tx_state(7 downto 0);
-            counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"33" then      -- 51
-            counter_out(7 downto 0) <= rocfifocntrl_state(7 downto 0);
-            counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"34" then      -- 52
-            counter_out(2 downto 0) <= ewtag_state(2 downto 0);
-            counter_out(15 downto 3) <= (others => '0');
-        elsif address = X"35" then      -- 53
-            counter_out(1 downto 0) <= datareq_state(1 downto 0);
-            counter_out(15 downto 2) <= (others => '0');
-        elsif address = X"36" then      -- 54
-            counter_out(7 downto 0) <= dreq_state(7 downto 0);
-            counter_out(15 downto 8) <= (others => '0');
-        elsif address = X"37" then      -- 55
-            counter_out(1 downto 0) <= fetch_state(1 downto 0);
-            counter_out(15 downto 2) <= (others => '0');
-        elsif address = X"38" then      -- 56
-            counter_out <= fetch_missing_TAG(15 downto 0);
-        elsif address = X"39" then      -- 57
-            counter_out <= fetch_missing_TAG(31 downto 16);
-        elsif address = X"3A" then      -- 58
-            counter_out <= fetch_missing_TAG(47 downto 32); 
-        elsif address = X"3B" then      -- 59
-            counter_out <= fetch_runover_TAG(15 downto 0);
-        elsif address = X"3C" then      -- 60
-            counter_out <= fetch_runover_TAG(31 downto 16);
-        elsif address = X"3D" then      -- 61
-            counter_out <= fetch_runover_TAG(47 downto 32); 
-            
-        elsif address = X"40" then      -- 64
-            counter_out <= dreq_full_counter;
-        elsif address = X"41" then      -- 65
-            counter_out <= invalid_hb_counter;
-        elsif address = X"42" then      -- 66
-            counter_out <= hb_bad_crc_counter;
-        elsif address = X"43" then      -- 67
-            counter_out <= hb_tag_full_counter;
-        elsif address = X"44" then      -- 68
-            counter_out <= spilltag_full_counter;
-        elsif address = X"45" then      -- 69
-            counter_out <= fetch_timeout_counter;
-        elsif address = X"46" then      -- 70
-            counter_out <= fetch_runover_counter;
-        elsif address = X"47" then      -- 71
-            counter_out <= fetch_missing_counter;
-        elsif address = X"48" then      -- 72
-            counter_out <= tag_sync_err_counter;
-            
-        else
-            counter_out <= (others => '0');
-        end if;
+        counter_out <= (others => '0');
+        --if address = X"00" then  -- debug error counter
+            --counter_out <= X"4321";
+        --elsif address = X"01" then
+            --counter_out <= (others => '0');
+        ----    counter_out <= std_logic_vector(rx_val_counter); --FIXME too slow
+        --elsif address = X"02" then
+            --counter_out <= std_logic_vector(rx_err_counter);
+        --elsif address = X"03" then
+            --counter_out <= std_logic_vector(b_cerr_counter);
+        --elsif address = X"04" then
+            --counter_out <= std_logic_vector(invalid_k_counter);
+        --elsif address = X"05" then
+            --counter_out <= std_logic_vector(code_err_n_counter);
+        --elsif address = X"06" then
+            --counter_out <= std_logic_vector(rd_err_counter);
+        --elsif address = X"07" then
+            --counter_out <= std_logic_vector(aligned_counter);
+        --elsif address = X"08" then
+            --counter_out <= std_logic_vector(clk_counter);
+        --elsif address = X"09" then
+            --counter_out <= rx_crc_error;
+        --elsif address = X"0A" then -- 10
+            --counter_out <= rx_packet_error;
+        --elsif address = X"0B" then -- 11
+            --counter_out <= std_logic_vector(event_window_seen);
+        --elsif address = X"0C" then -- 12
+            --counter_out <= dreq_crc_error;
+        --elsif address = X"0D" then -- 13
+            --counter_out <= seq_error_counter;
+        --elsif address = X"0E" then -- 14
+            --counter_out <= marker_error;
+        --elsif address = X"0F" then -- 15
+            --counter_out <= ewm_out_counter; -- this is a counter of EWM markers sent to the DIGIs (both internal and from DTC)
+        --elsif address = X"10" then -- 16
+            --counter_out <= any_marker_counter;            
+        --elsif address = X"11" then -- 17
+            --counter_out <= clock_marker_counter;
+        --elsif address = X"12" then  -- 18
+            --counter_out <= loop_marker_counter;
+        --elsif address = X"13" then  -- 19
+            --counter_out <= other_marker_counter;
+        --elsif address = X"14" then  -- 20
+            --counter_out <= retr_marker_counter;
+        --elsif address = X"15" then  -- 21
+            --counter_out <= dreq_timeout_counter;
+        --elsif address = X"16" then  -- 22
+            --counter_out <= tag_valid_counter;
+        --elsif address = X"17" then  -- 23
+            --counter_out <= skipped_DREQ_counter;
+        --elsif address = X"18" then  -- 24
+            --counter_out <= is_skipped_dreq_cnt;
+        --elsif address = X"19" then  -- 25
+            --counter_out <= bad_marker_cnt;
+        --elsif address = X"1A" then      -- 26
+            --counter_out <= hb_empty_overlap_counter;
+        --elsif address = X"1B" then      -- 27
+            --counter_out <= ew_fifo_emptied_counter;
+        --elsif address = X"1C" then      -- 28
+            --counter_out <= dcs_counter;            
+        --elsif address = X"1D" then      -- 29
+            --counter_out <= start_fetch_counter;
+        --elsif address = X"1E" then      -- 30
+            --counter_out <= tag_error_counter;
+        --elsif address = X"1F" then      -- 31
+            --counter_out <= comma_error_counter;
+            --
+        --elsif address = X"20" then      -- 32
+            --counter_out <= fetch_event_tag(15 downto 0);
+        --elsif address = X"21" then      -- 33
+            --counter_out <= fetch_event_tag(31 downto 16);
+        --elsif address = X"22" then      -- 34
+            --counter_out <= fetch_event_tag(47 downto 32);
+        --elsif address = X"23" then      -- 35
+            --counter_out <= next_read_event_tag(15 downto 0);
+        --elsif address = X"24" then      -- 36
+            --counter_out <= next_read_event_tag(31 downto 16);
+        --elsif address = X"25" then      -- 37
+            --counter_out <= next_read_event_tag(47 downto 32);
+        --elsif address = X"26" then      -- 38
+            --counter_out(3 downto 0) <= reqType_debug(3 downto 0);
+            --counter_out(15 downto 4) <= (others => '0');
+        --elsif address = X"27" then      -- 39
+            --counter_out <= reqEventWindowTag_debug(15 downto 0);
+        --elsif address = X"28" then      -- 40
+            --counter_out <= reqEventWindowTag_debug(31 downto 16);
+        --elsif address = X"29" then      -- 41
+            --counter_out <= reqEventWindowTag_debug(47 downto 32);
+        --elsif address = X"2A" then      -- 42
+            --counter_out <= fetchEventWindowTag_debug(15 downto 0);
+        --elsif address = X"2B" then      -- 43
+            --counter_out <= fetchEventWindowTag_debug(31 downto 16);
+        --elsif address = X"2C" then      -- 44
+            --counter_out <= fetchEventWindowTag_debug(47 downto 32);
+        --elsif address = X"2D" then      -- 45
+            --counter_out <= skipped_DREQ_tag(15 downto 0);
+        --elsif address = X"2E" then      -- 46
+            --counter_out <= skipped_DREQ_tag(31 downto 16);
+        --elsif address = X"2F" then      -- 47
+            --counter_out <= skipped_DREQ_tag(47 downto 32); 
+            --
+        --elsif address = X"30" then      -- 48
+            --counter_out(7 downto 0) <= dcs_proc_state(7 downto 0);
+            --counter_out(15 downto 8) <= (others => '0');
+        --elsif address = X"31" then      -- 49
+            --counter_out(7 downto 0) <= dcs_rx_state(7 downto 0);
+            --counter_out(15 downto 8) <= (others => '0');
+        --elsif address = X"32" then      -- 50
+            --counter_out(7 downto 0) <= dcs_tx_state(7 downto 0);
+            --counter_out(15 downto 8) <= (others => '0');
+        --elsif address = X"33" then      -- 51
+            --counter_out(7 downto 0) <= rocfifocntrl_state(7 downto 0);
+            --counter_out(15 downto 8) <= (others => '0');
+        --elsif address = X"34" then      -- 52
+            --counter_out(2 downto 0) <= ewtag_state(2 downto 0);
+            --counter_out(15 downto 3) <= (others => '0');
+        --elsif address = X"35" then      -- 53
+            --counter_out(1 downto 0) <= datareq_state(1 downto 0);
+            --counter_out(15 downto 2) <= (others => '0');
+        --elsif address = X"36" then      -- 54
+            --counter_out(7 downto 0) <= dreq_state(7 downto 0);
+            --counter_out(15 downto 8) <= (others => '0');
+        --elsif address = X"37" then      -- 55
+            --counter_out(1 downto 0) <= fetch_state(1 downto 0);
+            --counter_out(15 downto 2) <= (others => '0');
+        --elsif address = X"38" then      -- 56
+            --counter_out <= fetch_missing_TAG(15 downto 0);
+        --elsif address = X"39" then      -- 57
+            --counter_out <= fetch_missing_TAG(31 downto 16);
+        --elsif address = X"3A" then      -- 58
+            --counter_out <= fetch_missing_TAG(47 downto 32); 
+        --elsif address = X"3B" then      -- 59
+            --counter_out <= fetch_runover_TAG(15 downto 0);
+        --elsif address = X"3C" then      -- 60
+            --counter_out <= fetch_runover_TAG(31 downto 16);
+        --elsif address = X"3D" then      -- 61
+            --counter_out <= fetch_runover_TAG(47 downto 32); 
+            --
+        --elsif address = X"40" then      -- 64
+            --counter_out <= dreq_full_counter;
+        --elsif address = X"41" then      -- 65
+            --counter_out <= invalid_hb_counter;
+        --elsif address = X"42" then      -- 66
+            --counter_out <= hb_bad_crc_counter;
+        --elsif address = X"43" then      -- 67
+            --counter_out <= hb_tag_full_counter;
+        --elsif address = X"44" then      -- 68
+            --counter_out <= spilltag_full_counter;
+        --elsif address = X"45" then      -- 69
+            --counter_out <= fetch_timeout_counter;
+        --elsif address = X"46" then      -- 70
+            --counter_out <= fetch_runover_counter;
+        --elsif address = X"47" then      -- 71
+            --counter_out <= fetch_missing_counter;
+        --elsif address = X"48" then      -- 72
+            --counter_out <= tag_sync_err_counter;
+            --
+        --else
+            --counter_out <= (others => '0');
+        --end if;
         
         -- internally generated counters
         clk_counter <= clk_counter + 1;

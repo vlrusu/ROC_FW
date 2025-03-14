@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component CMD_TO_PROC_BUFFER
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {CMD_TO_PROC_BUFFER} -params {\
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.1.101} -component_name {CMD_TO_PROC_BUFFER} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:false"  \

@@ -142,14 +142,16 @@ begin
                 
             ---- PROC_CMD word is in and can be written to CMD_RX_BUFFER
             when SENDWRITE =>
-                DCS_RX_WE   <= '1';
-                DCS_RX_IN   <= PROC_CMD_DATA_IN;
                 if  PROC_CMD_DATA_IN = CMDTRAILER  then
                     PROC_CMD_RE <= '0';
                     CMD_Ready   <= '1';
+                    DCS_RX_WE   <= '1';
+                    DCS_RX_IN   <= PROC_CMD_DATA_IN;
                     rx_in_state <= HOLD;
-                elsif  unsigned(PROC_CMD_RDCNT)>0 then
+                elsif  PROC_CMD_EMPTY = '0' then
                     PROC_CMD_RE <= '1';
+                    DCS_RX_WE   <= '1';
+                    DCS_RX_IN   <= PROC_CMD_DATA_IN;
                     rx_in_state <= SENDREAD;
                 end if;
                              

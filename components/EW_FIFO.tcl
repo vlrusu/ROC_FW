@@ -2,7 +2,7 @@
 # Family: PolarFire
 # Part Number: MPF300TS-FCG484I
 # Create and Configure the core component EW_FIFO
-create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.0.101} -component_name {EW_FIFO} -params {\
+create_and_configure_core -core_vlnv {Actel:DirectCore:COREFIFO:3.1.101} -component_name {EW_FIFO} -params {\
 "AE_STATIC_EN:false"  \
 "AEVAL:4"  \
 "AF_STATIC_EN:true"  \
