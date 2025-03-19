@@ -64,7 +64,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:FULL" "rocfifo_c
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:RCLOCK" "SIM_ROC_FIFO_0:WCLOCK" "clus_pattern_cntrl_0:serdesclk" "hit_ram_0:clock" "rocfifo_cntrl_0:serdesclk" "serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:RE" "rocfifo_cntrl_0:rocfifo0_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:RRESET_N" "SIM_ROC_FIFO_0:WRESET_N" "clus_pattern_cntrl_0:serdesclk_resetn" "resetn_serdesclk" "rocfifo_cntrl_0:resetn_serdesclk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:WE" "clus_pattern_cntrl_0:pattern_we0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:WE" "clus_pattern_cntrl_0:pattern_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"axi_start_on_serdesclk" "rocfifo_cntrl_0:axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:ddr_done" "ddr_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:haltrun_en" "haltrun_en" }
@@ -78,7 +78,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_fifo_we" "rocfifo_cntrl_0:ew
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_ovfl" "rocfifo_cntrl_0:ew_ovfl" }
 
 # Add bus net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:DATA" "clus_pattern_cntrl_0:pattern_data0" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:DATA" "clus_pattern_cntrl_0:pattern_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:Q" "rocfifo_cntrl_0:rocfifo0_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SIM_ROC_FIFO_0:WRCNT" "rocfifo_cntrl_0:rocfifo0_wrcnt[11:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"clus_pattern_cntrl_0:ewtag_in" "ewtag_in" }

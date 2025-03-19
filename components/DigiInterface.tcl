@@ -122,24 +122,6 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {edge_generator_1:fallingEdge
 
 
 
-# Add MUX_DIGI_DATA_0 instance
-sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {MUX_DIGI_DATA} -hdl_file {hdl\MUX_DIGI_DATA.v} -instance_name {MUX_DIGI_DATA_0}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:en_digi_sim} -value {GND}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane0_re}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane1_re}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane2_re}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane3_re}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane0_empty} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane1_empty} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane2_empty} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:sim_lane3_empty} -value {VCC}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:lane0_sim_data} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:lane1_sim_data} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:lane2_sim_data} -value {GND}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {MUX_DIGI_DATA_0:lane3_sim_data} -value {GND}
-
-
-
 # Add ROCFIFOController_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ROCFIFOController} -hdl_file {hdl\ROCFIFOController.vhd} -instance_name {ROCFIFOController_0}
 
@@ -172,11 +154,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned_0" "cal_lane
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:aligned_1" "cal_lane1_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:fifo_rclk" "DigiLink_1:fifo_rclk" "DigiReaderFIFO_0:WCLOCK" "ROCFIFOController_0:clk" "edge_generator_1:clk" "fifo_rclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:force_full" "DigiLink_1:force_full" "force_full" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_empty" "LANE_EMPTY[0:0]" "MUX_DIGI_DATA_0:digi_lane0_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_fifo_re" "MUX_DIGI_DATA_0:digi_lane0_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_empty" "LANE_EMPTY[0:0]" "ROCFIFOController_0:lane0_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_fifo_re" "ROCFIFOController_0:lane0_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_full" "LANE_FULL[0:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_empty" "LANE_EMPTY[1:1]" "MUX_DIGI_DATA_0:digi_lane1_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_fifo_re" "MUX_DIGI_DATA_0:digi_lane1_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_empty" "LANE_EMPTY[1:1]" "ROCFIFOController_0:lane1_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_fifo_re" "ROCFIFOController_0:lane1_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_full" "LANE_FULL[1:1]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:LANE0_PCS_ARST_N" "LANE0_PCS_ARST_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:LANE0_PMA_ARST_N" "LANE0_PMA_ARST_N_0" }
@@ -194,25 +176,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:REF_CLK_PAD_N" "REF_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:REF_CLK_PAD_P" "REF_CLK_PAD_P_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:aligned_0" "hv_lane0_aligned" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:aligned_1" "hv_lane1_aligned" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_empty" "LANE_EMPTY[2:2]" "MUX_DIGI_DATA_0:digi_lane2_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_fifo_re" "MUX_DIGI_DATA_0:digi_lane2_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_empty" "LANE_EMPTY[2:2]" "ROCFIFOController_0:lane2_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_fifo_re" "ROCFIFOController_0:lane2_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_full" "LANE_FULL[2:2]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_empty" "LANE_EMPTY[3:3]" "MUX_DIGI_DATA_0:digi_lane3_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_re" "MUX_DIGI_DATA_0:digi_lane3_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_empty" "LANE_EMPTY[3:3]" "ROCFIFOController_0:lane3_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_re" "ROCFIFOController_0:lane3_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_full" "LANE_FULL[3:3]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:EMPTY" "serialfifo_empty" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:FULL" "ROCFIFOController_0:uart_fifo_full" "serialfifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RCLOCK" "serialfifo_rclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RE" "serialfifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:WE" "ROCFIFOController_0:uart_fifo_we" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane0_empty" "ROCFIFOController_0:lane0_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane0_re" "ROCFIFOController_0:lane0_re" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane1_empty" "ROCFIFOController_0:lane1_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane1_re" "ROCFIFOController_0:lane1_re" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane2_empty" "ROCFIFOController_0:lane2_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane2_re" "ROCFIFOController_0:lane2_re" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane3_empty" "ROCFIFOController_0:lane3_empty" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane3_re" "ROCFIFOController_0:lane3_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:axi_start_on_serdesclk" "axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:curr_ewfifo_wr" "curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_done" "ew_done" }
@@ -230,21 +204,17 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_0" "cal_la
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:alignment_1" "cal_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:error_count_0" "cal_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:error_count_1" "cal_lane1_error_count" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_fifo_data_out" "MUX_DIGI_DATA_0:lane0_digi_data" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_fifo_data_out" "MUX_DIGI_DATA_0:lane1_digi_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane0_fifo_data_out" "ROCFIFOController_0:lane0_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_0:lane1_fifo_data_out" "ROCFIFOController_0:lane1_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:alignment_0" "hv_lane0_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:alignment_1" "hv_lane1_alignment" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:error_count_0" "hv_lane0_error_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:error_count_1" "hv_lane1_error_count" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_fifo_data_out" "MUX_DIGI_DATA_0:lane2_digi_data" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_data_out" "MUX_DIGI_DATA_0:lane3_digi_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane0_fifo_data_out" "ROCFIFOController_0:lane2_data" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiLink_1:lane1_fifo_data_out" "ROCFIFOController_0:lane3_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:DATA" "ROCFIFOController_0:uart_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:Q" "serialfifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReaderFIFO_0:RDCNT" "serialfifo_rdcnt" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane0_data" "ROCFIFOController_0:lane0_data" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane1_data" "ROCFIFOController_0:lane1_data" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane2_data" "ROCFIFOController_0:lane2_data" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"MUX_DIGI_DATA_0:lane3_data" "ROCFIFOController_0:lane3_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_done_cnt" "ew_done_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_fifo_data" "ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFOController_0:ew_size" "ew_size" }

@@ -17,6 +17,8 @@
 --      <v10>: <02/28/2024>: MT Added ROC_ID output for LOOPBACK REPLY MARKER
 --      <v11>: <05/23/2024>: MT Added PRE_IDLE state to generate END_DC_OPS output pulse to measure DCSProcessor timing
 --      <v12>: <10/29/2024>: MT Added DCS packet counter to CALCULATECRC state
+--      <v13>: <03/03/2025>: MT Added IOs (ready_from_ddr, reg_from_ddr[15:0], is_ddr_reg inputs and read_ddr ouput) and logic for speDDR memory read.
+--                              Abort if DDR block read (address = 0x200) but BLK_SIZE is not 0x200   
 --
 -- Description: 
 --      Module decoding DCS operations. DCS Single RD, DCS Single WR (with ACK), DCS Block RD and DCS Block WRITE supported so far.
@@ -72,11 +74,15 @@ port (
 		
     ready_from_drac	:	in  std_logic;
     ready_from_cmd	:	in  std_logic;
+    ready_from_ddr	:	in  std_logic;
     reg_from_drac   :   in  std_logic_vector(15 downto 0);
     reg_from_cmd    :   in  std_logic_vector(15 downto 0);
+    reg_from_ddr    :   in  std_logic_vector(15 downto 0);
     
     read_reg    :	out std_logic;  -- high for READ DCS via DRACRegister
     read_proc   :	out std_logic;  -- high for READ DCS via uProcessor
+    read_ddr    :	out std_logic;  -- high for READ specific DDR Memory
+
     write_reg	:	out std_logic;  -- high for WRITE DCS via DRACRegister
     write_proc  :	out std_logic;  -- high for WRITE DCS via uProcessor
     address_reg :   out std_logic_vector(15 downto 0);
@@ -93,6 +99,7 @@ port (
 
     is_drac_reg	:	in  std_logic;
     is_cmd_reg	:	in  std_logic;
+    is_ddr_reg	:	in  std_logic;
     pckt_done   :   out   std_logic;  -- used in block request, if more packets are needed
     dcs_done    :   out   std_logic;  -- used in block request, to release processor
     
@@ -174,11 +181,12 @@ begin
     
     ready   <=  ready_from_drac   when    is_drac_reg = '1'   else
                 ready_from_cmd    when    is_cmd_reg = '1'    else
+                ready_from_ddr    when    is_ddr_reg = '1'    else
                 '0';
     reg_data<=  reg_from_drac   when    is_drac_reg = '1'   else
                 reg_from_cmd    when    is_cmd_reg = '1'    else
+                reg_from_ddr    when    is_ddr_reg = '1'    else
                 X"0000";
-        
     process(reset_n, clk)
     begin
     if reset_n = '0' then
@@ -263,6 +271,7 @@ begin
         
         read_reg    <= '0';
         read_proc   <= '0';
+        read_ddr    <= '0';
         write_reg   <= '0';
         write_proc  <= '0';
         blk_start   <= '0';
@@ -357,7 +366,7 @@ begin
             when SEND_ADDR =>
                 dcs_state_count <= X"04";
                 address_reg     <= op_address;
-                dcs_state <= SEND_ADDR2;
+                dcs_state 		<= SEND_ADDR2;
             
             when SEND_ADDR2 =>
                 -- set parameters for any BLOCK operation meant for uProcessor
@@ -375,20 +384,25 @@ begin
                     end if;
                 else                            -- if any DCS READ operation, go to next state to handle data for single vs block operations 
                     -- distinguish between registers for uProc vs others
-                    if  unsigned(op_address) >= X"0100" and unsigned(op_address) <= X"0200"   then
+                    if  unsigned(op_address) = X"0200"  then
+                        read_ddr    <= '1';
+                        dcs_state   <= WAIT_DATA_READY; 
+                    elsif  unsigned(op_address) >= X"0100" and unsigned(op_address) < X"0200"   then
                         read_proc   <= '1';
-                    else
+                        dcs_state   <= WAIT_DATA_READY; 
+                    elsif  unsigned(op_address) < X"0100"   then
                         read_reg    <= '1';
+                        dcs_state   <= WAIT_DATA_READY; 
+                    else
+                        dcs_state   <= PRE_IDLE;
                     end if;
                     
-                    dcs_state   <= WAIT_DATA_READY;     
                 end if;
-            
             -- send DCS SINGLE WRITE data and check if ACK packets is requested
             when SEND_DATA =>    
                 dcs_state_count <= X"05";
                 -- distinguish between registers for uProc vs others
-                if  unsigned(address_reg) >= X"0100" and unsigned(address_reg) <= X"0200"   then
+                if  unsigned(address_reg) >= X"0100" and unsigned(address_reg) < X"0200"   then
                     write_proc   <= '1';
                 else
                     write_reg    <= '1';
@@ -423,11 +437,11 @@ begin
                     blk_start   <= '1';
                     blk_pckt_size  <= std_logic_vector(unsigned(blk_size)+4); 
                     if  unsigned(blk_size) > X"0003" then
-                        blk_cnt_reg     <= X"0003";
-                        blk_rd_word_left   <= std_logic_vector(unsigned(blk_size)-3);
+                        blk_cnt_reg         <= X"0003";
+                        blk_rd_word_left    <= std_logic_vector(unsigned(blk_size)-3);
                     else
-                        blk_cnt_reg     <= blk_size;
-                        blk_rd_word_left   <= (others => '0');
+                        blk_cnt_reg         <= blk_size;
+                        blk_rd_word_left    <= (others => '0');
                     end if;
                 end if;
                  
@@ -445,11 +459,11 @@ begin
                     dcs_state <= SET_DATA;                    
                 elsif (ready = '1') then
                     if  is_blk_rw = '1'   then
-                        blk_rd_word_cnt<= blk_rd_word_cnt + 1;
-                        first_blk   <= '0';
+                        blk_rd_word_cnt <= blk_rd_word_cnt + 1;
+                        first_blk       <= '0';
                     end if;
                     save_data   <= reg_data; -- hold to word to send back for general case (no TIMEOUT)
-                    dcs_state <= SET_DATA;
+                    dcs_state   <= SET_DATA;
                 end if;
                 
                 
@@ -479,7 +493,7 @@ begin
                 dcs_state_count <= X"12";
                 --write_reg	<= '1';
                 -- distinguish between registers for uProc vs others
-                if  unsigned(address_reg) >= X"0100" and unsigned(address_reg) <= X"0200"   then
+                if  unsigned(address_reg) >= X"0100" and unsigned(address_reg) < X"0200"   then
                     write_proc   <= '1';
                 else
                     write_reg    <= '1';
@@ -705,8 +719,8 @@ begin
                         crc_data_out    <= TIMEOUT_WRD;
                     else
                         blk_read_req    <= '1';  -- send request for next block data
-                        fifo_data_out   <= "00" & reg_from_cmd ;
-                        crc_data_out    <= reg_from_cmd;
+                        fifo_data_out   <= "00" & reg_data ;
+                        crc_data_out    <= reg_data;
                     end if;
                 elsif word_count = 7 then
                     -- deal with timeout condition by skipping READY<->REQ protocol and forcing TIMEOUT word out 
@@ -733,8 +747,8 @@ begin
                             crc_data_out    <= (others => '0');
                         else
                             blk_rd_word_cnt<= blk_rd_word_cnt + 1;
-                            fifo_data_out   <= "00" & reg_from_cmd ;
-                            crc_data_out    <= reg_from_cmd;
+                            fifo_data_out   <= "00" & reg_data ;
+                            crc_data_out    <= reg_data;
                         end if;
                     else  -- prevent data to be used for CRC calculation
                         crc_rst <= '0';
@@ -764,8 +778,8 @@ begin
                             crc_data_out    <= (others => '0');
                         else
                             blk_rd_word_cnt<= blk_rd_word_cnt + 1;
-                            fifo_data_out   <= "00" & reg_from_cmd ;
-                            crc_data_out    <= reg_from_cmd;
+                            fifo_data_out   <= "00" & reg_data ;
+                            crc_data_out    <= reg_data;
                         end if;
                         dcs_state <= CALCULATECRC;
                     else  -- prevent data to be used for CRC calculation
@@ -805,8 +819,8 @@ begin
                             crc_data_out    <= (others => '0');
                         else
                             blk_rd_word_cnt    <= blk_rd_word_cnt + 1;
-                            fifo_data_out   <= "00" & reg_from_cmd ;
-                            crc_data_out    <= reg_from_cmd;
+                            fifo_data_out   <= "00" & reg_data ;
+                            crc_data_out    <= reg_data;
                         end if;
                     else  -- prevent data to be used for CRC calculation
                         crc_rst <= '0';
@@ -823,8 +837,8 @@ begin
                             crc_data_out    <= (others => '0');
                         else
                             blk_rd_word_cnt    <= blk_rd_word_cnt + 1;
-                            fifo_data_out   <= "00" & reg_from_cmd ;
-                            crc_data_out    <= reg_from_cmd;
+                            fifo_data_out   <= "00" & reg_data ;
+                            crc_data_out    <= reg_data;
                         end if;
                         dcs_state <= CALCULATECRC;
                     else  -- prevent data to be used for CRC calculation

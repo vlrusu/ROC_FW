@@ -116,7 +116,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.
 "MASTER1_READ_SLAVE30:true"  \
 "MASTER1_READ_SLAVE31:true"  \
 "MASTER1_TYPE:0"  \
-"MASTER1_WRITE_SLAVE0:true"  \
+"MASTER1_WRITE_SLAVE0:false"  \
 "MASTER1_WRITE_SLAVE1:true"  \
 "MASTER1_WRITE_SLAVE2:true"  \
 "MASTER1_WRITE_SLAVE3:true"  \
@@ -1128,7 +1128,7 @@ create_and_configure_core -core_vlnv {Actel:DirectCore:COREAXI4INTERCONNECT:2.8.
 "MASTER15_WRITE_SLAVE29:true"  \
 "MASTER15_WRITE_SLAVE30:true"  \
 "MASTER15_WRITE_SLAVE31:true"  \
-"NUM_MASTERS:1"  \
+"NUM_MASTERS:2"  \
 "NUM_MASTERS_WIDTH:1"  \
 "NUM_SLAVES:1"  \
 "NUM_THREADS:1"  \

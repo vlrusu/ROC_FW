@@ -21,6 +21,8 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {MEM_CLK} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {NEWRUN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RXCLK_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {RX_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dcsclk} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_fifo_ren} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {dreqclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {end_evm_seen} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_re} -port_direction {IN}
@@ -28,7 +30,9 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {event_start} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {first_hb_seen} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {haltrun_en} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {hb_seen} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {mem_read} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_type} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_dcsclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {serdesclk} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {start_fetch} -port_direction {IN}
 
@@ -52,13 +56,14 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {SHIELD3} -port_direction {
 sd_create_scalar_port -sd_name ${sd_name} -port_name {WE_N} -port_direction {OUT} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {data_ready} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_fifo_empty} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_fifo_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_pckts_err} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_pckts_ovfl} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_DDR_wrap} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {last_word} -port_direction {OUT}
-sd_create_scalar_port -sd_name ${sd_name} -port_name {pattern_init} -port_direction {OUT}
 
 
 # Create top level Bus Ports
@@ -68,23 +73,22 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DIGI_ew_tag} -port_direction 
 sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_tag} -port_direction {IN} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {event_window_fetch} -port_direction {IN} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_event_window} -port_direction {IN} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {mem_offset} -port_direction {IN} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {spill_hbtag_in} -port_direction {IN} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {spill_hbtag_rollover} -port_direction {IN} -port_range {[19:0]}
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {A} -port_direction {OUT} -port_range {[13:0]} -port_is_pad {1}
 sd_create_bus_port -sd_name ${sd_name} -port_name {BA} -port_direction {OUT} -port_range {[1:0]} -port_is_pad {1}
-sd_create_bus_port -sd_name ${sd_name} -port_name {DDR_error_mask} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DM_N} -port_direction {OUT} -port_range {[3:0]} -port_is_pad {1}
-sd_create_bus_port -sd_name ${sd_name} -port_name {data_expc} -port_direction {OUT} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {data_seen} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {datareq_state} -port_direction {OUT} -port_range {[1:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ddr_data_out} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ddr_fifo_rdcnt} -port_direction {OUT} -port_range {[9:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {ddr_fifo_wrcnt} -port_direction {OUT} -port_range {[7:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_cnt} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {dreq_full_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {et_fifo_rdata} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {et_pckts} -port_direction {OUT} -port_range {[9:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {evm_end_cnt} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {evt_expc} -port_direction {OUT} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {evt_seen} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ew_fifo_emptied_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewtag_dreq_full} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {ewtag_offset_out} -port_direction {OUT} -port_range {[47:0]}
@@ -103,10 +107,6 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hb_dreq_error_cnt} -port_dire
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_empty_overlap_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_tag_err_cnt} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {hb_tag_full_count} -port_direction {OUT} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_expc} -port_direction {OUT} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr1_seen} -port_direction {OUT} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_expc} -port_direction {OUT} -port_range {[63:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {hdr2_seen} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {next_read_event_tag} -port_direction {OUT} -port_range {[47:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {skipped_DREQ_cnt} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {skipped_DREQ_tag} -port_direction {OUT} -port_range {[47:0]}
@@ -117,9 +117,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {store_cnt} -port_direction {O
 sd_create_bus_port -sd_name ${sd_name} -port_name {store_pos_cnt} -port_direction {OUT} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_done_cnt} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_error_count} -port_direction {OUT} -port_range {[15:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {tag_expc} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_null_cnt} -port_direction {OUT} -port_range {[31:0]}
-sd_create_bus_port -sd_name ${sd_name} -port_name {tag_seen} -port_direction {OUT} -port_range {[63:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_sent_cnt} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_valid_count} -port_direction {OUT} -port_range {[15:0]}
 
@@ -189,6 +187,18 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {ewtag_cntrl} -hd
 
 
 
+# Add mem_read_cntrl_0 instance
+sd_instantiate_hdl_core -sd_name ${sd_name} -hdl_core_name {mem_read_cntrl} -instance_name {mem_read_cntrl_0}
+# Exporting Parameters of instance mem_read_cntrl_0
+sd_configure_core_instance -sd_name ${sd_name} -instance_name {mem_read_cntrl_0} -params {\
+"BURST_LENGTH:127" \
+"BURST_SIZE:3" }\
+-validate_rules 0
+sd_save_core_instance_config -sd_name ${sd_name} -instance_name {mem_read_cntrl_0}
+sd_update_instance -sd_name ${sd_name} -instance_name {mem_read_cntrl_0}
+
+
+
 # Add OR2_2 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {OR2} -instance_name {OR2_2}
 
@@ -218,8 +228,8 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {SYSCLKReset:PLL_POWERDOWN_B}
 
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ACT_N" "DDR4_Cntrl_0:ACT_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ACLK" "DDR4_Cntrl_0:SYS_CLK" "DREQ_FIFO_1:WCLOCK" "EW_FIFO_controller_0:sysclk" "SYSCLKReset:CLK" "edge_generator_2:clk" "ew_size_store_and_fetch_controller_0:sysclk" "ewtag_cntrl_0:sysclk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ARESETN" "EW_FIFO_controller_0:resetn_sysclk" "SYSCLKReset:FABRIC_RESET_N" "edge_generator_2:resetn" "ew_size_store_and_fetch_controller_0:resetn_sysclk" "ewtag_cntrl_0:resetn_sysclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ACLK" "DDR4_Cntrl_0:SYS_CLK" "DREQ_FIFO_1:WCLOCK" "EW_FIFO_controller_0:sysclk" "SYSCLKReset:CLK" "edge_generator_2:clk" "ew_size_store_and_fetch_controller_0:sysclk" "ewtag_cntrl_0:sysclk" "mem_read_cntrl_0:sysclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:ARESETN" "EW_FIFO_controller_0:resetn_sysclk" "SYSCLKReset:FABRIC_RESET_N" "edge_generator_2:resetn" "ew_size_store_and_fetch_controller_0:resetn_sysclk" "ewtag_cntrl_0:resetn_sysclk" "mem_read_cntrl_0:resetn_sysclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"BG" "DDR4_Cntrl_0:BG" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAS_N" "DDR4_Cntrl_0:CAS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CK0" "DDR4_Cntrl_0:CK0" }
@@ -290,6 +300,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"RXCLK_RESETN" "edge_generator_3
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX_CLK" "edge_generator_3:clk" "ewtag_cntrl_0:xcvrclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"axi_start_on_serdesclk" "pattern_switch_0:DIGI_axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"data_ready" "ewtag_cntrl_0:data_ready" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"dcsclk" "mem_read_cntrl_0:dcsclk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_fifo_empty" "mem_read_cntrl_0:ddr_fifo_empty" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_fifo_full" "mem_read_cntrl_0:ddr_fifo_full" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_fifo_ren" "mem_read_cntrl_0:ddr_fifo_ren" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_1:risingEdge" "ewtag_cntrl_0:new_spill_on_serdesclk" "pattern_FIFO_filler_0:newspill_reset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"edge_generator_3:risingEdge" "ewtag_cntrl_0:new_spill_on_xcvr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"end_evm_seen" "ewtag_cntrl_0:end_evm_seen" }
@@ -298,8 +312,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ew_size_store_and_fetch_control
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:first_hb_seen" "first_hb_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:haltrun_en" "haltrun_en" "pattern_FIFO_filler_0:haltrun_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_seen" "hb_seen" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:pattern_init" "pattern_FIFO_filler_0:pattern_init" "pattern_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:pattern_init" "pattern_FIFO_filler_0:pattern_init" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:start_fetch" "start_fetch" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_read" "mem_read_cntrl_0:mem_read" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_read_cntrl_0:resetn_dcsclk" "resetn_dcsclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:axi_start_on_serdesclk" "pattern_switch_0:PATTRN_axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:curr_ewfifo_wr" "pattern_switch_0:PATTRN_curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:ew_done" "pattern_switch_0:PATTRN_ew_done" }
@@ -314,39 +330,31 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:DM_N" "DM_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:DQ" "DQ" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:DQS" "DQS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR4_Cntrl_0:DQS_N" "DQS_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_error_mask" "EW_FIFO_controller_0:DDR_error_mask" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGI_ew_fifo_data" "pattern_switch_0:DIGI_ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGI_ew_size" "pattern_switch_0:DIGI_ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGI_ew_tag" "pattern_switch_0:DIGI_ew_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:DATA" "ew_size_store_and_fetch_controller_0:store_word" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:Q" "ew_size_store_and_fetch_controller_0:fetch_fifo_rdata" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:data_expc" "data_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:data_seen" "data_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:dreq_tag_in" "ewtag_cntrl_0:dreq_tag_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_rdata" "et_fifo_rdata" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_pckts" "et_pckts" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:evt_expc" "evt_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:evt_seen" "evt_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_data" "pattern_switch_0:ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_size" "pattern_switch_0:ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_size_to_store" "ew_size_store_and_fetch_controller_0:event_size_to_store" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_tag" "pattern_switch_0:ew_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_tag_to_store" "ew_size_store_and_fetch_controller_0:event_tag_to_store" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ewtag_offset_in" "ewtag_cntrl_0:ewtag_offset_out" "ewtag_offset_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_dreq_error_cnt" "hb_dreq_error_cnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_dreq_err_cnt" "hb_dreq_error_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_err_cnt" "hb_tag_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_in" "ewtag_cntrl_0:hb_tag_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hdr1_expc" "hdr1_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hdr1_seen" "hdr1_seen" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hdr2_expc" "hdr2_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hdr2_seen" "hdr2_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:spill_tag_rollover" "ewtag_cntrl_0:spill_tag_rollover_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_addr" "ew_size_store_and_fetch_controller_0:fetch_address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_evt" "ew_size_store_and_fetch_controller_0:fetch_tag" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_expc" "tag_expc" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_seen" "tag_seen" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_size" "ew_size_store_and_fetch_controller_0:fetch_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"datareq_state" "ewtag_cntrl_0:datareq_state" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_data_out" "mem_read_cntrl_0:ddr_data_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_fifo_rdcnt" "mem_read_cntrl_0:ddr_fifo_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ddr_fifo_wrcnt" "mem_read_cntrl_0:ddr_fifo_wrcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dreq_cnt" "ewtag_cntrl_0:dreq_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dreq_full_count" "ewtag_cntrl_0:dreq_full_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"dreq_tag" "ewtag_cntrl_0:dreq_tag" }
@@ -383,12 +391,14 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:tag_error_count" 
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:tag_null_cnt" "tag_null_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:tag_sent_cnt" "tag_sent_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:tag_valid_count" "tag_valid_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"mem_offset" "mem_read_cntrl_0:mem_offset" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:ew_data" "pattern_switch_0:PATTRN_ew_fifo_data" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:ew_size" "pattern_switch_0:PATTRN_ew_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"pattern_FIFO_filler_0:ew_tag" "pattern_switch_0:PATTRN_ew_tag" }
 
 # Add bus interface net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:AXI4mmaster0" "EW_FIFO_controller_0:AXI4_M" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:AXI4mmaster1" "mem_read_cntrl_0:BIF_1" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AXI4_Interconnect_0:AXI4mslave0" "DDR4_Cntrl_0:AXI4slave0" }
 
 # Re-enable auto promotion of pins of type 'pad'

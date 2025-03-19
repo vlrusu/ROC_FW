@@ -6,6 +6,7 @@ build_design_hierarchy
 
 #Sourcing the Tcl files in which HDL+ core definitions are created for HDL modules
 source components/EW_FIFO_controller.tcl 
+source components/mem_read_cntrl.tcl 
 source components/DCSRegisters.tcl 
 source components/RS485Registers.tcl 
 source components/Registers.tcl 
@@ -31,7 +32,8 @@ source components/CNT_FIFO.tcl
 source components/EVT_FIFO.tcl 
 source components/EWTAG_FIFO.tcl 
 source components/EW_FIFO.tcl 
-source components/SIZE_FIFO.tcl 
+source components/SIZE_FIFO.tcl
+source components/DDR1KB_FIFO.tcl
 source components/LARGE_TAG_FIFO.tcl 
 source components/SPILLTAG_FIFO.tcl 
 source components/SIM_ROC_FIFO.tcl 

@@ -10,6 +10,7 @@ import_files -library work -hdl_source hdl/EWMaker.vhd
 import_files -library work -hdl_source hdl/EW_FIFO_controller.v
 import_files -library work -hdl_source hdl/ew_size_store_and_fetch_controller.vhd
 import_files -library work -hdl_source hdl/ewtag_cntrl.v
+import_files -library work -hdl_source hdl/mem_read_cntrl.v
 import_files -library work -hdl_source hdl/clus_pattern_cntrl.v
 import_files -library work -hdl_source hdl/rocfifo_cntrl.v
 import_files -library work -hdl_source hdl/hit_ram.vhd
@@ -22,6 +23,7 @@ import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
 import_files -library work -hdl_source hdl/counter32.v
 import_files -library work -hdl_source hdl/DCSProcessor.vhd
+import_files -library work -hdl_source hdl/DCSReadDDRProcessor.vhd
 import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
 import_files -library work -hdl_source hdl/DCSWriteCMDProcessor.vhd
 import_files -library work -hdl_source hdl/DRACRegisters.vhd
