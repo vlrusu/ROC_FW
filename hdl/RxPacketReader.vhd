@@ -78,7 +78,6 @@ port (
     EVT_MODE                    : out std_logic_vector(31 downto 0);
     RF_MARKER                   : out std_logic_vector(7 downto 0);
     SUBRUN_ID                   : out std_logic_vector(1 downto 0);
-	TAG_LOST	                : out std_logic_vector(EVENT_TAG_BITS-1 downto 0);
 	 
     -- this are single RXCLK pulses
 	eventmarker	: out std_logic;
@@ -234,7 +233,6 @@ begin
         EVT_MODE                    <= (others => '0');
         RF_MARKER                   <= (others => '0');
         SUBRUN_ID                   <= (others => '0');
-        TAG_LOST                    <= (others => '0');
         
 		rx_loopmarker_out   <= B"11" & X"BC3C";
         
@@ -456,16 +454,10 @@ begin
         if evm_lost = '1' then
             evm_lost_cnt <= std_logic_vector(unsigned(evm_lost_cnt) + 1);
             -- save TAG of first lost event
-            if evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" then
-                TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
-            end if;
         end if;
         if hb_lost = '1' then 
             hb_lost_cnt <= std_logic_vector(unsigned(hb_lost_cnt) + 1);
             -- save TAG of first lost event
-            if evm_lost_cnt = X"0000" and hb_lost_cnt = X"0000" then
-                TAG_LOST <= HEARTBEAT_EVENT_WINDOW_TAG;
-            end if;
         end if;
             
         

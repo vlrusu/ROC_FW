@@ -43,8 +43,6 @@ port (
    
    -- Debugging
     DEBUG_REG_0			: IN  std_logic_vector(15 downto 0);
-    PREREAD_PULSE		: OUT std_logic;
-	SEL_RST				: OUT std_logic;
 
     -- DTC to RISKV diagnostic registers
     DCS_CMD_STATUS	    : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- status of DCS command to RiskV
@@ -82,14 +80,12 @@ port (
     DCS_DREQTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- last DREQ tag
     DCS_OFFSETTAG   : IN  std_logic_vector(47 DOWNTO 0);    -- offset TAG in present SPILL
     DCS_FULLTAG     : IN  std_logic_vector(47 DOWNTO 0);    -- first TAG with DREQ full
-    DCS_TAG_LOST    : IN  std_logic_vector(47 downto 0);	-- first TAG with EVM counter falling behing of HB counter
 
     DCS_LED_OFF     : OUT STD_LOGIC;    -- turn on/off key LED via write to reg. 9																				   
     DCS_DDRRESET_N  : OUT STD_LOGIC;						-- specific firmware reset (separate from TOP_Serdes reset, although it does drive DDRReset_N)
     DCS_RESETFIFO   : OUT STD_LOGIC;						-- specific DIGIInterface reset (level: must be written high and then low again via bit[0])
     DCS_USE_LANE    : OUT std_logic_vector(3 downto 0);		-- SERDES lanes enable bit map (addr[8], bit[3:0])
     DCS_PATTERN_EN  : OUT std_logic;						-- switch between DIGIFIFO/PATTERN_FIFO inputs to memory when 0/1 (addr=8, bit[4])
-    DCS_DLYD_EVM_EN : OUT std_logic;				        -- send DELAYED EVM after loopback test to DIGIs (addr=8, bit[5])
     DCS_ERROR_EN    : OUT std_logic;						-- enable ErrorCounter reading via DCS (addr=8, bit[6])
     DCS_INT_EVM_EN  : OUT std_logic;						-- enable internal EVM to DIGIs(addr=8, bit[7])
     DCS_ENABLE_CLOCK: OUT std_logic;						-- enable fiber clock to DIGIs(addr=8, bit[8])
@@ -115,6 +111,7 @@ port (
     DCS_DDR_FIFO_EMPTY  : IN std_logic;
     DCS_DDR_FIFO_WRCNT  : IN std_logic_vector(7 downto 0);
     DCS_DDR_FIFO_RDCNT  : IN std_logic_vector(9 downto 0);
+    DCS_DDR_ADDRESS     : IN std_logic_vector(19 downto 0);
 
     hb_tag_err_cnt      : IN std_logic_vector(15 DOWNTO 0);    
     hb_dreq_err_cnt     : IN std_logic_vector(15 DOWNTO 0);    
@@ -169,10 +166,9 @@ architecture architecture_DRACRegisters of DRACRegisters is
 
 	signal pattern_en_reg	: std_logic;
 	signal pattern_type_reg : std_logic;  -- 0 => 32-bit counter + 1;  1=> alternating 5s&As
-	signal dlyd_evm_en_reg	: std_logic;
     signal error_en_reg     : std_logic;
-    signal use_lane_reg		: std_logic_vector(3 downto 0);
     signal enable_internal_ewm  : std_logic;
+    signal use_lane_reg		: std_logic_vector(3 downto 0);
     signal enable_clock_reg     : std_logic;
     signal enable_marker_reg    : std_logic;
     signal force_full_reg       : std_logic;
@@ -190,7 +186,6 @@ begin
     DCS_PATTERN_EN  <= pattern_en_reg;
     DCS_PATTERN_TYPE<= pattern_type_reg;
     DCS_ERROR_EN    <= error_en_reg;
-    DCS_DLYD_EVM_EN <= dlyd_evm_en_reg;
     DCS_INT_EVM_EN  <= enable_internal_ewm;
     DCS_ENABLE_CLOCK    <= enable_clock_reg;
     DCS_ENABLE_MARKER   <= enable_marker_reg;
@@ -218,7 +213,6 @@ begin
 		pattern_en_reg	<= '0';	
         pattern_type_reg<= '0';
         error_en_reg    <= '0';
-		dlyd_evm_en_reg	<= '0';
         enable_internal_ewm <= '0';
         enable_clock_reg    <= '0';
         enable_marker_reg   <= '0';
@@ -249,14 +243,11 @@ begin
 			
 		READY_REG		<= '0'; 
 			
-		--ALGO_RESET    <= '0'; 				
-		PREREAD_PULSE   <= '0';
 		DATA_OUT      	<= (others => '0');
         IS_DRAC_REGISTER<= '0';
 			
 		read_latch		<= '0';
 		write_latch		<= '0';
-		SEL_RST			<= '0';
         
         if DDRReset_N = '0' then
 			
@@ -302,7 +293,6 @@ begin
 			elsif (drac_addrs = 8) then
 				use_lane_reg 	<= drac_wdata(3 downto 0);
                 pattern_en_reg  <= drac_wdata(4);
-                dlyd_evm_en_reg <= drac_wdata(5);  
                 error_en_reg    <= drac_wdata(6);
                 enable_internal_ewm <= drac_wdata(7);
                 enable_clock_reg    <= drac_wdata(8);
@@ -364,7 +354,6 @@ begin
 			read_latch		<= drac_read;
 			if (drac_read = '1' and read_latch = '0') then 	             
 				readCounter 	<= readCounter + 1;  
-				PREREAD_PULSE	<= '1';
 			end if;	
 				
 			-- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
@@ -395,7 +384,7 @@ begin
 			elsif (drac_addrs = 8) then		 	 
 				DATA_OUT <= B"00" & HALTRUN_EN & DCS_PATTERN_TYPE &
                             '0'   & DCS_FORCE_FULL & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
-                            DCS_INT_EVM_EN & DCS_ERROR_EN & DCS_DLYD_EVM_EN & DCS_PATTERN_EN & 
+                            DCS_INT_EVM_EN & DCS_ERROR_EN & '0' & DCS_PATTERN_EN & 
                             DCS_USE_LANE;
                             
 			elsif (drac_addrs = 9) then		 	 
@@ -410,7 +399,10 @@ begin
 				DATA_OUT 	<= IS_SKIPPED_DREQ_CNT;			
             elsif (drac_addrs = 14) then		 	 
 				DATA_OUT 	<= ew_done_cnt;                
-
+            elsif (drac_addrs = 15) then		 	 
+				DATA_OUT 	<= DCS_DDR_ADDRESS(15 downto 0);
+            elsif (drac_addrs = 16) then		 	 
+				DATA_OUT 	<= B"0000_0000_0000" & DCS_DDR_ADDRESS(19 downto 16);
             elsif (drac_addrs = 17) then		 	 
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
  			elsif (drac_addrs = 18) then		 	 
@@ -553,12 +545,6 @@ begin
                 DATA_OUT <= dreq_data_pkt_count;
 			elsif (drac_addrs = 149) then	 -- 0x95		 	 
                 DATA_OUT <= dreq_empty_pkt_count;	
-			elsif (drac_addrs = 160) then	 -- 0xA0	 	 
-				DATA_OUT <= DCS_TAG_LOST(15 downto 0);
-			elsif (drac_addrs = 161) then	 -- 0xA1		 	 
-				DATA_OUT <= DCS_TAG_LOST(31 downto 16);
-			elsif (drac_addrs = 162) then	 -- 0xA2		 	 
-				DATA_OUT <= DCS_TAG_LOST(47 downto 32);
                 
 			else	
 				DATA_OUT            <= drac_addrs;		  --Unmapped Addresses

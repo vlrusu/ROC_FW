@@ -115,6 +115,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {spilltag_full_count} -port_di
 sd_create_bus_port -sd_name ${sd_name} -port_name {start_fetch_cnt} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {store_cnt} -port_direction {OUT} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {store_pos_cnt} -port_direction {OUT} -port_range {[1:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {tag_address} -port_direction {OUT} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_done_cnt} -port_direction {OUT} -port_range {[31:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_error_count} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {tag_null_cnt} -port_direction {OUT} -port_range {[31:0]}
@@ -348,7 +349,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_dreq_er
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_err_cnt" "hb_tag_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_in" "ewtag_cntrl_0:hb_tag_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:spill_tag_rollover" "ewtag_cntrl_0:spill_tag_rollover_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_addr" "ew_size_store_and_fetch_controller_0:fetch_address" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_addr" "ew_size_store_and_fetch_controller_0:fetch_address" "tag_address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_evt" "ew_size_store_and_fetch_controller_0:fetch_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_size" "ew_size_store_and_fetch_controller_0:fetch_size" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"datareq_state" "ewtag_cntrl_0:datareq_state" }

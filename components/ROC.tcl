@@ -461,7 +461,6 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:HEARTBEAT_EVENT
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:PREFETCH_EVENT_WINDOW_TAG} -pin_slices {[31:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[19:0]}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {TOP_SERDES_0:SPILL_EVENT_WINDOW_TAG} -pin_slices {[39:20]}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:DCS_DLYD_EVM_EN}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {TOP_SERDES_0:ewm_out_counter} -value {GND}
 
@@ -798,6 +797,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:spilltag_full
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:start_fetch_cnt[15:0]" "TOP_SERDES_0:start_fetch_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:store_cnt" "TOP_SERDES_0:DCS_STORE_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:store_pos_cnt" "TOP_SERDES_0:DCS_STORE_POS" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:tag_address" "TOP_SERDES_0:DCS_DDR_ADDRESS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:tag_done_cnt" "TOP_SERDES_0:DCS_DREQSENT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:tag_error_count" "TOP_SERDES_0:tag_error_counter" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:tag_null_cnt" "TOP_SERDES_0:DCS_DREQNULL" }

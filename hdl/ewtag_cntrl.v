@@ -249,10 +249,14 @@ end
 // DREQ_FULL diagnostic logic on SYSCLK
 // save number of DREQ_FULL rising edge and first DDR TAG at which is happens
 reg dreq_full_reg, dreq_full_latch, dreq_full_first;
+reg cnt_fifo_re, hb_tag_fifo_re;
 always@(posedge sysclk, negedge resetn_sysclk)
 begin
     if(resetn_sysclk == 1'b0)
     begin
+        cnt_fifo_re     <= 0;
+        hb_tag_fifo_re  <= 0;
+        
         dreq_full_reg   <= 1'b0;
         dreq_full_latch <= 1'b0;
         dreq_full_first <= 1'b0;
@@ -261,6 +265,9 @@ begin
     end 
     else    
     begin
+        
+        cnt_fifo_re     <= ew_empty_ren;
+        hb_tag_fifo_re  <= ew_we_store;
         dreq_full_latch <= dreq_full;
         dreq_full_reg   <= dreq_full_latch;
         // save only first TAG with DREQ full 
@@ -585,7 +592,8 @@ LARGE_TAG_FIFO	hb_tag_fifo (
 	.WE		    (hb_seen),
 	.RCLOCK	    (sysclk),
 	.RRESET_N   (resetn_fifo),
-	.RE		    (ew_we_store),
+	//.RE		    (ew_we_store),
+    .RE		    (hb_tag_fifo_re),
 	// Outputs
 	.EMPTY	    (hb_tag_empty),
 	.FULL	    (hb_tag_full),
@@ -634,7 +642,8 @@ CNT_FIFO	cnt_fifo0 (
 	.WE		    (hb_seen),
 	.RCLOCK	    (sysclk),
 	.RRESET_N   (resetn_fifo),
-	.RE		    (ew_empty_ren),
+	//.RE		    (ew_empty_ren),
+	.RE		    (cnt_fifo_re),
 	// Outputs
 	.EMPTY	    (tag_rollover_empty),
 	.FULL		(tag_rollover_full),
