@@ -60,7 +60,7 @@ port (
     
     reset_dcs_logic_n : out std_logic;
 
-    fifo_rdcnt : in std_logic_vector(10 downto 0);
+    fifo_rdcnt : in std_logic_vector(11 downto 0);
     fifo_data_in : in std_logic_vector(15 downto 0);
     fifo_re : out std_logic;
     

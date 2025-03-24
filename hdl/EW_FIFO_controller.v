@@ -1002,7 +1002,8 @@ begin
         VALID:
         begin            
             first_wr_hdr	<=  {2'b0, ew_err_to_store, ew_ovfl_to_store, 2'b0, ew_size_to_store, ew_tag_to_store};
-            second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, hb_tag_in}; 
+            //second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, hb_tag_in}; 
+            second_wr_hdr	<=	{ew_pckt_to_do,	(wburst_cnt + 1'b1), hb_tag_in}; 
             
             hb_tag_in_latch <= hb_tag_in;
             check_hb <= 1;

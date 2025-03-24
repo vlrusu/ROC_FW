@@ -244,8 +244,8 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {crc} -hdl_file {
 
 # Add DCSProcessor_0 instance
 sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {DCSProcessor} -hdl_file {hdl\DCSProcessor.vhd} -instance_name {DCSProcessor_0}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:blk_cnt_reg}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {DCSProcessor_0:end_dcs_ops}
 
 
 
@@ -323,19 +323,6 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {pulse_time_cross
 
 
 
-# Add RxPacketFIFO_0 instance
-sd_instantiate_component -sd_name ${sd_name} -component_name {RxPacketFIFO} -instance_name {RxPacketFIFO_0}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_0:DATA} -pin_slices {[15:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_0:DATA} -pin_slices {[19:16]}
-sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxPacketFIFO_0:DATA[19:16]} -value {GND}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_0:Q} -pin_slices {[15:0]}
-sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_0:Q} -pin_slices {[19:16]}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_0:Q[19:16]}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_0:FULL}
-sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_0:EMPTY}
-
-
-
 # Add RxPacketFIFO_1 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {RxPacketFIFO} -instance_name {RxPacketFIFO_1}
 sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_1:DATA} -pin_slices {[17:0]}
@@ -372,6 +359,19 @@ sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_3:Q} -pin_slice
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_3:Q[19:18]}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_3:FULL}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_3:EMPTY}
+
+
+
+# Add RxPacketFIFO_Large_0 instance
+sd_instantiate_component -sd_name ${sd_name} -component_name {RxPacketFIFO_Large} -instance_name {RxPacketFIFO_Large_0}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_Large_0:DATA} -pin_slices {[15:0]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_Large_0:DATA} -pin_slices {[19:16]}
+sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {RxPacketFIFO_Large_0:DATA[19:16]} -value {GND}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_Large_0:Q} -pin_slices {[15:0]}
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {RxPacketFIFO_Large_0:Q} -pin_slices {[19:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_Large_0:Q[19:16]}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_Large_0:FULL}
+sd_mark_pins_unused -sd_name ${sd_name} -pin_names {RxPacketFIFO_Large_0:EMPTY}
 
 
 
@@ -424,11 +424,11 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:FABRIC_RESET_N" "DR
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:FPGA_POR_N" "CORERESET_DCSDDRReset:FPGA_POR_N" "CORERESET_DCSRXFIFOR_DDRReset:FPGA_POR_N" "CORERESET_DCSRXFIFOW_DDRReset:FPGA_POR_N" "CORERESET_DREQRXFIFOR_DDRReset:FPGA_POR_N" "CORERESET_DREQRXFIFOW_DDRReset:FPGA_POR_N" "CORERESET_RXPacketReader:FPGA_POR_N" "FPGA_POR_N" "TXClkReset:FPGA_POR_N" "XCVR_Block_0:FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:INIT_DONE" "CORERESET_DCSDDRReset:INIT_DONE" "CORERESET_DCSRXFIFOR_DDRReset:INIT_DONE" "CORERESET_DCSRXFIFOW_DDRReset:INIT_DONE" "CORERESET_DREQRXFIFOR_DDRReset:INIT_DONE" "CORERESET_DREQRXFIFOW_DDRReset:INIT_DONE" "CORERESET_RXPacketReader:INIT_DONE" "INIT_DONE" "TXClkReset:INIT_DONE" "XCVR_Block_0:INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:PLL_LOCK" "CORERESET_DCSDDRReset:PLL_LOCK" "CORERESET_DCSRXFIFOR_DDRReset:PLL_LOCK" "CORERESET_DREQRXFIFOR_DDRReset:PLL_LOCK" "CORERESET_DREQRXFIFOW_DDRReset:PLL_LOCK" "PLL_LOCK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSDDRReset:CLK" "CORERESET_DCSRXFIFOR_DDRReset:CLK" "DCSProcessor_0:clk" "DCSReadCMDProcessor_0:DCS_CLK" "DCSReadDDRProcessor_0:DCS_CLK" "DCSWriteCMDProcessor_0:DCS_CLK" "DCS_CLK" "DRACRegisters_0:DCS_CLK" "RxPacketFIFO_0:RCLOCK" "RxPacketFIFO_1:WCLOCK" "crc_0:CLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSDDRReset:CLK" "CORERESET_DCSRXFIFOR_DDRReset:CLK" "DCSProcessor_0:clk" "DCSReadCMDProcessor_0:DCS_CLK" "DCSReadDDRProcessor_0:DCS_CLK" "DCSWriteCMDProcessor_0:DCS_CLK" "DCS_CLK" "DRACRegisters_0:DCS_CLK" "RxPacketFIFO_1:WCLOCK" "RxPacketFIFO_Large_0:RCLOCK" "crc_0:CLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSDDRReset:FABRIC_RESET_N" "DCSCLK_RESET_N" "DCSProcessor_0:reset_n" "DCSReadCMDProcessor_0:RESET_N" "DCSReadDDRProcessor_0:RESET_N" "DCSWriteCMDProcessor_0:RESET_N" "DRACRegisters_0:DDRReset_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOR_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_0:RRESET_N" "RxPacketFIFO_1:WRESET_N" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOW_DDRReset:CLK" "CORERESET_DREQRXFIFOW_DDRReset:CLK" "CORERESET_RXPacketReader:CLK" "ErrorCounter_0:clk" "LANE0_RX_CLK_R" "PBRS_checker_0:CLK" "RxPacketFIFO_0:WCLOCK" "RxPacketFIFO_2:WCLOCK" "RxPacketReader_0:clk" "XCVR_Block_0:LANE0_RX_CLK_R" "crc_2:CLK" "delay_sreg_1bit_0:clk" "delay_sreg_1bit_1:clk" "delay_sreg_1bit_2:clk" "delay_sreg_1bit_3:clk" "pulse_time_crossing_0:clk_in" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOW_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_0:WRESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOR_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_1:WRESET_N" "RxPacketFIFO_Large_0:RRESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOW_DDRReset:CLK" "CORERESET_DREQRXFIFOW_DDRReset:CLK" "CORERESET_RXPacketReader:CLK" "ErrorCounter_0:clk" "LANE0_RX_CLK_R" "PBRS_checker_0:CLK" "RxPacketFIFO_2:WCLOCK" "RxPacketFIFO_Large_0:WCLOCK" "RxPacketReader_0:clk" "XCVR_Block_0:LANE0_RX_CLK_R" "crc_2:CLK" "delay_sreg_1bit_0:clk" "delay_sreg_1bit_1:clk" "delay_sreg_1bit_2:clk" "delay_sreg_1bit_3:clk" "pulse_time_crossing_0:clk_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOW_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_Large_0:WRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DCSRXFIFOW_DDRReset:PLL_LOCK" "TXClkReset:PLL_LOCK" "XCVR_Block_0:LANE0_TX_CLK_STABLE" "XCVR_Block_0:PLL_LOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DREQRXFIFOR_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_2:RRESET_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_DREQRXFIFOW_DDRReset:FABRIC_RESET_N" "RxPacketFIFO_2:WRESET_N" }
@@ -450,7 +450,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:crc_rst" "crc_0:
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:data_we" "DCSWriteCMDProcessor_0:NEXT_WRITE_CMD" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:data_we_ack" "DCSWriteCMDProcessor_0:NEXT_WRITE_ACK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_done" "DCSReadCMDProcessor_0:DCS_DONE" "DCSReadDDRProcessor_0:DCS_DONE" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_re" "RxPacketFIFO_0:RE" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_re" "RxPacketFIFO_Large_0:RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_we" "RxPacketFIFO_1:WE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:first_blk" "DCSReadCMDProcessor_0:FIRST_BLOCK" "DCSReadDDRProcessor_0:FIRST_BLOCK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:is_cmd_reg" "DCSReadCMDProcessor_0:IS_CMD_REG" }
@@ -523,10 +523,10 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_generator_0:CLK" "RxPacket
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_generator_0:RESETGN" "RxPacketFIFO_1:RRESET_N" "RxPacketFIFO_3:RRESET_N" "TXClkReset:FABRIC_RESET_N" "TxPacketWriter_0:reset_n" "pulse_time_crossing_0:resetn_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_N" "XCVR_Block_0:REF_CLK_PAD_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"REF_CLK_PAD_P" "XCVR_Block_0:REF_CLK_PAD_P" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:WE" "RxPacketReader_0:rx_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:RE" "TxPacketWriter_0:dcs_fifo_re" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_2:WE" "RxPacketReader_0:req_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:RE" "TxPacketWriter_0:dreq_fifo_re" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_Large_0:WE" "RxPacketReader_0:rx_we" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:LAST_EWM" "delay_sreg_1bit_1:sr_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:ONSPILL" "delay_sreg_1bit_2:sr_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:TAG_SYNC" "delay_sreg_1bit_3:sr_in" }
@@ -550,9 +550,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:data_reg" "DCSWr
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_error_count" "ErrorCounter_0:rx_crc_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_pkt_count" "DRACRegisters_0:dcs_pkt_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:dcs_state_count" "ErrorCounter_0:dcs_proc_state" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_in" "RxPacketFIFO_0:Q[15:0]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_in" "RxPacketFIFO_Large_0:Q[15:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_data_out" "RxPacketFIFO_1:DATA[17:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_rdcnt" "RxPacketFIFO_0:RDCNT" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:fifo_rdcnt" "RxPacketFIFO_Large_0:RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:reg_from_cmd" "DCSReadCMDProcessor_0:DATA_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:reg_from_ddr" "DCSReadDDRProcessor_0:DATA_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSProcessor_0:reg_from_drac" "DRACRegisters_0:DATA_OUT" }
@@ -676,9 +676,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:DATA_IN" "RxPack
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PBRS_checker_0:ERROR_COUNT" "PRBS_ERROR_COUNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_generator_0:CHAR_OUT" "XCVR_Block_0:PRBS_KCHAR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_generator_0:DATA_OUT" "XCVR_Block_0:PRBS_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_0:DATA[15:0]" "RxPacketFIFO_2:DATA[15:0]" "RxPacketReader_0:rx_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:Q[17:0]" "TxPacketWriter_0:dcs_fifo_data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_1:RDCNT" "TxPacketWriter_0:dcs_fifo_rdcnt" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_2:DATA[15:0]" "RxPacketFIFO_Large_0:DATA[15:0]" "RxPacketReader_0:rx_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:Q[17:0]" "TxPacketWriter_0:dreq_fifo_data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketFIFO_3:RDCNT" "TxPacketWriter_0:dreq_fifo_rdcnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxPacketReader_0:SPILL_EVENT_WINDOW_TAG" "SPILL_EVENT_WINDOW_TAG" }

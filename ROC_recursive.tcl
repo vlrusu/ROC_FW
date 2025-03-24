@@ -64,6 +64,7 @@ source components/UARTapb.tcl
 source components/pwm.tcl 
 source components/SLOWCONTROLS.tcl 
 source components/RxPacketFIFO.tcl 
+source components/RxPacketFIFO_Large.tcl 
 source components/CorePCS_C0.tcl 
 source components/PF_XCVR_ERM_C0.tcl 
 source components/PF_XCVR_REF_CLK_C0.tcl 
