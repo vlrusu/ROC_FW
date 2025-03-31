@@ -21,6 +21,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_TX_PLL:2.0.304} -component
 "TxPLL_JITTER_MODE_REFCLK_SEL:DEDICATED"  \
 "TxPLL_JITTER_MODE_SEL:10G SyncE 32Bit"  \
 "TxPLL_JITTER_MODE_WANDER:15"  \
+"TxPLL_LANE_ALIGNMENT_EN:false"  \
 "TxPLL_MODE:NORMAL"  \
 "TxPLL_OUT:2000.000"  \
 "TxPLL_REF:100"  \

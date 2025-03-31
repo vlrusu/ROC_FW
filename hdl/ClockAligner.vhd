@@ -23,20 +23,23 @@ use IEEE.NUMERIC_STD.all;
 
 entity ClockAligner is
 port (
-		RX_RESET_N		: IN std_logic;
+		RX_RESET_N  : IN std_logic;
 		RX_CLK		: IN std_logic; 
         
-        CTRL_RESET_N : IN std_logic;
-        CTRL_CLK : IN std_logic;
+        CTRL_RESET_N: IN std_logic;
+        CTRL_CLK    : IN std_logic;
         
 		RX_DATA		: IN std_logic_vector(19 downto 0); 
         PCS_ALIGNED : IN std_logic;
         RX_VAL      : IN std_logic;
         
-        ENABLE_ALIGNMENT : in std_logic;
-        CLOCK_ALIGNED : out std_logic;
-        ALIGNMENT_LOSS_COUNTER : out std_logic_vector(15 downto 0);
-        ALIGNMENT_RESET_N : out std_logic
+        BITSLIP_START   : IN std_logic;
+        BITSLIP_SHIFT   : IN std_logic_vector(4 downto 0); 
+        
+        ENABLE_ALIGNMENT: in std_logic;
+        CLOCK_ALIGNED   : out std_logic;
+        ALIGNMENT_LOSS_COUNTER  : out std_logic_vector(15 downto 0);
+        ALIGNMENT_RESET_N       : out std_logic
 );
 end ClockAligner;
 architecture architecture_ClockAligner of ClockAligner is
@@ -57,6 +60,15 @@ architecture architecture_ClockAligner of ClockAligner is
     signal pcs_aligned_2Q : std_logic;
     signal rx_val_1Q : std_logic;
     signal rx_val_2Q : std_logic;
+    
+    signal  rx_raw_data_match       : std_logic_vector(19 downto 0);
+    signal  bitslip_raw_data_match  : unsigned(19 downto 0);
+    signal  bitslip_start_reg: std_logic;
+    signal  bitslip_end     : std_logic;
+    signal  bitslip_end_1Q  : std_logic;
+    signal  bitslip_end_2Q  : std_logic;
+    signal  bitslip_shift_reg   : std_logic_vector(4 downto 0);
+    signal  bitslip_counter     : unsigned(4 downto 0);
 
 begin
 
@@ -71,10 +83,12 @@ begin
         alignment_loss_counter <= (others => '0');
         aligned_flag_1Q <= '0';
         aligned_flag_2Q <= '0';
-        pcs_aligned_1Q <= '0';
-        pcs_aligned_2Q <= '0';
-        rx_val_1Q <= '0';
-        rx_val_2Q <= '0';
+        pcs_aligned_1Q  <= '0';
+        pcs_aligned_2Q  <= '0';
+        rx_val_1Q   <= '0';
+        rx_val_2Q   <= '0';
+        bitslip_end_1Q  <= '0';
+        bitslip_end_2Q  <= '0';
     elsif rising_edge(CTRL_CLK) then
         aligned_flag_1Q <= aligned_flag;
         aligned_flag_2Q <= aligned_flag_1Q;
@@ -82,6 +96,13 @@ begin
         pcs_aligned_2Q <= pcs_aligned_1Q;
         rx_val_1Q <= rx_val;
         rx_val_2Q <= rx_val_1Q;
+        
+        -- force realignemnt after a new BITSLIP value is passed
+        bitslip_end_1Q<= bitslip_end;
+        bitslip_end_2Q<= bitslip_end_1Q;
+        if  bitslip_end_1Q = '1' and bitslip_end_2Q = '0'   then
+            alignment_state <= "00";
+        end if;
         
         clock_aligned_1Q <= clock_aligned;
         if clock_aligned_1Q = '1' and clock_aligned = '0' then
@@ -144,16 +165,51 @@ begin
     process(RX_RESET_N, RX_CLK)
     begin
     if RX_RESET_N = '0' then
-        rx_raw_data_latch <= (others => '0');
-        aligned_flag <= '0';
+        bitslip_start_reg   <= '0';
+        bitslip_shift_reg   <= (others => '0');
+        rx_raw_data_match   <= match_default; 
+        bitslip_raw_data_match   <= unsigned(match_default); 
+        rx_raw_data_latch   <= (others => '0');
+        aligned_flag    <= '0';
+        bitslip_end     <= '0';
     elsif rising_edge(RX_CLK) then
         aligned_flag <= '0';
         rx_raw_data_latch <= RX_DATA;
         
-        if  rx_raw_data_latch(19 DOWNTO 0) = match_default or		  --check for rx_data and its 4 possible polarities.
-            rx_raw_data_latch(19 DOWNTO 0) = not match_default or
-            rx_raw_data_latch(19 DOWNTO 0) = (not match_default(19 downto 10) & match_default(9 downto 0)) or
-            rx_raw_data_latch(19 DOWNTO 0) = (match_default(19 downto 10) & not match_default(9 downto 0)) then
+        --if  rx_raw_data_latch(19 DOWNTO 0) = match_default or		  --check for rx_data and its 4 possible polarities.
+            --rx_raw_data_latch(19 DOWNTO 0) = not match_default or
+            --rx_raw_data_latch(19 DOWNTO 0) = (not match_default(19 downto 10) & match_default(9 downto 0)) or
+            --rx_raw_data_latch(19 DOWNTO 0) = (match_default(19 downto 10) & not match_default(9 downto 0)) then
+                --aligned_flag <= '1';
+        --end if;
+        
+        -- start BITSLIP logic
+        bitslip_start_reg   <=  BITSLIP_START;
+        bitslip_shift_reg   <=  BITSLIP_SHIFT;
+        
+--        if (bitslip_start_reg = '1'     and     unsigned(bitslip_shift_reg) <=20)   then
+        if (bitslip_start_reg = '1')   then
+            bitslip_end             <=  '0';
+            bitslip_counter         <=  (others => '0');
+            bitslip_raw_data_match  <=  unsigned(match_default); 
+        else
+            if (unsigned(bitslip_shift_reg) <=20) then
+                if (bitslip_counter >= 0 and bitslip_counter < unsigned(bitslip_shift_reg)) then 
+                    bitslip_counter         <=  bitslip_counter + 1;
+                    bitslip_raw_data_match  <=  bitslip_raw_data_match ror 1;  
+                elsif (bitslip_counter = unsigned(bitslip_shift_reg))    then
+                    bitslip_counter     <=  (others => '1');
+                    bitslip_end         <=  '1';
+                    rx_raw_data_match   <=  std_logic_vector(bitslip_raw_data_match);
+                end if;
+            end if;
+        end if;
+        
+        -- check for alignment after bitslip, if enabled
+        if  rx_raw_data_latch(19 DOWNTO 0) = rx_raw_data_match or		  --check for rx_data and its 4 possible polarities.
+            rx_raw_data_latch(19 DOWNTO 0) = not rx_raw_data_match or
+            rx_raw_data_latch(19 DOWNTO 0) = (not rx_raw_data_match(19 downto 10) & rx_raw_data_match(9 downto 0)) or
+            rx_raw_data_latch(19 DOWNTO 0) = (rx_raw_data_match(19 downto 10) & not rx_raw_data_match(9 downto 0)) then
                 aligned_flag <= '1';
         end if;
     end if;

@@ -3,7 +3,7 @@
 --
 -- File: RxPacketReader.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      <v1>: <Mar.25>: Registered DATA and RDCNT inputs to ease timing
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -49,12 +49,22 @@ architecture architecture_TxPacketWriter of TxPacketWriter is
     signal tx_kchar : std_logic_vector(1 downto 0);
     signal tx_word_count : integer range 0 to 31;
     signal sequence_num : std_logic_vector(2 downto 0);
+    
+    signal dcs_fifo_rdcnt_reg : std_logic_vector(10 downto 0);
+    signal dreq_fifo_rdcnt_reg: std_logic_vector(10 downto 0);
+    signal dcs_fifo_data_reg  : std_logic_vector(17 downto 0);
+    signal dreq_fifo_data_reg : std_logic_vector(17 downto 0);
 
 begin
 
     tx_data_out <= tx_data;
     tx_kchar_out <= tx_kchar;
     
+    dcs_fifo_rdcnt_reg  <= dcs_fifo_rdcnt;
+    dreq_fifo_rdcnt_reg <= dreq_fifo_rdcnt;
+    dcs_fifo_data_reg   <= dcs_fifo_data_in;
+    dreq_fifo_data_reg  <= dreq_fifo_data_in;
+        
     process(reset_n, clk)
     begin
     if reset_n = '0' then
@@ -69,28 +79,35 @@ begin
         dreq_fifo_re <= '0';
         tx_data <= X"BC3C";
         tx_kchar <= "11";
+        
         case tx_state is
             when IDLE =>
                 tx_word_count <= 0;
-                if unsigned(dcs_fifo_rdcnt) > 9 then  -- give priority to DCS packets 
+--                if unsigned(dcs_fifo_rdcnt) > 9 then  -- give priority to DCS packets 
+                if unsigned(dcs_fifo_rdcnt_reg) > 9 then  -- give priority to DCS packets 
                     dcs_fifo_re <= '1';
                     tx_state <= RUNNING1;
-                elsif unsigned(dreq_fifo_rdcnt) > 9 then
+--                elsif unsigned(dreq_fifo_rdcnt) > 9 then
+                elsif unsigned(dreq_fifo_rdcnt_reg) > 9 then
                     dreq_fifo_re <= '1';
                     tx_state <= RUNNING2;
                 end if;
-                
+            
             when RUNNING1 =>
                 tx_word_count <= tx_word_count + 1;
                 if tx_word_count < 9 then
                     dcs_fifo_re <= '1';
                 end if;
                 if tx_word_count = 1 then
-                    tx_data <= dcs_fifo_data_in(15 downto 8) & sequence_num & dcs_fifo_data_in(4 downto 0);
-                    tx_kchar <= dcs_fifo_data_in(17 downto 16);
+                    --tx_data <= dcs_fifo_data_in(15 downto 8) & sequence_num & dcs_fifo_data_in(4 downto 0);
+                    --tx_kchar <= dcs_fifo_data_in(17 downto 16);
+                    tx_data <= dcs_fifo_data_reg(15 downto 8) & sequence_num & dcs_fifo_data_reg(4 downto 0);
+                    tx_kchar <= dcs_fifo_data_reg(17 downto 16);
                 elsif tx_word_count > 1 then
-                    tx_data <= dcs_fifo_data_in(15 downto 0);
-                    tx_kchar <= dcs_fifo_data_in(17 downto 16);
+                    --tx_data <= dcs_fifo_data_in(15 downto 0);
+                    --tx_kchar <= dcs_fifo_data_in(17 downto 16);
+                    tx_data <= dcs_fifo_data_reg(15 downto 0);
+                    tx_kchar <= dcs_fifo_data_reg(17 downto 16);
                 end if;
                 if tx_word_count = 10 then
                     sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
@@ -104,12 +121,16 @@ begin
                     dreq_fifo_re <= '1';
                 end if;
                 if tx_word_count = 1 then
-                    tx_data <= dreq_fifo_data_in(15 downto 8) & sequence_num & dreq_fifo_data_in(4 downto 0);
-                    tx_kchar <= dreq_fifo_data_in(17 downto 16);
+                    --tx_data <= dreq_fifo_data_in(15 downto 8) & sequence_num & dreq_fifo_data_in(4 downto 0);
+                    --tx_kchar <= dreq_fifo_data_in(17 downto 16);
+                    tx_data <= dreq_fifo_data_reg(15 downto 8) & sequence_num & dreq_fifo_data_reg(4 downto 0);
+                    tx_kchar <= dreq_fifo_data_reg(17 downto 16);
                 elsif tx_word_count > 1 then
-                    tx_data <= dreq_fifo_data_in(15 downto 0);
-                    tx_kchar <= dreq_fifo_data_in(17 downto 16);
-                end if;
+                    --tx_data <= dreq_fifo_data_in(15 downto 0);
+                    --tx_kchar <= dreq_fifo_data_in(17 downto 16);
+                    tx_data <= dreq_fifo_data_reg(15 downto 0);
+                    tx_kchar <= dreq_fifo_data_reg(17 downto 16);
+               end if;
                 if tx_word_count = 10 then
                     sequence_num <= std_logic_vector(unsigned(sequence_num) + 1);
                     dtc_pkt_count  <= std_logic_vector(unsigned(dtc_pkt_count) + 1);

@@ -348,7 +348,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ewtag_offs
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_dreq_err_cnt" "hb_dreq_error_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_err_cnt" "hb_tag_err_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_in" "ewtag_cntrl_0:hb_tag_out" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:spill_tag_rollover" "ewtag_cntrl_0:spill_tag_rollover_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:spill_tag_rollover" "ewtag_cntrl_0:spill_hbtag_rollover_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_addr" "ew_size_store_and_fetch_controller_0:fetch_address" "tag_address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_evt" "ew_size_store_and_fetch_controller_0:fetch_tag" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:tag_size" "ew_size_store_and_fetch_controller_0:fetch_size" }
@@ -384,7 +384,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_event_window" 
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:hb_tag_full_count" "hb_tag_full_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_ewtag_out" "pattern_FIFO_filler_0:ewtag_in" "spill_ewtag_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_hbtag_in" "spill_hbtag_in" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_tag_rollover_in" "spill_hbtag_rollover" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spill_hbtag_rollover_in" "spill_hbtag_rollover" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:spilltag_full_count" "spilltag_full_count" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:start_fetch_cnt" "start_fetch_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ewtag_cntrl_0:tag_done_cnt" "tag_done_cnt" }

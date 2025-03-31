@@ -17,6 +17,7 @@
 //      v11.0:<Nov.5,2024>: added DDR_WRITE_ON condition in logic avoiding writing and reading from same DDR address.
 //      v12.0:<Nov.29,2024>: removed DDR_WRITE_ON condition in logic avoiding writing and reading from same DDR address (see WAIT state of raddr_state SM)
 //      v13.0:<Mar.12,2025>: fixed EW_FIFO_WE logic to respond to WREADY low. Also pass full HB_TAG to second DDR header word.
+//      v14.0:<Mar.25,2025>: change "second_wr_hdr" definition. Added delayed to EW_EMPTY_REN and extra stare to WADDR_STATE to comply with registered FIFO RD_EN in ewtag_cntl module
 //
 // Description:
 //
@@ -265,7 +266,7 @@ wire    ew_tag_empty, ew_tag_full;
 wire 	[`SPILL_TAG_BITS-1:0]   ewtag_sync;
 reg     ew_empty_all, ew_empty_reg, ew_empty_latch;
 //reg     ew_empty_ren;
-reg     ew_empty_ren_dly;
+reg     ew_empty_ren_Q1, ew_empty_ren_Q2, ew_empty_ren_Q3, ew_empty_ren_Q4, ew_empty_ren_dly;
 
 
 // signals for SIZE_FIFO0, CNT_FIFO0 and EWTAG_FIFO0 (time domain crossing FIFOs for buses from EW_SIZE_STORE_AND_FETCH_CONTROLLER)
@@ -994,15 +995,21 @@ begin
             if (ew_left_to_do > 126)	ew_pckt_to_do <= 126;
             else						ew_pckt_to_do <= ew_left_to_do[7:0];	
             
-            waddr_state	<=	VALID;   
+            waddr_state	<=	WAIT;   
+        end
+        
+        // wiat for one clock so that HB_TAG_IN is ready
+        WAIT:
+        begin
+            waddr_state	<=	VALID; 
         end
         
         //Initiate AXI write 
         //Set start of next DDR address block to write to, depending on the size of the current event
         VALID:
         begin            
-            first_wr_hdr	<=  {2'b0, ew_err_to_store, ew_ovfl_to_store, 2'b0, ew_size_to_store, ew_tag_to_store};
-            //second_wr_hdr	<=	{ew_pckt_to_do,	ew_blk_to_store, hb_tag_in}; 
+//            first_wr_hdr	<=  {2'b0, ew_err_to_store, ew_ovfl_to_store, 2'b0, ew_size_to_store, ew_tag_to_store};
+            first_wr_hdr	<=  {2'b0, ew_err_to_store, ew_ovfl_to_store, 2'b0, ew_left_to_do, ew_tag_to_store};
             second_wr_hdr	<=	{ew_pckt_to_do,	(wburst_cnt + 1'b1), hb_tag_in}; 
             
             hb_tag_in_latch <= hb_tag_in;
@@ -1747,6 +1754,10 @@ begin
         ew_empty_all   <= 0;
         ew_empty_reg   <= 0;
         ew_empty_ren   <= 0;
+        ew_empty_ren_Q1<= 0;
+        ew_empty_ren_Q2<= 0;
+        ew_empty_ren_Q3<= 0;
+        ew_empty_ren_Q4<= 0;
         ew_empty_ren_dly    <= 0;
     end
     else
@@ -1759,7 +1770,13 @@ begin
         ew_empty_reg   <= ew_empty_all;
       
         ew_empty_ren    <= ew_empty_all && ~ew_empty_reg;
-        ew_empty_ren_dly<= ew_empty_ren;
+        
+        // delay here to leave time for EW_EMPTY_REN to go to EWTAG_CNTRL and SPILL TAG ROLLOVER data to come back
+        ew_empty_ren_Q1 <= ew_empty_ren;
+        ew_empty_ren_Q2 <= ew_empty_ren_Q1;
+        ew_empty_ren_Q3 <= ew_empty_ren_Q2;
+        ew_empty_ren_Q4 <= ew_empty_ren_Q3;
+        ew_empty_ren_dly<= ew_empty_ren_Q4;
     end  
 end 
 

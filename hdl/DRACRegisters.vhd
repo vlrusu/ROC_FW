@@ -8,7 +8,7 @@
 --      <v3>: <July,2024>: Remove "dcs_newspill_cntrl". Add "DCS_PATTERN_TYPE".
 --      <v4>: <Aug,2024>:  Add HALTRUN_EN.
 --      <v5>: <Jan,2025>:  Add LANE_EMPTY_SEEN input and DCS_TO_SERIAL output (def = 0x1234).
---      <v6>: <Mar,2025>:  Imrpoved RESET logic. Removed expc vs seen signals. Added DDR read diagnostics.
+--      <v6>: <Mar,2025>:  Improved RESET logic. Removed expc vs seen signals. Added DDR dump and BITSLIP  command
 --
 -- Description: 
 --
@@ -112,6 +112,10 @@ port (
     DCS_DDR_FIFO_WRCNT  : IN std_logic_vector(7 downto 0);
     DCS_DDR_FIFO_RDCNT  : IN std_logic_vector(9 downto 0);
     DCS_DDR_ADDRESS     : IN std_logic_vector(19 downto 0);
+    
+    CLOCK_ALIGNED       : IN std_logic;
+    DCS_BITSLIP_START   : OUT std_logic;
+    DCS_BITSLIP_SHIFT   : OUT std_logic_vector(4 downto 0);
 
     hb_tag_err_cnt      : IN std_logic_vector(15 DOWNTO 0);    
     hb_dreq_err_cnt     : IN std_logic_vector(15 DOWNTO 0);    
@@ -238,6 +242,8 @@ begin
         DCS_TO_SERIAL   <= X"1234";             -- default delay is 0x1234
 		DCS_DDRRESET_N    <= '1';
         
+        DCS_BITSLIP_START   <= '0';
+        DCS_BITSLIP_SHIFT   <= (others => '0');
       
     elsif rising_edge(DCS_CLK) then
 			
@@ -248,6 +254,8 @@ begin
 			
 		read_latch		<= '0';
 		write_latch		<= '0';
+        
+        DCS_BITSLIP_START   <= '0';
         
         if DDRReset_N = '0' then
 			
@@ -275,17 +283,16 @@ begin
 			end if;
 						
    -- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
-			if (drac_addrs = 0) then			-- RESET ALL
+			if (drac_addrs = 0) then			-- RESET ALL 
             
+            elsif (drac_addrs = 1) then  
+                DCS_BITSLIP_START   <= '1';
+                DCS_BITSLIP_SHIFT   <= drac_wdata(4 downto 0);
+                
             elsif (drac_addrs = 4) then  
                 DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(10 downto 0);
-			--elsif (drac_addrs = 4) then
-				--DCS_ALIGNMENT_REQ <= '1';   		-- self clearing	  
             elsif (drac_addrs = 5) then  
                 DCS_TO_SERIAL <= drac_wdata(15 downto 0);
-			--elsif (drac_addrs = 5) then
-				--evtstart_delay_en_reg	<= drac_wdata(14);				  
-				--evtstart_delay_fine_reg	<= "00" & drac_wdata(13 downto 0);	
 			elsif (drac_addrs = 6) then
                 dcs_digirw_sel <= drac_wdata(0);     
             
@@ -359,22 +366,16 @@ begin
 			-- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
 			if (drac_addrs = 0) then	-- monitors status of Core_PCS	 						
 				DATA_OUT 	<= DEBUG_REG_0;			
-			--elsif (drac_addrs = 1) then	
-				--DATA_OUT 	<=  ALGO_RDATA;	-- data read from other modules
+			elsif (drac_addrs = 1) then	
+				DATA_OUT 	<=  CLOCK_ALIGNED & B"000_0000_000" & DCS_BITSLIP_SHIFT;	-- data read from other modules
 			elsif (drac_addrs = 2) then	
 				DATA_OUT 	<=  writeCounter ;	-- useful counters
 			elsif (drac_addrs = 3) then	 
 				DATA_OUT 	<=  readCounter; 	
 			elsif (drac_addrs = 4) then	 
 				DATA_OUT 	<=  B"0_0000" & DCS_LOOPBACK_COARSE_DELAY; 	
-			--elsif (drac_addrs = 4) then		 	 
-				--DATA_OUT <=   "00" &  RX_K_CHAR & 
-									--"00" & ALIGNED & TX_CLK_STABLE & 
-									--INVALID_K & RD_ERR & B_CERR & CODE_ERR_N;
 			elsif (drac_addrs = 5) then	 
 				DATA_OUT 	<=  DCS_TO_SERIAL; 	
-			--elsif (drac_addrs = 5) then		 	 
-				--DATA_OUT 	<= XCVR_LOSS_COUNTER;			
 			elsif (drac_addrs = 6) then		 	 
                 DATA_OUT    <= B"000_0000_0000_0000" & dcs_digirw_sel;
 			elsif (drac_addrs = 7) then		 	 

@@ -6,6 +6,7 @@ create_smartdesign -sd_name ${sd_name}
 auto_promote_pad_pins -promote_all 0
 
 # Create top level Scalar Ports
+sd_create_scalar_port -sd_name ${sd_name} -port_name {BITSLIP_START} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_ARST_N} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {CTRL_CLK} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DTC_ALIGN_RESETN} -port_direction {IN}
@@ -34,6 +35,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {resetn_align} -port_direct
 
 
 # Create top level Bus Ports
+sd_create_bus_port -sd_name ${sd_name} -port_name {BITSLIP_SHIFT} -port_direction {IN} -port_range {[4:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MARKER_DATA} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {MARKER_KCHAR} -port_direction {IN} -port_range {[1:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {PRBS_DATA} -port_direction {IN} -port_range {[15:0]}
@@ -131,6 +133,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "ClockAligner_0:ALIGN
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "CORERESET_0:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ASYNC_RESET_N:B" "CORERESET_0:FPGA_POR_N" "FPGA_POR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ASYNC_RESET_N:Y" "ClockAligner_0:RX_RESET_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"BITSLIP_START" "ClockAligner_0:BITSLIP_START" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CLOCK_ALIGNED" "ClockAligner_0:CLOCK_ALIGNED" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:CLK" "ClockAligner_0:RX_CLK" "Core_PCS_0:EPCS_RxCLK" "LANE0_RX_CLK_R" "WordAligner_0:clk" "XCVR_IF_0:LANE0_RX_CLK_R" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORERESET_0:FABRIC_RESET_N" "Core_PCS_0:RESET_N" "WordAligner_0:reset_n" "resetn_align" }
@@ -157,6 +160,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"XCVR_CLK_0:REF_CLK" "XCVR_IF_0:
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ALIGNMENT_LOSS_COUNTER" "ClockAligner_0:ALIGNMENT_LOSS_COUNTER" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"BITSLIP_SHIFT" "ClockAligner_0:BITSLIP_SHIFT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"B_CERR" "Core_PCS_0:B_CERR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CODE_ERR_N" "Core_PCS_0:CODE_ERR_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ClockAligner_0:RX_DATA" "Core_PCS_0:EPCS_RxDATA" "XCVR_IF_0:LANE0_RX_DATA" }

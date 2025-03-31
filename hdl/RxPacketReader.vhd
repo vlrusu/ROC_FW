@@ -28,6 +28,7 @@
 --                        Fix EWM_to_EWM logic. Remove HB_to_EWM.
 --      <v14>: <08/2024>: increase SPILL_EVENT_WINDOW_TAG to 40 bit and pass MSB 20 bits to EW_FIFO_CONTROLLER
 --      <v15>: <08/2024>: Remove SPILLTIMEOUT logic. Add HALTRUN_EN, which prevents counters reset after a NEWRUN (except fro SPILL_EVENT_WINDOW_TAG)
+--      <v16>: <03/2025>: Registered some signals to improve timing and commneted unused diagnostic
 --
 -- Description: 
 --
@@ -109,9 +110,6 @@ port (
     rx_error_count 	    : out std_logic_vector(15 downto 0);
 	seq_error_count     : out std_logic_vector(15 downto 0);
 	marker_error_count  : out std_logic_vector(15 downto 0);
-    
-    dcsreq_start_count  : out std_logic_vector(15 downto 0);
-    dcsreq_end_count    : out std_logic_vector(15 downto 0);
     any_marker_count    : out std_logic_vector(15 downto 0);
 
     crc_en              : out std_logic;
@@ -176,7 +174,6 @@ architecture architecture_RxPacketReader of RxPacketReader is
     
     signal evm_reg1, evm_reg2, evm_reg3, evm_reg4   : std_logic;
     signal missing_hb   : std_logic;
-	signal is_marker_error  : std_logic;
     
     signal PREFETCH_SEEN        : std_logic;
     signal NULL_HEARTBEAT_SEEN  : std_logic;
@@ -256,9 +253,6 @@ begin
 		rx_error_count  <= (others => '0');
 		seq_error_count 	<= (others => '0');
 		marker_error_count  <= (others => '0');
-        
-        dcsreq_start_count  <= (others => '0');
-        dcsreq_end_count    <= (others => '0');
         any_marker_count    <= (others => '0');
             
         crc_en          <= '0';
@@ -326,7 +320,6 @@ begin
         evm_reg3        <= '0';
         evm_reg4        <= '0';
         missing_hb      <= '0';
-		is_marker_error	<= '0';
         
 		HB_TAG_SAVE	                <= (others => '0');	
 		HB_TAG_SAVE_P1	                <= (others => '0');	
@@ -629,37 +622,10 @@ begin
 					elsif (rx_data_prev2 = X"1C15" and rx_data_prev1 = X"1CEA") then
 						counter <= (others => '0');
 						is_retrseq <= '1';
-					else
-                    -- this is true at the beginning of any DTC packet: recognize and skip this case
-					---- skip case of marker right after first DTC packet word (but it will also skip finding errors if marker is in the middle of a packet )
-					---- Still OK because it will be caught later by DCS/DREQProcessor either as CRC error or RX_packet error or both!
-						if (is_DTCpacket = '0') then	
-							is_marker_error	<= '1';
-						end if;
 					end if;
 				end if; 	-- if rx_kchar_prev1 = "10" 
 			end if; 		-- if rx_kchar_prev2 = "10" 
 		end if;			-- if counter < 5 
-        
-   		-- clear error when marker is re-established
-		if (is_marker_error = '1' and rx_kchar_prev2 = B"11" and rx_kchar_prev1 = B"11") then
-			is_marker_error <= '0';
-            marker_error_count <= std_logic_vector(unsigned(marker_error_count) + 1);
-		end if;
-        
-		---- finish retransmission marker decoding by checking on sequence request 
-		---- Must be outside of previous IF because counter=0 at this point
-		--if (is_retrseq = '1' and rx_data_prev2 = X"1CEA") then 
-			--if( rx_data_prev1(7 downto 4)  = rx_data_prev1(3 downto 0) and  
-				--rx_data_prev1(11 downto 8) = rx_data_prev1(3 downto 0) and 
-				--rx_data_prev1(15 downto 12)= rx_data_prev1(3 downto 0) ) 	then
-                --is_retrseq 	<= '0';
-                --is_retrmarker 	<= '1';
-                --retr_seq_save	<= rx_data_prev1(2 downto 0);
-			----else
-                ----is_retrseq 	<= '0';
-			--end if;
-		--end if;
         
 		-- start and end of decoding DTC packet using PREV3 with look-ahead knowledge about incoming markers
 		if (is_evtmarker = '0' and is_clkmarker = '0' and is_loopmarker = '0' and is_othermarker = '0' and is_retrseq = '0' and is_retrmarker = '0') then
@@ -728,11 +694,6 @@ begin
 				elsif (is_datareq = '1' or is_prefetch = '1') then
 					req_we <= '1';
 				end if;
-                
-				if (is_dcsreq = '1') then
-                    if (word_count = 1) then    dcsreq_start_count  <= std_logic_vector(unsigned(dcsreq_start_count) + 1);  end if;
-                    if (word_count = 9) then    dcsreq_end_count    <= std_logic_vector(unsigned(dcsreq_end_count) + 1);    end if;
-                end if;
                 
 				-- save EWTag and Event Mode for heartbeat packet or Prefecth packet
 				if (is_heartbeat = '1') then

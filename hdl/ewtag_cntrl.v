@@ -22,6 +22,7 @@
 //      08/01/2024 : Add SPILL_TAG_ROLLOVER
 //      08/06/2024 : Fix HB_CNT_ONHOLD count down logic: use HOLD_EW_FIFO_EMPTIED to count down after count up has happened
 //      08/08/2024 : Fix SPILLTAG_FIFO write enable to use END_EVM_SEEN
+//      03/24/2025 : Register RE of LARGE_TAG_FIFO to help timing. Remove HB_ON_SERDESCLK logic. Changed W_EN of SPILLTAG_ROLLOVER FIFO
 //
 // Description: 
 //
@@ -65,7 +66,7 @@ module ewtag_cntrl(
     input   new_spill_on_xcvr,      // pulse on NEWSPILL rising edge 
     input   haltrun_en,             // gate set by addr=8 bit[13]
 
-    input   [`SPILL_TAG_BITS-1:0]   spill_tag_rollover_in, // 20 MSB of local SPILL EWTAG counter
+    input   [`SPILL_TAG_BITS-1:0]   spill_hbtag_rollover_in, // 20 MSB of local SPILL EWTAG counter
     
     // on SERDES clock
     input   new_spill_on_serdesclk,   // pulse on NEWSPILL rising edge 
@@ -95,8 +96,8 @@ module ewtag_cntrl(
     output  reg  ewtag_offset_seen,                    // to EW_FIFO_CNTRL: local spill EWTAG counter has restarted, ie first HB has been seen
 	output  [`EVENT_TAG_BITS-1:0] ewtag_offset_out,    //                 : EWTAG_OFFSET updated with first HB of new spill
         
-    input   ew_empty_ren,       // use to read SPILL_TAG_ROLLOVER FIFO 
-    output  [`SPILL_TAG_BITS-1:0]   spill_tag_rollover_out, // 20 MSB of local SPILL EWTAG counter 
+    input   ew_empty_ren,       // use to read SPILLTAG_ROLLOVER FIFO 
+    output  [`SPILL_TAG_BITS-1:0]   spill_hbtag_rollover_out, // 20 MSB of local SPILL EWTAG counter 
     
 	// exchanged with EW_SIZE_STORE_AND_FETCH
 	input	    tag_valid,		    // REQTAG (or PREFTAG) has been serviced in EW_SIZE_STORE_AND_FETCH_CNTRL
@@ -167,7 +168,7 @@ wire    ewtag_offset_full, ewtag_offset_empty;
 wire    hb_tag_full,    hb_tag_empty;
 wire    dreq_tag_full,  dreq_tag_empty;
 
-wire    tag_rollover_full, tag_rollover_empty;    
+wire    spilltag_rollover_full, spilltag_rollover_empty;    
 
 //
 // CDC (Cross-Domain Clock) handshake for hb_seen and EVM
@@ -175,11 +176,6 @@ wire    tag_rollover_full, tag_rollover_empty;
 // 2) synchronize REQ on clk_slow => REQ_SYNC
 // 3) feed-back REQ_SYNC as acknowlegde => ACK_SYNC 
 // 4) generate BUSY until ACKOWLEDGE is cleared
-reg     hb_on_serdesclk;   // unused
-reg     req, ack_req, ack_sync, ack_sync2;
-reg     req_latch, req_sync, req_sync2;
-wire    busy;
-
 reg     evm_on_serdesclk;
 reg     reqE, ack_reqE, ack_syncE, ack_syncE2;
 reg     req_latchE, req_syncE, req_syncE2;
@@ -189,19 +185,11 @@ always@(posedge xcvrclk, negedge resetn_xcvrclk)
 begin
     if(resetn_xcvrclk == 1'b0) 
     begin
-        req     <= 0;
         reqE    <= 0;
         evm_end_cnt <= 0;
     end
     else
     begin
-        ack_req	    <= req_sync2;
-        ack_sync	<=	ack_req;
-        ack_sync2   <=  ack_sync;
-            
-        if (hb_seen && !busy)	req <= 1'b1;
-        else if (ack_sync2)		req <= 1'b0;
-
         ack_reqE	<= req_syncE2;
         ack_syncE	<=	ack_reqE;
         ack_syncE2	<=	ack_syncE;
@@ -218,7 +206,6 @@ begin
     end
 end	
 
-assign 	busy    = req  || ack_sync2;
 assign 	busyE   = reqE || ack_syncE2;
 
 // synchronize the request on slow clock
@@ -226,17 +213,10 @@ always@(posedge serdesclk, negedge resetn_serdesclk)
 begin
     if(resetn_serdesclk == 1'b0) 
     begin   
-        hb_on_serdesclk	<= 0;
         evm_on_serdesclk<= 0;
     end
 	else
 	begin
-        hb_on_serdesclk <=	req_sync && !req_sync2;
-			
-        req_latch   <=  req;
-        req_sync    <=  req_latch;
-        req_sync2   <= req_sync;
-            
         evm_on_serdesclk <=	req_syncE && !req_syncE2;
 			
         req_latchE   <=  reqE;
@@ -535,7 +515,7 @@ end
 
 
 //
-// SPILLTAG_FIFOs (20bx4K) to buffer local EWTAG counter for duration of the SPILL
+// SPILLTAG_FIFOs (20bx4K) to buffer local EWTAG counter to be used in DDR pattern for duration of the SPILL
 SPILLTAG_FIFO	spilltag_fifo0 (
 	.WCLOCK	    (xcvrclk),
 	.WRESET_N   (resetn_fifo),
@@ -567,6 +547,26 @@ begin
         if (spilltag_full_latch == 1'b1 && spilltag_full_reg == 1'b0) spilltag_full_count <= spilltag_full_count + 1;
     end
 end
+
+//
+// CNT_FIFO is 20b x 64, enough to buffer SPILLTAG_ROLLOVER bus which contains the 20 MBS of local tag counter until we pass it to EW_FIFO_Controller.
+// Written to FIFO at the same time as 20 LSB (SPILL_HBTAG_IN), read from FIFO on registered EW_EMPTY_REN from EW_FIFO_Controller
+CNT_FIFO	cnt_fifo0 (
+	.WCLOCK	    (xcvrclk),
+	.WRESET_N   (resetn_fifo),
+	.DATA		(spill_hbtag_rollover_in),
+	.WE		    (end_evm_seen),
+	.RCLOCK	    (sysclk),
+	.RRESET_N   (resetn_fifo),
+	//.RE		    (ew_empty_ren),
+	.RE		    (cnt_fifo_re),
+	// Outputs
+	.EMPTY	    (spilltag_rollover_empty),
+	.FULL		(spilltag_rollover_full),
+	.Q			(spill_hbtag_rollover_out)	
+);
+
+
 //
 // Cross time domain FIFO (48bit x 64) for EWTAG_OFFSET bus at the start of SPILL
 EWTAG_FIFO	ewtag_fifo_offset (
@@ -631,23 +631,6 @@ EWTAG_FIFO	dreq_tag_fifo (
 	.EMPTY	(dreq_tag_empty),
 	.FULL	(dreq_tag_full),
 	.Q		(dreq_tag_out)	
-);
-
-// CNT_FIFO is 20b x 64 since
-// SPILL_TAG_ROLLOVER bus is only 20 bits 
-CNT_FIFO	cnt_fifo0 (
-	.WCLOCK	    (xcvrclk),
-	.WRESET_N   (resetn_fifo),
-	.DATA		(spill_tag_rollover_in),
-	.WE		    (hb_seen),
-	.RCLOCK	    (sysclk),
-	.RRESET_N   (resetn_fifo),
-	//.RE		    (ew_empty_ren),
-	.RE		    (cnt_fifo_re),
-	// Outputs
-	.EMPTY	    (tag_rollover_empty),
-	.FULL		(tag_rollover_full),
-	.Q			(spill_tag_rollover_out)	
 );
 
 endmodule

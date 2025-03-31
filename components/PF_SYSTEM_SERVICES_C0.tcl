@@ -6,6 +6,7 @@ create_and_configure_core -core_vlnv {Actel:SgCore:PF_SYSTEM_SERVICES:3.0.103} -
 "AUTHBITSTREAM:false"  \
 "AUTHIAPIMG:false"  \
 "DCSERVICE:false"  \
+"DIE_RTPF500ZT:0"  \
 "DIGESTCHECK:false"  \
 "DIGSIGSERVICE:false"  \
 "DVSERVICE:true"  \

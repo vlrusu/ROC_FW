@@ -3,17 +3,16 @@ import_files -library work -hdl_source hdl/Blinking_LED_driver.vhd
 import_files -library work -hdl_source hdl/RxController.vhd
 import_files -library work -hdl_source hdl/algorithm_constants.vhd
 import_files -library work -hdl_source hdl/TxController.vhd
-import_files -library work -hdl_source hdl/MUX_DIGI_DATA.v
 import_files -library work -hdl_source hdl/ROCFIFOController.vhd
 import_files -library work -hdl_source hdl/edge_generator.v
 import_files -library work -hdl_source hdl/EWMaker.vhd
 import_files -library work -hdl_source hdl/EW_FIFO_controller.v
+import_files -library work -hdl_source hdl/mem_read_cntrl.v
 import_files -library work -hdl_source hdl/ew_size_store_and_fetch_controller.vhd
 import_files -library work -hdl_source hdl/ewtag_cntrl.v
-import_files -library work -hdl_source hdl/mem_read_cntrl.v
 import_files -library work -hdl_source hdl/clus_pattern_cntrl.v
-import_files -library work -hdl_source hdl/rocfifo_cntrl.v
 import_files -library work -hdl_source hdl/hit_ram.vhd
+import_files -library work -hdl_source hdl/rocfifo_cntrl.v
 import_files -library work -hdl_source hdl/pattern_switch.v
 import_files -library work -hdl_source hdl/DCSRegisters.vhd
 import_files -library work -hdl_source hdl/LeakMux.vhd
@@ -23,8 +22,8 @@ import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
 import_files -library work -hdl_source hdl/counter32.v
 import_files -library work -hdl_source hdl/DCSProcessor.vhd
-import_files -library work -hdl_source hdl/DCSReadDDRProcessor.vhd
 import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
+import_files -library work -hdl_source hdl/DCSReadDDRProcessor.vhd
 import_files -library work -hdl_source hdl/DCSWriteCMDProcessor.vhd
 import_files -library work -hdl_source hdl/DRACRegisters.vhd
 import_files -library work -hdl_source hdl/DREQProcessor.vhd
@@ -40,7 +39,6 @@ import_files -library work -hdl_source hdl/WordFlipper.vhd
 import_files -library work -hdl_source hdl/crc.vhd
 import_files -library work -hdl_source hdl/delay_sreg_1bit.vhd
 import_files -library work -hdl_source hdl/pulse_time_crossing.v
-import_files -library work -hdl_source hdl/req_err_switch.v
 import_files -library work -hdl_source hdl/counter_16bit.v
 import_files -library work -hdl_source hdl/pulse_stretcher.v
 import_files -library work -hdl_source hdl/tracker_params.vh
