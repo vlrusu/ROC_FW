@@ -106,6 +106,7 @@ port (
 
     DCS_MEM_READ        : OUT std_logic;
     DCS_MEM_OFFSET      : OUT std_logic_vector(19 downto 0);
+    EVENT_TIMEOUT       : OUT std_logic_vector(19 downto 0);
     
     DCS_DDR_FIFO_FULL   : IN std_logic;
     DCS_DDR_FIFO_EMPTY  : IN std_logic;
@@ -177,6 +178,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
     signal enable_marker_reg    : std_logic;
     signal force_full_reg       : std_logic;
     signal haltrun_en_reg       : std_logic;
+    signal event_timeout_reg	: std_logic_vector(19 downto 0);
    
 begin	
 		
@@ -195,6 +197,7 @@ begin
     DCS_ENABLE_MARKER   <= enable_marker_reg;
     DCS_FORCE_FULL  <= force_full_reg; 
     HALTRUN_EN      <= haltrun_en_reg;
+    EVENT_TIMEOUT   <= event_timeout_reg;
     
    -------------------------------------------------------------------------------
    -- Process Read/Write Commands
@@ -229,6 +232,7 @@ begin
         
         DCS_MEM_READ    <= '0';
         DCS_MEM_OFFSET  <= (others => '0');
+        event_timeout_reg   <= X"0_FFFF";
         
         dcs_digirw_sel  <= '0';
         dcs_cal_init    <= '0';
@@ -341,6 +345,10 @@ begin
                 DCS_MEM_OFFSET(15 downto 0) <= drac_wdata(15 downto 0);
             elsif (drac_addrs = 34) then   -- 0x22
                 DCS_MEM_OFFSET(19 downto 16) <= drac_wdata(3 downto 0);
+            elsif (drac_addrs = 60) then   -- 0x3C
+                event_timeout_reg(15 downto 0)  <= drac_wdata(15 downto 0);
+            elsif (drac_addrs = 61) then   -- 0x3D
+                event_timeout_reg(19 downto 16)  <= drac_wdata(3 downto 0);
                  
             --elsif (drac_addrs = 126) then
 				--fifo_we   <= '1';
@@ -495,6 +503,10 @@ begin
 				DATA_OUT <= DCS_OFFSETTAG(31 downto 16);
 			elsif (drac_addrs = 59) then		 	 
 				DATA_OUT <= DCS_OFFSETTAG(47 downto 32);
+			elsif (drac_addrs = 60) then		 	 
+				DATA_OUT <= EVENT_TIMEOUT(15 downto 0);
+			elsif (drac_addrs = 61) then		 	 
+				DATA_OUT <= X"000" & EVENT_TIMEOUT(19 downto 16);
                 
 			elsif (drac_addrs = 64) then		 	 
 				DATA_OUT <= DCS_EVMCNT(15 downto 0);

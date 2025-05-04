@@ -12,6 +12,8 @@
 --              bit[30:20]=> number of 128-bit words for SERDES lane 
 --              bit[31]   => error bit if ROC to DIGI TAG_SYNC fails (where TAG_SYNC is local tag counter roll-over every 2**14=8192 tags)
 --           Sent EW_TAG_ERROR and TAG_SYNC_ERROR out to DDR
+--      v6.0: <Feb. 2025>: Latched CURRENT_DATA and added extra states START1_2 and COUNT1_2 to easy timing
+--      v7.0: <May 1 2025>: Increased size of FULL_SIZE bus to 14 bits to avoid overflow and overwrite of EW_SIZE output
 --
 -- Description: 
 --
@@ -92,7 +94,7 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
 --    signal ew_tag_error : std_logic;
 
     signal lane_size : unsigned(12 downto 0);
-    signal full_size : unsigned(11 downto 0);
+    signal full_size : unsigned(13 downto 0);  -- need to fit 11-bit size reported by each Serdes in units of 64-bits
     constant  MAX_BEATS: integer := (2**TRK_HIT_BITS-1)*4;  -- one TRK hit comprises 256-bits, ie 4x64-bit words
     
     signal rd_cnt : unsigned(15 downto 0);    -- this counts words read from ROCFIFO in units of 32-bit words

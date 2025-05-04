@@ -3,7 +3,7 @@
 --
 -- File: TxController.vhd
 -- File history:
---      <Revision number>: <Date>: <Comments>
+--      <v1>: <May 1 205>: Changed ROCFIFO almost full from 2048-1024 to 4096-1024 (effectively 3/4 full) 
 --      <Revision number>: <Date>: <Comments>
 --      <Revision number>: <Date>: <Comments>
 --
@@ -88,7 +88,8 @@ begin
             when START =>
                 data_out <= X"00000000";
                 kchar_out <= "0000";
-                if unsigned(wrcnt) < 2048 - 1024 and force_full_2q = '0' then
+                if unsigned(wrcnt) < 4096 - 1024 and force_full_2q = '0' then
+--                if unsigned(wrcnt) < 2048 - 1024 and force_full_2q = '0' then
                     data_out <= X"01010101";
                     kchar_out <= "0000";
                 end if;

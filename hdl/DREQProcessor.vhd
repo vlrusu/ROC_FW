@@ -12,6 +12,7 @@
 --      <v6>: <10/2024>: MT Add EMPTY_EVENT flag and DTC header/data packet counters
 --      <v7>: <11/2024>: MT Fixed Data Header packer by adding DATAREQ_SUBSYSTEM_ID, fixing "dataReqPktCnt" size and
 --                          addinn DATAREQ_EVT_MODE, DATAREQ_SUBRUN, DATAREQ_ONSPILL and DATAREQ_DTC_ID
+--      <v8>: <05/2025>: MT Add programmable READTIMEOUT
 --
 -- Description: 
 --
@@ -71,6 +72,8 @@ port (
     DATAREQ_PACKETS_OVFL    : IN  STD_LOGIC;
     DATAREQ_TAG_ERROR       : IN  STD_LOGIC;
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
+    
+    EVENT_TIMEOUT	        : IN  STD_LOGIC_VECTOR(19 DOWNTO 0);
     
     -- debug signals
     dreq_pkt_count      : out std_logic_vector(15 downto 0);
@@ -135,7 +138,8 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal  empty_event             : std_logic;
 
     signal dreqTimeout  : unsigned(13 downto 0);        -- allow a 16383 x 12.5 ns = 205 us timeout
-    signal readTimeout	: unsigned(13 downto 0);
+--    signal readTimeout	: unsigned(13 downto 0);    -- allow a 16383 x 12.5 ns = 205 us timeout
+    signal readTimeout	: unsigned(19 downto 0);        -- allow a 2**20 x 12.5 ns = 3.2 ms timeout
     
 begin
 
@@ -231,7 +235,8 @@ begin
                 mark_window_tag_unknown <= '0';
                 mark_window_tag_error   <= '0';
                 mark_dreq_timeout       <= '0';
-                readTimeout		        <= (others => '1');
+--                readTimeout		        <= (others => '1');
+                readTimeout		        <= unsigned(EVENT_TIMEOUT);
                 
                 dataReqStatus   <= DATAREQ_STATUS;
                 if unsigned(dreq_rdcnt) > 0 then

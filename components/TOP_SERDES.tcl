@@ -603,6 +603,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_PREFTAG" "P
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_SPILLCNT" "RxPacketReader_0:SPILL_EVENT_WINDOW_TAG[31:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_SUBSYSTEM_ID" "DREQProcessor_0:DATAREQ_SUBSYSTEM_ID" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:EVENT_MARKER_CNT" "RxPacketReader_0:event_marker_count" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:EVENT_TIMEOUT" "DREQProcessor_0:EVENT_TIMEOUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:IS_SKIPPED_DREQ_CNT" "ErrorCounter_0:is_skipped_dreq_cnt" "RxPacketReader_0:is_skipped_dreq_cnt" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:LANE_EMPTY_SEEN" "LANE_EMPTY_SEEN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:LOSS_OF_LOCK_CNT" "XCVR_Block_0:ALIGNMENT_LOSS_COUNTER" }
