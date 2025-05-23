@@ -7,6 +7,7 @@
 --      <v0>: <06/26/22>: First version reading from CRDCS_EXAMPLE_RD and wrting content to CRDCS_EXAMPLE_WR
 --      <v1>: <07/05/22>: Add CMD_RX_BUFFER
 --      <v2>: <08/03/22>: Clean logic and add comments: tested for single DCS Read/Block DCS Read (inclusing READSPI)
+--      <v3>: <05/08/25>: Added DCS_DTC_REQUEST for programming multiple SPI Flash blocks
 --
 -- Description: 
 --
@@ -68,6 +69,7 @@ port (
     DCS_TX_WE       :   out std_logic;
     DCS_TX_IN       :   out std_logic_vector(15 downto 0);
 
+    DCS_PROG_RETURN :   out std_logic_vector(15 downto 0);
     DCS_CMD_STATUS  :   out std_logic_vector(15 downto 0);
     DCS_DIAG_DATA   :   out std_logic_vector(15 downto 0)
 );
@@ -81,6 +83,7 @@ architecture architecture_DCSRegisters of DCSRegisters is
 	constant CRDCS_READ_RX     : std_logic_vector(7 downto 0) := x"02";     -- PADDR = 0x7A00_0008
 	constant CRDCS_WRITE_TX    : std_logic_vector(7 downto 0) := x"03";     -- PADDR = 0x7A00_000C
 	constant CRDCS_DIAG_DATA   : std_logic_vector(7 downto 0) := x"04";     -- PADDR = 0x7A00_0010
+	constant CRDCS_PROG_RETURN : std_logic_vector(7 downto 0) := x"05";     -- PADDR = 0x7A00_0014
    
   -------------------------------------------------------------------------------
   -- Signal declarations
@@ -271,6 +274,7 @@ begin
             Is_BufferWR     <= '0';
             DCS_DIAG_DATA   <= (others => '0');
             DCS_CMD_STATUS  <= (others => '0');
+            DCS_PROG_RETURN <= (others => '0');
             tx_data         <= (others => '0');
          
         elsif (PCLK'event and PCLK = '1') then
@@ -285,6 +289,9 @@ begin
                 
                 when CRDCS_DIAG_DATA =>
                     DCS_DIAG_DATA   <= PWDATA(15 downto 0);
+                    
+                when CRDCS_PROG_RETURN =>
+                    DCS_PROG_RETURN <= PWDATA(15 downto 0);
                     
                 --  needs to write 24x32-bits to CMX_TX_BUFFER
                 when CRDCS_WRITE_TX =>

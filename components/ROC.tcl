@@ -806,6 +806,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"NewDDRInterface_0:tag_valid_cou
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:CMD_IN_DATA" "TOP_SERDES_0:CMD_IN_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_CMD_STATUS" "TOP_SERDES_0:DCS_CMD_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_DIAG_DATA" "TOP_SERDES_0:DCS_DIAG_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_PROG_RETURN" "TOP_SERDES_0:DCS_PROG_RETURN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_RX_WRCNT" "TOP_SERDES_0:DCS_RX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TO_SERIAL_TEST" "TOP_SERDES_0:DCS_TO_SERIAL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"SLOWCONTROLS_0:DCS_TX_Q" "TOP_SERDES_0:DCS_TX_DATA" }

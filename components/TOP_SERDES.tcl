@@ -98,6 +98,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_HBONHOLD} -port_direction
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_LANE_EMPTY} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_LANE_FULL} -port_direction {IN} -port_range {[3:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_OFFSETTAG} -port_direction {IN} -port_range {[47:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_PROG_RETURN} -port_direction {IN} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {IN} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_STORE_CNT} -port_direction {IN} -port_range {[19:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_STORE_POS} -port_direction {IN} -port_range {[1:0]}
@@ -581,6 +582,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_LANE_EMPTY" "DRACRegisters_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_LANE_FULL" "DRACRegisters_0:DCS_LANE_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_MEM_OFFSET" "DRACRegisters_0:DCS_MEM_OFFSET" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_OFFSETTAG" "DRACRegisters_0:DCS_OFFSETTAG" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_PROG_RETURN" "DRACRegisters_0:DCS_PROG_RETURN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_WRCNT" "DRACRegisters_0:DCS_RX_WRCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_CNT" "DRACRegisters_0:DCS_STORE_CNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_STORE_POS" "DRACRegisters_0:DCS_STORE_POS" }

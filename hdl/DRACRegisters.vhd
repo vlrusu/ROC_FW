@@ -47,6 +47,7 @@ port (
     -- DTC to RISKV diagnostic registers
     DCS_CMD_STATUS	    : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- status of DCS command to RiskV
     DCS_DIAG_DATA	    : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- diagnostic register via RiskV
+    DCS_PROG_RETURN     : IN  std_logic_vector(gAPB_DWIDTH-1 DOWNTO 0); 	-- return parameter for REMOTE PROGRAM actions	
     DCS_TX_FULL 		: IN  std_logic;				--
     DCS_TX_EMPTY 		: IN  std_logic;				--
     DCS_TX_WRCNT	    : IN  std_logic_vector(10 downto 0);     -- DCS_TX_BUFFER WRCNT
@@ -543,6 +544,8 @@ begin
 				DATA_OUT <= '0' & DCS_TX_FULL & '0' & DCS_TX_EMPTY & '0' & DCS_TX_WRCNT;
 			elsif (drac_addrs = 130) then		-- 0x82 	 
 				DATA_OUT <= '0' & DCS_RX_FULL & '0' & DCS_RX_EMPTY & '0' & DCS_RX_WRCNT;
+			elsif (drac_addrs = 132) then		-- 0x84 	 
+                DATA_OUT <= DCS_PROG_RETURN;
 			elsif (drac_addrs = 255) then		-- 0xFF 	 
 				DATA_OUT <= DCS_DIAG_DATA;
                 

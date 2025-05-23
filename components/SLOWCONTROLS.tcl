@@ -145,6 +145,7 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {hv_lane1_error_count} -port_d
 
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_CMD_STATUS} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_DIAG_DATA} -port_direction {OUT} -port_range {[15:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_PROG_RETURN} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_RX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_Q} -port_direction {OUT} -port_range {[15:0]}
 sd_create_bus_port -sd_name ${sd_name} -port_name {DCS_TX_WRCNT} -port_direction {OUT} -port_range {[10:0]}
@@ -568,6 +569,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:Q" "DCSReg
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CMD_TO_PROC_BUFFER_0:RDCNT" "DCSRegisters_0:PROC_CMD_RDCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_CMD_STATUS" "DCS_CMD_STATUS" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_DIAG_DATA" "DCS_DIAG_DATA" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_PROG_RETURN" "DCS_PROG_RETURN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_IN" "DCS_RX_BUFFER_0:DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_OUT" "DCS_RX_BUFFER_0:Q" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_TX_IN" "DCS_TX_BUFFER_0:DATA" }
