@@ -23,11 +23,13 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RX_FULL} -port_directi
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_EMPTY} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_FULL} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DREQ_CLK} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DREQ_ERROR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DTCALIGN_RESETN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ENABLE_ALIGNMENT} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ERROR_CLEAR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ERROR_IN} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {FPGA_POR_N} -port_direction {IN}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {HB_ERROR} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {INIT_DONE} -port_direction {IN}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_N} -port_direction {IN} -port_is_pad {1}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {LANE0_RXD_P} -port_direction {IN} -port_is_pad {1}
@@ -494,7 +496,9 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_cal_init" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_digirw_sel" "dcs_digirw_sel" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_busy" "dcs_hv_busy" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:dcs_hv_init" "dcs_hv_init" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:DREQ_ERROR" "DREQ_ERROR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:FETCH_START" "FETCH_START" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:HB_ERROR" "HB_ERROR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_en" "crc_1:CRC_EN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:crc_rst" "crc_1:RST" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQProcessor_0:dreq_fifo_re" "RxPacketFIFO_2:RE" }

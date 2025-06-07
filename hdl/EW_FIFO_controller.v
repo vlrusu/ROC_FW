@@ -18,6 +18,7 @@
 //      v12.0:<Nov.29,2024>: removed DDR_WRITE_ON condition in logic avoiding writing and reading from same DDR address (see WAIT state of raddr_state SM)
 //      v13.0:<Mar.12,2025>: fixed EW_FIFO_WE logic to respond to WREADY low. Also pass full HB_TAG to second DDR header word.
 //      v14.0:<Mar.25,2025>: change "second_wr_hdr" definition. Added delayed to EW_EMPTY_REN and extra stare to WADDR_STATE to comply with registered FIFO RD_EN in ewtag_cntl module
+//      v15.0:<Jun.2,2025>: added HB_TAG_ERROR/DREQ_TAG_ERROR outputs for TOP_SERDES/DREQProcessor to set status bit when TAG inconsistency between DDR header and HB/DREQ is seen
 //
 // Description:
 //
@@ -97,6 +98,8 @@ module EW_FIFO_controller #(
     output  reg     et_pckts_err,                       // event has error (tag sync or inconsistent tag accross serdes lanes)
 	output  reg     tag_sent,                   // DDR read is done
 	output  reg	    tag_null,                   // DDR read is done for event with no hits
+    output  reg     hb_tag_error,             	// failed comparison between HB tag and tag derived from DIGI data
+    output  reg     dreq_tag_error,             // failed comparison between DREQ tag and tag saved in DDR header
 	output  reg     et_fifo_emptied,            // pulse on EVT_FIFO becoming available: used to clear DATA_READY and generate LAST_WORD
     output          et_fifo_full,               // current ET FIFO is almost full (ie has 511 hits)
 // diagnostics
@@ -291,8 +294,11 @@ reg	    data_error, event_error;
 // to mitigate timing
 reg     hb_dreq_err, hb_tag_err;
 reg     check_hb, check_hb2, hb_tag_err2;
+reg     [1:0] cnt_delay;
+reg     hb_err_on, hb_err_off;
 reg     [`EVENT_TAG_BITS-1:0]  hb_tag_in_latch;
 
+reg     dreq_err_on, dreq_err_off;
 reg     check_dreq_tag, check_dreq2, hb_dreq_err2;
 reg 	[`EVENT_TAG_BITS-1:0]   dreq_tag_in_latch;
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,7 +327,8 @@ localparam [2:0]    IDLE	=  3'b000,
                     SET  	=  3'b010,
                     CHECK	=  3'b110,
                     WAIT    =  3'b100,
-                    NEXT	=  3'b101;
+                    NEXT	=  3'b101,
+                    DELAY   =  3'b111;
 						
 // this is the offset for the next burst in units of bytes: 
 //     bytes-per-beat * burst length in beats
@@ -903,6 +910,8 @@ begin
         check_hb2       <= 1'b0;
         hb_tag_err      <= 1'b0;
         hb_tag_err2     <= 1'b0;
+        
+        cnt_delay       <= 2'b0;
     end
         
     else
@@ -1014,18 +1023,33 @@ begin
             
             hb_tag_in_latch <= hb_tag_in;
             check_hb <= 1;
+            cnt_delay   <= cnt_delay + 1;
+            waddr_state	<=	DELAY;
+        end
+        
+        // delay AWVALID to wait for HB_ERR to be set
+        DELAY:
+        begin
+            cnt_delay   <= cnt_delay + 1;
             
-            awvalid_o		<=	1'b1;
-            if(awready_i)
+            if (cnt_delay == 3'b11) 
             begin
-                // commented after moving zeroeing of write address to NEXT state
-                //if(ew_DDRwrap_to_store == 1)    next_write_addr	<= 0;
-                //else                            next_write_addr	<=	next_write_addr + 1;
-                next_write_addr	<=	next_write_addr + 1;
+                cnt_delay       <=  2'b0;
+                first_wr_hdr[63]<=  hb_tag_err;
+                awvalid_o	    <=	1'b1;
                 
-                wburst_cnt	<=	wburst_cnt + 1'b1;
-                waddr_state	<=	DONE;   
+                if(awready_i)
+                begin
+                    // commented after moving zeroeing of write address to NEXT state
+                    //if(ew_DDRwrap_to_store == 1)    next_write_addr	<= 0;
+                    //else                            next_write_addr	<=	next_write_addr + 1;
+                    next_write_addr	<=	next_write_addr + 1;
+                    
+                    wburst_cnt	<=	wburst_cnt + 1'b1;
+                    waddr_state	<=	DONE;   
+                end
             end
+            
         end
         
         //wait for AXI write completion
@@ -1364,8 +1388,10 @@ begin
         hb_dreq_err     <= 1'b0;
         hb_dreq_err2    <= 1'b0;
         hb_dreq_err_cnt <= 16'b0;
+		hb_err_on		<= 1'b0;
         check_dreq_tag  <= 1'b0;
         check_dreq2     <= 1'b0;
+        dreq_err_on     <= 1'b0;
         dreq_tag_in_latch <= 64'b0;
         rdata_state		<=	IDLE;
     end
@@ -1379,15 +1405,19 @@ begin
         check_dreq_tag  <= 1'b0;
         check_dreq2     <= 1'b0;
 
-        if (hb_dreq_err == 1) begin
-            hb_dreq_err_cnt <= hb_dreq_err_cnt + 1;
-        end
         if (check_dreq_tag == 1) begin
             if (second_rd_hdr[`EVENT_TAG_BITS-1:0] != dreq_tag_in_latch[`EVENT_TAG_BITS-1:0] ) begin
                 hb_dreq_err   <= 1'b1;
             end;
         end
+        if (hb_dreq_err == 1) begin
+            hb_dreq_err_cnt <= hb_dreq_err_cnt + 1;
+            dreq_err_on     <= 1'b1;
+        end
         
+        if (hb_err_off)     hb_err_on   <= 1'b0;
+        if (dreq_err_off)   dreq_err_on <= 1'b0;
+
         case(rdata_state)
         
         IDLE:
@@ -1459,10 +1489,12 @@ begin
                             header1_error       <= 1;
                         end
 						
-                        if  (first_rd_hdr[63] != et_err || first_rd_hdr[62] != et_ovfl ) begin
+                        if  (first_rd_hdr[61] != et_err || first_rd_hdr[60] != et_ovfl ) begin
                             data_error          <= 1;
                         end
-                    end
+                        
+                        if (first_rd_hdr[63] == 1'b1) hb_err_on <= 1'b1;
+					end
                    
                     if (hdr_cnt == 2) begin
                         dreq_tag_in_latch <= dreq_tag_in;
@@ -1663,6 +1695,41 @@ begin
 					(et_fifo1_empty_latch && !et_fifo1_empty_sync)) et_fifo_emptied	<= 1'b1;
 		end
         
+    end
+end
+
+//
+// logic to set inconsistent DATA REQUEST for DREQ data header
+always@(posedge dreqclk, negedge resetn_dreqclk)
+begin
+    if(resetn_dreqclk == 1'b0)
+    begin
+        hb_err_off      <= 0;
+        hb_tag_error    <= 0;
+        dreq_err_off    <= 0;
+        dreq_tag_error  <= 0;
+    end
+    else
+    begin
+        // used to set inconsistent DATA REQUEST in DREQ data header
+        if (hb_err_on) 
+        begin   
+            hb_tag_error  <= 1;
+            hb_err_off    <= 1;
+        end
+        else if (et_fifo_emptied || tag_null)  hb_tag_error  <= 0;
+        
+        if (hb_tag_error) hb_err_off    <= 0;
+        
+        // used to set inconsistent DATA REQUEST in DREQ data header
+        if (dreq_err_on) 
+        begin   
+            dreq_tag_error  <= 1;
+            dreq_err_off    <= 1;
+        end
+        else if (et_fifo_emptied || tag_null)  dreq_tag_error  <= 0;
+        
+        if (dreq_tag_error) dreq_err_off    <= 0;
     end
 end
 

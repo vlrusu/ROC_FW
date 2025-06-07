@@ -258,6 +258,11 @@ sd_update_instance -sd_name ${sd_name} -instance_name {DCSRegisters_0}
 
 
 
+# Add DFN1_0 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {DFN1} -instance_name {DFN1_0}
+
+
+
 # Add GPIO_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {GPIO} -instance_name {GPIO_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {GPIO_0:INT}
@@ -443,7 +448,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE1n" "PREAMPSPI_1:S
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MISO" "PREAMPSPI_1:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MOSI" "PREAMPSPI_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_SCLK" "MX2_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485Registers_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "DFN1_0:CLK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485Registers_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISCLKO" "HVPROGSPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDI" "HVPROGSPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDO" "HVPROGSPISDO" }
@@ -471,6 +476,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:FULL" "DCS_TX_F
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_BUFFER_0:RE" "DCS_TX_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDRCTRLREADY" "Registers_0:DDRCTRLREADY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DDR_RESETN" "Registers_0:DDR_RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:D" "rs485_rx" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DFN1_0:Q" "RS485Registers_0:rx" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DI" "PF_SPI_0:DI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIDEVICE_RESETN" "Registers_0:DIGIDEVICE_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DO" "PF_SPI_0:DO" }
@@ -500,7 +507,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_LOCK" "Registers_0:PRBS_LO
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_ON" "Registers_0:PRBS_ON" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PREAMPSPI_0:SPISS[2:2]" "SENSOR_MCP_CEn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PWM0" "pwm_0:PWM[0:0]" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:rx" "rs485_rx" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:tx" "rs485_tx" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:tx_enable" "rs485_tx_enable" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RX" "UARTapb_0:RX" }

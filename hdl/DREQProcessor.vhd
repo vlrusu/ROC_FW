@@ -13,6 +13,7 @@
 --      <v7>: <11/2024>: MT Fixed Data Header packer by adding DATAREQ_SUBSYSTEM_ID, fixing "dataReqPktCnt" size and
 --                          addinn DATAREQ_EVT_MODE, DATAREQ_SUBRUN, DATAREQ_ONSPILL and DATAREQ_DTC_ID
 --      <v8>: <05/2025>: MT Add programmable READTIMEOUT
+--      <v9>: <05/2025>: MT Add HB_ERROR/DREQ_ERROR input from NewDDRInterface/EW_FIFO_Controller to set status_bit[5]/[6] when TAG inconsistency between DDR header and HB/DREQ is seen
 --
 -- Description: 
 --
@@ -74,6 +75,8 @@ port (
     DATAREQ_RE_FIFO			: OUT STD_LOGIC; 
     
     EVENT_TIMEOUT	        : IN  STD_LOGIC_VECTOR(19 DOWNTO 0);
+    HB_ERROR              	: IN  STD_LOGIC;
+    DREQ_ERROR              : IN  STD_LOGIC;
     
     -- debug signals
     dreq_pkt_count      : out std_logic_vector(15 downto 0);
@@ -139,7 +142,7 @@ architecture architecture_DREQProcessor of DREQProcessor is
 
     signal dreqTimeout  : unsigned(13 downto 0);        -- allow a 16383 x 12.5 ns = 205 us timeout
 --    signal readTimeout	: unsigned(13 downto 0);    -- allow a 16383 x 12.5 ns = 205 us timeout
-    signal readTimeout	: unsigned(19 downto 0);        -- allow a 2**20 x 12.5 ns = 3.2 ms timeout
+    signal readTimeout	: unsigned(19 downto 0);        -- allow a 2**20 x 12.5 ns = 9.6 ms timeout
     
 begin
 
@@ -350,6 +353,8 @@ begin
                     end if;
                     
                 else
+                    if (HB_ERROR = '1')	  then  dataReqStatus(5) <= '1';  end if;
+                    if (DREQ_ERROR = '1') then  dataReqStatus(6) <= '1';  end if;
                     dataReqPktOvfl      <= DATAREQ_PACKETS_OVFL;
                     dataReqTagErr       <= DATAREQ_TAG_ERROR;
                     dataReqDataReadCnt  <= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
@@ -372,7 +377,7 @@ begin
                     dataReqStatus(4) <= '1';  
                 end if;
                 if  (dataReqTagErr = '1') then
-                    dataReqStatus(5) <= '1';  
+                    dataReqStatus(2) <= '1';  
                 end if;
                 
                 

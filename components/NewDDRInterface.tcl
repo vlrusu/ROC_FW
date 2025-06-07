@@ -58,11 +58,13 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {axi_start_on_serdesclk} -p
 sd_create_scalar_port -sd_name ${sd_name} -port_name {data_ready} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_fifo_empty} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ddr_fifo_full} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {dreq_tag_error} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_fifo_full} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_pckts_err} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {et_pckts_ovfl} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_DDR_wrap} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {ew_fifo_full} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {hb_tag_error} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {last_word} -port_direction {OUT}
 
 
@@ -265,6 +267,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DREQ_FIFO_1:WE" "ew_size_store_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:axi_start_on_serdesclk" "pattern_switch_0:axi_start_on_serdesclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:curr_ewfifo_wr" "pattern_switch_0:curr_ewfifo_wr" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ddr_done_on_serdesclk" "pattern_FIFO_filler_0:ddr_done" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:dreq_tag_error" "dreq_tag_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_emptied" "ewtag_cntrl_0:tag_done" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_full" "et_fifo_full" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:et_fifo_re" "et_fifo_re" }
@@ -282,6 +285,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_ovfl" "
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_ovfl_to_store" "ew_size_store_and_fetch_controller_0:overflow_to_store" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ew_we_store" "ew_size_store_and_fetch_controller_0:store" "ewtag_cntrl_0:ew_we_store" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:ewtag_offset_seen" "ewtag_cntrl_0:ewtag_offset_seen" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:hb_tag_error" "hb_tag_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:last_word" "ewtag_cntrl_0:last_word" "last_word" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_dreqclk" "edge_generator_0:risingEdge" "ew_size_store_and_fetch_controller_0:newspill_on_dreqclk" "ewtag_cntrl_0:new_spill_on_dreqclk" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"EW_FIFO_controller_0:newspill_on_sysclk" "edge_generator_2:risingEdge" "ew_size_store_and_fetch_controller_0:newspill_on_sysclk" }
