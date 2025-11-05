@@ -14,6 +14,9 @@
 --                          addinn DATAREQ_EVT_MODE, DATAREQ_SUBRUN, DATAREQ_ONSPILL and DATAREQ_DTC_ID
 --      <v8>: <05/2025>: MT Add programmable READTIMEOUT
 --      <v9>: <05/2025>: MT Add HB_ERROR/DREQ_ERROR input from NewDDRInterface/EW_FIFO_Controller to set status_bit[5]/[6] when TAG inconsistency between DDR header and HB/DREQ is seen
+--      <v10>:<09/2025>: MT Add EW_DATA_ON input to delay event DREQ timeout if DIGI data is still coming in.
+--      <v11>:<10/2025>: MT Add HAS_PREFETCH flag to prevent FETCH_START on DREQ following a PREFETCH. Removed some diagnostics using DREQ_RDCNT. 
+--                          
 --
 -- Description: 
 --
@@ -78,6 +81,8 @@ port (
     HB_ERROR              	: IN  STD_LOGIC;
     DREQ_ERROR              : IN  STD_LOGIC;
     
+    ew_data_on              : IN  STD_LOGIC;
+    
     -- debug signals
     dreq_pkt_count      : out std_logic_vector(15 downto 0);
     dreq_hdr_pkt_count  : out std_logic_vector(15 downto 0);
@@ -96,7 +101,8 @@ end DREQProcessor;
 
 architecture architecture_DREQProcessor of DREQProcessor is
 
-    type dreq_state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, DREQ, DBGDATA, DREQHDR, SENDHEADER, READDATA, SENDDATA, DONE, CALCULATECRC, WRITECRC, FLUSHFIFO);
+    type dreq_state_type is (IDLE, FIRSTREAD, SECONDREAD, CHECKCRC, DREQ, DBGDATA, DREQHDR, SENDHEADER, READDATA, SENDDATA, 
+                                DONE, CALCULATECRC, WRITECRC, FLUSHFIFO, VERIFYTIMEOUT);
     signal dreq_state      : dreq_state_type;
     
     type   packet   is array (9 downto 0) of std_logic_vector(15 downto 0);
@@ -116,11 +122,6 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal reqType : unsigned(3 downto 0);
     signal reqEventWindowTag: unsigned(6*8-1 downto 0);		--6 byte    --		* NOTE: assume "timestamp" tag does not wrap around
      
-    -- DEBUG PACKET is now driven by EVT_MODE
-    --signal dgbDreq			: 	std_logic;
-    --signal dbgDataPacketCnt : 	unsigned(10 downto 0);	
-    --signal dbgDataType		: 	unsigned(3 downto 0);	
-	 
     signal dataReq_FIFOReadyState	: unsigned(1 downto 0);
     signal dataReq_dataReady		: std_logic;
     signal dataReqDataReadCnt		: unsigned(15 downto 0);
@@ -132,17 +133,17 @@ architecture architecture_DREQProcessor of DREQProcessor is
     signal firstDone				: std_logic; 
     
     -- debug signals for ILA
-    signal mark_dreq_pkt_long       : std_logic;
-    signal mark_dreq_pkt_error      : std_logic;
     signal mark_window_tag_error    : std_logic; 
     signal mark_window_tag_unknown  : std_logic;
     signal mark_dreq_timeout        : std_logic;  
     
-    signal  empty_event             : std_logic;
+    signal empty_event              : std_logic;
 
-    signal dreqTimeout  : unsigned(13 downto 0);        -- allow a 16383 x 12.5 ns = 205 us timeout
---    signal readTimeout	: unsigned(13 downto 0);    -- allow a 16383 x 12.5 ns = 205 us timeout
-    signal readTimeout	: unsigned(19 downto 0);        -- allow a 2**20 x 12.5 ns = 9.6 ms timeout
+    signal dreqTimeout  : unsigned(13 downto 0);        -- allow up to 16383 x 12.5 ns = 205 us timeout
+    signal readTimeout	: unsigned(19 downto 0);        -- allow up to 2**20 x 12.5 ns = 9.6 ms timeout
+    signal is_timeout   : std_logic;
+
+    signal has_prefetch : std_logic;
     
 begin
 
@@ -150,9 +151,6 @@ begin
     reqType 			<= unsigned(inbuffer(2)(7 downto 4));
     link_id 			<= inbuffer(2)(10 downto 8);
     reqEventWindowTag 	<= unsigned(inbuffer(5)) & unsigned(inbuffer(4)) & unsigned(inbuffer(3));
-    --dgbDreq				<= inbuffer(7)(0);					-- debug data mask: if 1, ROC sends data for debugging purposes
-    --dbgDataType			<= unsigned(inbuffer(7)(7 downto 4));  -- 0x0 special sequence; 0x1 External serial data; 0x2 Same as 0x1 WITH initial FIFO reset
-    --dbgDataPacketCnt	<= unsigned(inbuffer(8)(10 downto 0)); -- number of Debug Data packets
     read_crc 			<= inbuffer(9);
 	 
     sequence_num		<= "000";
@@ -199,8 +197,6 @@ begin
         dreq_error_count    <= (others => '0');
         dreq_state_count    <= (others => '0');
         
-        mark_dreq_pkt_long  <= '0';
-        mark_dreq_pkt_error <= '0';
         mark_window_tag_error   <= '0';
         mark_window_tag_unknown <= '0';
         mark_dreq_timeout   <= '0';
@@ -218,7 +214,11 @@ begin
         dreq_data_pkt_count <= (others => '0');
         dreq_empty_pkt_count<= (others => '0');
         empty_event         <= '0';
-         
+        
+        is_timeout      <= '0';
+        
+        has_prefetch    <= '0';
+        
     elsif rising_edge(clk) then
         crc_en <= '0';
         crc_rst <= '1';
@@ -226,11 +226,6 @@ begin
         dreq_fifo_we <= '0';
         FETCH_START  <= '0';
             
-				
-        if  unsigned(dreq_rdcnt) > 10 then
-            mark_dreq_pkt_long  <= '1';
-        end if;
-        
         case dreq_state is 
             when IDLE =>
                 dreq_state_count <= X"01";
@@ -238,7 +233,6 @@ begin
                 mark_window_tag_unknown <= '0';
                 mark_window_tag_error   <= '0';
                 mark_dreq_timeout       <= '0';
---                readTimeout		        <= (others => '1');
                 readTimeout		        <= unsigned(EVENT_TIMEOUT);
                 
                 dataReqStatus   <= DATAREQ_STATUS;
@@ -287,8 +281,6 @@ begin
                 -- signals for ILA triggering: skip first DREQ after reset
                 if  (reqEventWindowTag <= unsigned(FETCH_EVENT_WINDOW_TAG) and unsigned(FETCH_EVENT_WINDOW_TAG) > 0)  then   mark_window_tag_error <= '1';  end if;
                 
-                if  unsigned(dreq_rdcnt) > 0 then   mark_dreq_pkt_error <= '1';  end if;
-                
                 ---- drive FETCH signals to DDRInterface/EW_SIZE_STORE_AND_FETCH_CONTROLLER
                 ---- Recognize PREFETCH and skip following DATA REQUEST                
                 -- DO THIS ONLY AFTER CRC ERROR DETECTION
@@ -298,14 +290,19 @@ begin
                     dreq_state <= FLUSHFIFO;
                 else
                     if (reqType = X"03") then
+                        has_prefetch<= '1';
                         FETCH_START <= '1';
                         FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
                         dreq_state <= IDLE;
                     -- skip this check for now or we need to force zeroing of FETCH_EVENT_WINDOW_TAG at start of NEWRUN... 
                     --elsif (reqType = X"02" and (reqEventWindowTag = X"000000000000" or reqEventWindowTag > unsigned(FETCH_EVENT_WINDOW_TAG)) ) then
                     elsif (reqType = X"02") then
-                        FETCH_START <= '1';
-                        FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
+                        if  has_prefetch = '0'  then
+                            FETCH_START <= '1';
+                            FETCH_EVENT_WINDOW_TAG  <= std_logic_vector(reqEventWindowTag); 
+                        else -- DO NOT send FETCH_START if already sent on PREFETCH
+                            has_prefetch <= '0';
+                        end if;
                         dreq_state <= DREQ;
                     else -- catch-all condition for "unusual" EW Timestamps: send back a data packet header with Status bit(7) 
                         reqType_debug   <= std_logic_vector(reqType);
@@ -333,22 +330,31 @@ begin
                 dreq_state_count <= X"06";
                 
                 readTimeout		<= readTimeout - 1;
-                DATAREQ_START_EVENT		<= '0';	  
+              
+                DATAREQ_START_EVENT		<= '0';	
                 dataReq_FIFOReadyState	<= (others => '0');	
 						
                 if (dataReq_dataReady = '0') then  	--  Wait for DATA Ready: if timeout, drain!...To be defined
-							
+                        
                     if (DATAREQ_DATA_READY = '1') then
                         dataReq_dataReady	<= '1';	
-                    else -- send back a data packet header with Status bit(3) 
-                        if (readTimeout = 0) then  
-                            mark_dreq_timeout   <= '1';
-                            dreq_timeout_count  <= std_logic_vector(unsigned(dreq_timeout_count) + 1);
-                            
-                            dataReqStatus(3)    <= '1';
-                            dataReqDataReadCnt  <= (others => '0');
-                            dataReqPktCnt       <= (others => '0');
-                            dreq_state <= SENDHEADER;
+                        dreq_state <= DREQHDR;
+                        
+                    else  -- analize how to respond to default readTimeout
+                        
+                        if (readTimeout = 0) then   
+                            if (is_timeout = '0') then -- extend timeout first time around
+                                is_timeout  <= '1';  
+                                dreq_state  <= VERIFYTIMEOUT;
+                            else  -- send back a data packet header with Status bit(3)  
+                                mark_dreq_timeout   <= '1';
+                                dreq_timeout_count  <= std_logic_vector(unsigned(dreq_timeout_count) + 1);
+                              
+                                dataReqStatus(3)    <= '1';
+                                dataReqDataReadCnt  <= (others => '0');
+                                dataReqPktCnt       <= (others => '0');
+                                dreq_state <= SENDHEADER;
+                            end if;
                         end if;
                     end if;
                     
@@ -358,15 +364,26 @@ begin
                     dataReqPktOvfl      <= DATAREQ_PACKETS_OVFL;
                     dataReqTagErr       <= DATAREQ_TAG_ERROR;
                     dataReqDataReadCnt  <= to_unsigned(0,16-EVENT_SIZE_BITS+1) & unsigned(DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1));
-                    --dataReqPktCnt       <= DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
                     dataReqPktCnt       <= b"00" & DATAREQ_PACKETS_IN_EVT(EVENT_SIZE_BITS-1 downto 1);	
                     dreq_state          <= SENDHEADER;
                 end if;
-					
+                
+            -- delay timeout if event window is still going thru DigiInterface
+            -- add 30 more us to let DDR WR and READ to get going                
+            when VERIFYTIMEOUT =>
+                dreq_state_count <= X"10";
+                if  ew_data_on = '0'  then
+                    readTimeout <= X"00A00";
+                    dreq_state <= DREQHDR;
+                else
+                    dreq_state <= VERIFYTIMEOUT;
+                end if;
+                
             when SENDHEADER =>
                 dreq_state_count <= X"0A";
-                word_count <= word_count + 1;
-                dreq_fifo_we <= '1';
+                is_timeout  <= '0';
+                word_count  <= word_count + 1;
+                dreq_fifo_we<= '1';
                 
                 if  (dataReqDataReadCnt = 0) then
                     dataReqStatus(0) <= '0';  

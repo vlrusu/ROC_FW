@@ -1,4 +1,5 @@
 #Importing and Linking all the HDL source files used in the design
+import_files -library work -hdl_source hdl/latch_and_clear.v
 import_files -library work -hdl_source hdl/Blinking_LED_driver.vhd
 import_files -library work -hdl_source hdl/RxController.vhd
 import_files -library work -hdl_source hdl/algorithm_constants.vhd

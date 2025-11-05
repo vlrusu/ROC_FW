@@ -35,7 +35,7 @@ create_and_configure_core -core_vlnv {Microsemi:MiV:MIV_RV32IMC:2.1.100} -compon
 "INTERNAL_MTIME_IRQ:true"  \
 "MTIME_PRESCALER:100"  \
 "MTVEC_OFFSET:0x34"  \
-"NUM_EXT_IRQS:6"  \
+"NUM_EXT_IRQS:3"  \
 "RESET_VECTOR_ADDR_0:0x0"  \
 "RESET_VECTOR_ADDR_1:0x8000"  \
 "TCM_DAP_PRESENT:false"  \

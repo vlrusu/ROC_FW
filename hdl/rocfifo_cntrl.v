@@ -9,6 +9,7 @@
 //      v4.0: <Mar. 2022>: change EW_SIZE output dimensions to [EVENT_SIZE_BITS:0] => MAX allowed value is 4096
 //      v5.0: <July 2023>: added  NEWSPILL_RESET input to reset some internal signals 
 //      v6.0: <Mar. 2025>: cleaned code for single SIM_ROCFIFO use 
+//      v7.0: <Aug. 2025>: remove NEWSPILL_RESET
 //
 // Description: 
 //
@@ -33,8 +34,6 @@ module rocfifo_cntrl(
     input    serdesclk,             // on 150 MHz input serdes clock
     input    resetn_serdesclk,
     
-    input   newspill_reset,         // add reset on NEWSPILL
-
 	input	rocfifo_full,           // ROCFIFO is FULL
     input	[`DIGI_BITS-1:0] rocfifo_data,  // data from ROCFIFO 
 	input	rocfifo_empty,          // ROCFIFO0 has some data
@@ -82,9 +81,9 @@ reg[7:0] wait_cnt;
 reg      timeout_en;
 reg[15:0]timeout_cnt;
 
-always@(posedge serdesclk, negedge resetn_serdesclk, posedge newspill_reset)
+always@(posedge serdesclk, negedge resetn_serdesclk)
 begin
-    if(resetn_serdesclk == 1'b0 || newspill_reset == 1'b1)
+    if(resetn_serdesclk == 1'b0)
 	begin
         curr_ewfifo_wr <= 1'b1;
         full_size   <= 0;

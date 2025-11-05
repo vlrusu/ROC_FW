@@ -19,6 +19,7 @@
 //      v13.0:<Mar.12,2025>: fixed EW_FIFO_WE logic to respond to WREADY low. Also pass full HB_TAG to second DDR header word.
 //      v14.0:<Mar.25,2025>: change "second_wr_hdr" definition. Added delayed to EW_EMPTY_REN and extra stare to WADDR_STATE to comply with registered FIFO RD_EN in ewtag_cntl module
 //      v15.0:<Jun.2,2025>: added HB_TAG_ERROR/DREQ_TAG_ERROR outputs for TOP_SERDES/DREQProcessor to set status bit when TAG inconsistency between DDR header and HB/DREQ is seen
+//      v16.0:<Aug.29,2025>: increased WRAP_DDR_ADDR by 1. Removed EWTAG_OFFSET logic and use data with EW_TAG = 0 to mark start of new run. Removed NEWSPILL edge reset logic
 //
 // Description:
 //
@@ -46,10 +47,8 @@ module EW_FIFO_controller #(
 //global signals
     input   sysclk,             // on DDR SYS clock
     input   resetn_sysclk,
-    input   newspill_on_sysclk, // rising edge of NEWSPILL
     input   dreqclk,            // on DREQ clock
     input   resetn_dreqclk,
-    input   newspill_on_dreqclk,// rising edge of NEWSPILL
     input   serdesclk,  	    // on 150 MHz clock
     input	resetn_serdesclk,
     
@@ -147,18 +146,23 @@ module EW_FIFO_controller #(
 ///////////////////////////////////////////////////////////////////////////////
 // Internal signals
 ///////////////////////////////////////////////////////////////////////////////
+// this is the offset for the next burst in units of bytes: 
+//     bytes-per-beat * burst length in beats
+localparam [11:0]  BURST_OFFSET = (2**BURST_SIZE) * (BURST_LENGTH+1); 
 
 // maximum number of 1kB blocks in 8Gb memory
 localparam 	[`DDR_ADDRESS_BITS-1:0]	MAX_DDR_ADDR = 2**`DDR_ADDRESS_BITS - 1;
 
 // WRAP_DDR_ADDR is set to prevent worst-case scenario 
 // of incoming event spreading over enough blocks to go over MAX_DDR_ADDR
-localparam	[`DDR_ADDRESS_BITS-1:0]	WRAP_DDR_ADDR = MAX_DDR_ADDR - (2**`MAX_STEP_BITS + 1);
+localparam	[`DDR_ADDRESS_BITS-1:0]	WRAP_DDR_ADDR = MAX_DDR_ADDR - (2**`MAX_STEP_BITS + 2);
 
 
 // set wait longer period longer than ~1 us after an EXT_RST
 localparam  [7:0] WAIT_FOR_RST =  8'hF0; 
-      
+    
+//reg     [31:0]   ddr_write_timer, ddr_read_timer;     // DDR write and read counters
+
 // EWFIFOs WRITE signals on SERDESCLK time domain  
 wire	ew_fifo0_we,   ew_fifo1_we;		// EW_FIFO write enable
 wire	ew_fifo0_full, ew_fifo1_full;   // EW_FIFO almost full (to give time to stop DIGIFIFO read)
@@ -282,9 +286,6 @@ wire 	[`EVENT_TAG_BITS-1:0]    tag_evt_sync;
 reg     tag_empty_all, tag_empty_reg;
 reg     tag_empty_ren, tag_empty_ren_dly;
 
-// signals for CDC (Cross-Domain Clock) handshake of EWTAG_OFFSET from DTCINTERFACE
-reg	    ewtag_offset_reg, ewtag_offset_latch, ewtag_offset_delay;
-reg     ewtag_offset_pulse;
 reg     [`EVENT_TAG_BITS-1:0] ewtag_offset_sync;  
 
 // DDR read vs write inconsistencies
@@ -330,10 +331,6 @@ localparam [2:0]    IDLE	=  3'b000,
                     NEXT	=  3'b101,
                     DELAY   =  3'b111;
 						
-// this is the offset for the next burst in units of bytes: 
-//     bytes-per-beat * burst length in beats
-localparam [11:0]  BURST_OFFSET = (2**BURST_SIZE) * (BURST_LENGTH+1); 
-
 
 wire    [7:0]  wr_burst_length, rd_burst_length;
 // after enabling multiple blocks per AXI transactions:
@@ -554,29 +551,6 @@ begin
 end
 
 
-always@(posedge sysclk, negedge resetn_sysclk)
-begin
-   if(resetn_sysclk == 1'b0) 
-    begin
-        ewtag_offset_reg     <= 1'b0;
-        ewtag_offset_latch   <= 1'b0;
-        ewtag_offset_delay   <= 1'b0;
-        ewtag_offset_pulse   <= 1'b0;
-      
-        ewtag_offset_sync    <= 0;
-    end
-	else
-	begin
-		ewtag_offset_reg     <= ewtag_offset_seen;
-		ewtag_offset_latch   <= ewtag_offset_reg;
-		ewtag_offset_delay   <= ewtag_offset_latch;
-      
-        ewtag_offset_pulse   <= (ewtag_offset_latch && ~ewtag_offset_delay);
-      
-        if (ewtag_offset_pulse) ewtag_offset_sync <= ewtag_offset_in;
-	end
-end
-
 //
 // capture EW_FIFO rising edge (EW_FIFO available to receive a new event!)
 // on SERDES_CLK as single clock pulse
@@ -623,11 +597,6 @@ begin
     end
     else
     begin
-        
-        if (newspill_on_sysclk)   begin
-            first_ew_ready  <=  1;
-            curr_ewfifo_rd  <=  0; 
-        end
         
         // pulse indicating that EW_FIFOs have full event and EW_SIZE signals have been properly latched
         if (ew_empty_ren_dly) 
@@ -704,10 +673,6 @@ begin
     else
     begin
         
-        if (newspill_on_sysclk)   begin
-            curr_etfifo_wr  <=  1'b1; 
-        end
-        
         // at this point TAG bus signals have been properly latched.
         // Make a copy for the next ET_FIFO to use and 
         // generate "et_fifo_fromDDDR" signals used in starting DDR read state machine 
@@ -765,10 +730,6 @@ begin
     begin
         tag_sent <= et_pctk_empty_ren;
         tag_null <= 1'b0;
-        
-        if (newspill_on_dreqclk)   begin
-            curr_etfifo_rd  <=  1; 
-        end
         
         if (tag_sent) // this is generated by end of AXI read and it is on DREQCLK
         begin
@@ -912,6 +873,8 @@ begin
         hb_tag_err2     <= 1'b0;
         
         cnt_delay       <= 2'b0;
+        
+//        ddr_write_timer <= 32'b0;
     end
         
     else
@@ -945,10 +908,8 @@ begin
             hb_tag_err_cnt <= hb_tag_err_cnt + 1;
         end
         
-        if (newspill_on_sysclk)
-        begin   
-            DDR_to_write    <= 0;
-        end
+        //if (waddr_state > IDLE) ddr_write_timer <= ddr_write_timer + 1;
+        //else                    ddr_write_timer <= 32'b0;
         
         case(waddr_state)
         
@@ -1242,6 +1203,9 @@ begin
 		et_pckt_to_do	<= 0;
 		start_read		<= 0;		// semaphore for read data state machine
         start_read_reg  <= 0;
+        
+//        ddr_read_timer  <= 32'b0;
+        
         raddr_state		<=	IDLE;
     end
     else
@@ -1249,10 +1213,9 @@ begin
 	
         et_fifo0_clr	<=	0;
         et_fifo1_clr	<=	0;
-        if (newspill_on_sysclk)   begin
-            first_axi_read <= 1;
-            DDR_to_read    <= 0;
-        end
+        
+        //if (raddr_state > IDLE)     ddr_read_timer <= ddr_read_timer + 1;
+        //else                        ddr_read_timer <= 32'b0;
         
         start_read_reg  <= start_read;
         start_read_pulse<= start_read && !start_read_reg;
@@ -1826,6 +1789,8 @@ begin
         ew_empty_ren_Q3<= 0;
         ew_empty_ren_Q4<= 0;
         ew_empty_ren_dly    <= 0;
+
+        ewtag_offset_sync    <= 0;
     end
     else
     begin
@@ -1844,6 +1809,9 @@ begin
         ew_empty_ren_Q3 <= ew_empty_ren_Q2;
         ew_empty_ren_Q4 <= ew_empty_ren_Q3;
         ew_empty_ren_dly<= ew_empty_ren_Q4;
+        
+        // delay latching until ADC sends data with EW_TAG=0
+        if (ew_empty_ren_Q2 == 1'b1 && ewtag_sync == 0)  ewtag_offset_sync <= ewtag_offset_in;
     end  
 end 
 

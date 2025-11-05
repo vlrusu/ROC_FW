@@ -28,8 +28,10 @@ entity Registers is
 		
     INVERTCALSPICLCK : out std_logic;
     DDR_RESETN 		: out std_logic;
-    DTCALIGN_RESETN 	: out std_logic;
+    DTCALIGN_RESETN : out std_logic;
     TVS_RESETN 		: out std_logic;
+    
+    IRQCLR         : out std_logic;
       
     DDRCTRLREADY  : in  std_logic;
         
@@ -155,6 +157,11 @@ architecture synth of Registers is
   ------------------------------------------------------------------------------
    constant CRLEDOFF : std_logic_vector(7 downto 0) := x"17";
    constant CRDCSTEST: std_logic_vector(7 downto 0) := x"18";
+
+  ------------------------------------------------------------------------------
+  --  clear of IRQ from within uProc
+  ------------------------------------------------------------------------------   
+    constant CRIRQCLR   : std_logic_vector(7 downto 0) := x"19";
 
 -------------------------------------------------------------------------------
 -- DDR signals with Monica updates in "flowcontrol"
@@ -593,6 +600,8 @@ begin
         DTCALIGN_RESETN	    <= '1';
         DIGIDEVICE_RESETN	<= '1';
         TVS_RESETN		    <=	'1';
+        
+        IRQCLR             <= '1';
 		
         INVERTCALSPICLCK  <= '0';
 		PRBS_EN	 	      <= '0';
@@ -643,8 +652,8 @@ begin
 		
     elsif (PCLK'event and PCLK = '1') then
 		DDR_RESETN  <= '1';
-		
-        SERDES_RE <= '0';
+        IRQCLR     <= '0';		
+        SERDES_RE   <= '0';
       
         serial_cal_init <= '0';
         serial_hv_init <= '0';
@@ -670,6 +679,9 @@ begin
 				
             when CRTIMERENABLE =>
                 TIMERENABLE <= PWDATA(0);
+
+            when CRIRQCLR =>
+                IRQCLR     <= '1';	
                 
             when CRLEDOFF =>
                 led_off <= PWDATA(0);

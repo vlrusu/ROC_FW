@@ -11,6 +11,7 @@
 //    v4.0: 07/2024:  added PATTERN_TYPE input                 
 //    v5.0: 08/2024:  added NEWSPILL_RESET and HALTRUN_EN input                 
 //    v6.0: 03/2025:  remove 4 SIM_FIFO simulation                
+//    v7.0: 08/2025:  remove HALTRUN_EN and NEWSPILL_RESET inputs              
 //
 // Description: 
 //
@@ -32,9 +33,6 @@ module clus_pattern_cntrl
     input	serdesclk,
     input   serdesclk_resetn,
     
-    input   newspill_reset,
-    input   haltrun_en,             // gate set by addr=8 bit[13]
-
     input   pattern_init,						//	Event Window and Event payload start
 	input	ddr_done,					        //	event has been read from EW_FIFO and written to DDR
 //   input	[`TRK_HIT_BITS-1:0]		hit_in,	        // simulated tracker bit number from HIT_NO_TPSRAM 
@@ -79,7 +77,6 @@ assign pattern_data = (is_header == 1'b1) ? header_data  : payload_data;
 
 
 //pattern output state machine
-//always@(posedge serdesclk, negedge serdesclk_resetn, posedge newspill_reset)
 always@(posedge serdesclk, negedge serdesclk_resetn)
 begin
     if(serdesclk_resetn == 1'b0)
@@ -101,50 +98,14 @@ begin
         wr_state    <=	IDLE;
     end
     
-    //// do NOT reset data payload counter or 64-events sequence in HATLRUN mode
-    //else if (newspill_reset == 1'b1)
-    //begin
-        //pattern_we  <=  0;
-        //is_header   <=  0;
-		//header_data  <=  0;
-        //payload_data <=  0;
-        //
-		//if (!haltrun_en) counter_data<=  -1'b1;
-        //if (!haltrun_en) hit_rdaddr 	<=	0; 
-        //pttrn_index <= 1'b0;
-        //hit_filled  <=	0;
-        //hit_re     	<=	0;
-		//hit_cnt		<=  0;
-        //word_cnt    <=	0;
-        //wr_state    <=	IDLE;
-    //end
-
     else
+    
     begin
         hit_re      <=	0;
         hit_filled  <=	0;
         pattern_we  <=	0;
         word_cnt    <=	0;
-        
-        // do NOT reset data payload counter or 64-events sequence in HATLRUN mode
-        if (newspill_reset == 1'b1)
-        begin
-            //pattern_we  <=  0;
-            is_header   <=  0;
-            header_data  <=  0;
-            payload_data <=  0;
-            
-            if (!haltrun_en) counter_data<=  -1'b1;
-            if (!haltrun_en) hit_rdaddr 	<=	0; 
-            pttrn_index <= 1'b0;
-            //hit_filled  <=	0;
-            //hit_re     	<=	0;
-            hit_cnt		<=  0;
-            //word_cnt    <=	0;
-            wr_state    <=	IDLE;
-        end
-        
-		
+        		
 		// if HIT_FILLED is simultaneous to DDR_DONE, retrigger it so we don't miss it.
 		if (ddr_done && hit_filled) 	hit_filled   <= 1;	
 		

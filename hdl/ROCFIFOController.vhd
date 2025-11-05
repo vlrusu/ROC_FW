@@ -14,6 +14,7 @@
 --           Sent EW_TAG_ERROR and TAG_SYNC_ERROR out to DDR
 --      v6.0: <Feb. 2025>: Latched CURRENT_DATA and added extra states START1_2 and COUNT1_2 to easy timing
 --      v7.0: <May 1 2025>: Increased size of FULL_SIZE bus to 14 bits to avoid overflow and overwrite of EW_SIZE output
+--      v8.0: <Aug 29 2025>: Add EW_DATA_ON gate for duration of event window. Remove NEWSPILL_RESET
 --
 -- Description: 
 --
@@ -65,12 +66,12 @@ port (
     ew_ovfl : out std_logic;
     ew_size : out std_logic_vector(EVENT_SIZE_BITS-1 downto 0);
     ew_tag  : out std_logic_vector(SPILL_TAG_BITS-1 downto 0);
-    newspill_reset  : in  std_logic;
     curr_ewfifo_wr  : out std_logic;
     tag_sync_error  : out std_logic;
     ew_tag_error    : out std_logic;
     tag_sync_err_cnt: out std_logic_vector(15 downto 0);
     ew_done_cnt     : out std_logic_vector(15 downto 0);
+    ew_data_on      : out std_logic;  -- gate high for the duration of the DIGI data coming in for a given event window
     
     state_count : out std_logic_vector(7 downto 0);
 
@@ -91,7 +92,6 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
     signal state            : state_type;
     
     signal current_lane : integer range 0 to NROCFIFO-1;
---    signal ew_tag_error : std_logic;
 
     signal lane_size : unsigned(12 downto 0);
     signal full_size : unsigned(13 downto 0);  -- need to fit 11-bit size reported by each Serdes in units of 64-bits
@@ -122,6 +122,9 @@ architecture architecture_ROCFIFOController of ROCFIFOController is
     
     signal count0_wait : unsigned(3 downto 0);    -- this counts words read from ROCFIFO in units of 32-bit words
     signal count0_error : std_logic;
+    
+    signal  ew_start   : std_logic;
+--    signal  digi_timer : unsigned(31 downto 0);  -- event length counter
         
 begin
 
@@ -170,9 +173,9 @@ begin
                         4;
     
     
-    process(reset_n, newspill_reset, clk)
+    process(reset_n, clk)
     begin
-    if reset_n = '0' OR newspill_reset = '1'  then
+    if reset_n = '0' then
         state <= RESET;
         state_count <= (others => '0');
         
@@ -211,6 +214,10 @@ begin
         
         current_data_latch <= (others => '0');
         
+        ew_start        <= '0';
+        ew_data_on      <= '0';
+--        digi_timer      <= (others => '0');
+        
     elsif rising_edge(clk) then
     
         want_re             <= (others => '0');
@@ -220,6 +227,17 @@ begin
         use_lane_reg        <= use_lane;
         current_data_latch <= current_data;
         
+        if  ew_start    then    
+            ew_data_on <= '1';
+        else  ew_data_on <= '0'; 
+        end if;
+        
+--        if  ew_data_on   then    
+--            digi_timer <= digi_timer + 1;
+--        else
+--            digi_timer <= (others => '0');
+--        end if;
+
         ---- set LOWEST of enabled lanes
         --if    ( use_lane_reg(0) = '1') then     first_used_lane <= 0;        
         --elsif ( use_lane_reg(1) = '1') then     first_used_lane <= 1;       
@@ -255,9 +273,10 @@ begin
             -- read header word
             when START =>
                 state_count <= X"03";
-                ew_done <= '0';
+                ew_done     <= '0';
                 
                 if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
+                    ew_start    <= '1';
                     want_re(current_lane) <= '1';
                     lane_empty_seen(current_lane) <= '1';
                     state <= START1;
@@ -265,17 +284,17 @@ begin
                 
             -- wait for header word to settle
             when START1 =>
-                state_count <= X"10";
+                state_count <= X"30";
                 state <= START1_2;
                 
             when START1_2 =>
-                state_count <= X"10";
+                state_count <= X"31";
                 state <= START2;
                
             -- check header word and flag EW_TAG inconsistencies between
             -- if lane is not empty, pass its size to DigiReaderFIFO (if serial is enabled) but not to DDR
             when START2 =>
-                state_count <= X"11";
+                state_count <= X"32";
                 
                 -- BAD! Will get stuck when lane reports ONLY header word
                 --if rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
@@ -328,7 +347,7 @@ begin
                 
             -- read next word
             when COUNT0 =>
-                state_count <= X"12";
+                state_count <= X"40";
                 if  rocfifo_empty(current_lane) = '0' and outfifo_full = '0' then
                     want_re(current_lane) <= '1';
                     rd_cnt <= rd_cnt + 1;
@@ -340,18 +359,18 @@ begin
                 
             -- wait for next word to settle
             when COUNT1 =>
-                state_count <= X"13";
+                state_count <= X"41";
                 count0_error <= '0';
                 count0_wait  <= (others => '0'); 
                 state <= COUNT1_2;
             
             when COUNT1_2 =>
-                state_count <= X"13";
+                state_count <= X"42";
                 state <= COUNT2;                
                 
             -- write out previous word, unless overflow condition is seen
             when COUNT2 =>
-                state_count <= X"14";
+                state_count <= X"43";
                 
                 wr_cnt <= wr_cnt + 1;
                 --rd_cnt <= rd_cnt + 1;
@@ -372,7 +391,7 @@ begin
              
             -- do this read-in/wait/write-out cycle until all words are read  
             when COUNT3 =>
-                state_count <= X"15";
+                state_count <= X"44";
                 -- use RD_CNT (in units of 32-bits) to decide when the lane is done 
                 if rd_cnt = lane_size then     
                     state <= UPDATE;
@@ -410,8 +429,8 @@ begin
                 
             -- skip to next enabled lane
             when UPDATE =>                
-                state_count <= X"06";
-                rd_cnt <= (others => '0');
+                state_count <= X"05";
+                rd_cnt  <= (others => '0');
                 want_re(current_lane)  <= '0';
                 want_uart_fifo_we <= '0';
                 want_ew_fifo_we <= '0';
@@ -428,13 +447,14 @@ begin
                     active_lane <= (others => '0');
                     wr_cnt      <= (others => '0');
                     ew_done     <= '1';
+                    ew_start    <= '0';
                     ew_done_cnt <= std_logic_vector(unsigned(ew_done_cnt) + 1);
                     state <= HOLD;
                 end if;
                 
             -- if all lanes have been read, wait for DDR write to start
             when HOLD =>
-                state_count <= X"07";
+                state_count <= X"06";
                 ew_done <= '0';
                 if axi_start_on_serdesclk = '1' or use_uart = '1' then
                     ew_size     <= (others => '0');

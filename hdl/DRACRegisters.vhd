@@ -95,6 +95,8 @@ port (
     DCS_PATTERN_TYPE: OUT std_logic;					    -- switch pattern between 32-bit counters to alternating 5s&As (addr=8, bit[12])
     HALTRUN_EN      : OUT std_logic;					    -- enable HALTRUN mode(addr=8, bit[13])
 
+    DCS_EXT_SYS_IRQ : OUT std_logic;					    -- processor interrupt (addr=15, bit[0])
+    
     DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(10 downto 0);		-- coarse Event Window Marker delay (addr=4)
     DCS_TO_SERIAL   : OUT std_logic_vector(15 downto 0);    -- diagnostic RW register to be sent to serial (addr=5)
 
@@ -227,6 +229,8 @@ begin
         force_full_reg      <= '0';
         haltrun_en_reg      <= '0';
         
+        DCS_EXT_SYS_IRQ     <= '0';
+        
         DCS_FORMAT_VERSION  <= (others => '0');
         DCS_DTC_ID          <= (others => '0');
         DCS_SUBSYSTEM_ID    <= (others => '0');  -- 0 is the TRK Subsystem ID
@@ -318,6 +322,8 @@ begin
 				DCS_RESETFIFO	<= drac_wdata(0);
 			elsif (drac_addrs = 14) then
 				DCS_DDRRESET_N		<= '0';	 -- self clearing
+            elsif (drac_addrs = 15) then
+                DCS_EXT_SYS_IRQ <= drac_wdata(0);
                     
             elsif (drac_addrs = 17) then
 				DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);
@@ -346,7 +352,8 @@ begin
                 DCS_MEM_OFFSET(15 downto 0) <= drac_wdata(15 downto 0);
             elsif (drac_addrs = 34) then   -- 0x22
                 DCS_MEM_OFFSET(19 downto 16) <= drac_wdata(3 downto 0);
-            elsif (drac_addrs = 60) then   -- 0x3C
+
+                elsif (drac_addrs = 60) then   -- 0x3C
                 event_timeout_reg(15 downto 0)  <= drac_wdata(15 downto 0);
             elsif (drac_addrs = 61) then   -- 0x3D
                 event_timeout_reg(19 downto 16)  <= drac_wdata(3 downto 0);

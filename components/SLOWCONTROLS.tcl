@@ -66,6 +66,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE0n} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_CE1n} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_FCLK} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {HV_PREAMP_SCLK} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {IRQ_CLR} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_EN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_ERRORCLR} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {PRBS_ERROROUT} -port_direction {OUT}
@@ -492,6 +493,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"HV_PREAMP_SCLK" "PREAMPSPI_0:SP
 sd_connect_pins -sd_name ${sd_name} -pin_names {"IFACE" "PF_SPI_0:IFACE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:A" "MX2_0:A" "PREAMPSPI_1:SPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"INV_0:Y" "MX2_0:B" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"IRQ_CLR" "Registers_0:IRQCLR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:HV_PREAMP_MOSI" "PREAMPSPI_0:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SCL" "Registers_0:leak_scl" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"LeakMux_0:LEAK_SDA_DIR" "Registers_0:leak_sdir" }

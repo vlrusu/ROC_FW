@@ -80,7 +80,7 @@ port (
     RF_MARKER                   : out std_logic_vector(7 downto 0);
     SUBRUN_ID                   : out std_logic_vector(1 downto 0);
 	 
-    -- this are single RXCLK pulses
+    -- these are single RXCLK pulses
 	eventmarker	: out std_logic;
 	clockmarker : out std_logic;
 	loopmarker  : out std_logic;

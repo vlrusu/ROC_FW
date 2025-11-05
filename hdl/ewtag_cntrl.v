@@ -23,6 +23,8 @@
 //      08/06/2024 : Fix HB_CNT_ONHOLD count down logic: use HOLD_EW_FIFO_EMPTIED to count down after count up has happened
 //      08/08/2024 : Fix SPILLTAG_FIFO write enable to use END_EVM_SEEN
 //      03/24/2025 : Register RE of LARGE_TAG_FIFO to help timing. Remove HB_ON_SERDESCLK logic. Changed W_EN of SPILLTAG_ROLLOVER FIFO
+//      08/28/2025 : Eliminate NEWSPILL edge reset logic
+//      10/30/2025 : Anticipate WE of EWTAG FIFO from EVENT_START to START_FETCH to avoid hb_tag_errors
 //
 // Description: 
 //
@@ -63,8 +65,6 @@ module ewtag_cntrl(
     input   first_hb_seen,          // pulse on XCVR CLK when first HB of a spill has been decoded
 	input	[`SPILL_TAG_BITS-1:0]   spill_hbtag_in,	    // local SPILL EWTAG counter
 	input   [`EVENT_TAG_BITS-1:0]   hb_event_window,    // current EWTAG from HB
-    input   new_spill_on_xcvr,      // pulse on NEWSPILL rising edge 
-    input   haltrun_en,             // gate set by addr=8 bit[13]
 
     input   [`SPILL_TAG_BITS-1:0]   spill_hbtag_rollover_in, // 20 MSB of local SPILL EWTAG counter
     
@@ -78,7 +78,6 @@ module ewtag_cntrl(
 	output  reg  [`SPILL_TAG_BITS-1:0] spill_ewtag_out, //  SPILL EWTAG to be passed to EWT_FIFO
    
     // exchanged with TOP_SERDES on DREQCLK
-    input   new_spill_on_dreqclk,   // pulse on NEWSPILL rising edge
 	input	start_fetch,            // FETCH observed (can be PREFETCH or DREQ)
     input   event_start,            // semaphone for DATA_READY!!
 	input	[`EVENT_TAG_BITS-1:0]	event_window_fetch, // EWTAG on fetch (can be PREFETCH or DREQ)
@@ -197,11 +196,6 @@ begin
         if (end_evm_seen && !busyE)	reqE <= 1'b1;
         else if (ack_syncE2)		reqE <= 1'b0;
         
-        if (new_spill_on_xcvr && !haltrun_en) 
-        begin
-            evm_end_cnt     <= 0;
-        end
-        
         if (end_evm_seen)   evm_end_cnt <= evm_end_cnt + 1;
     end
 end	
@@ -224,7 +218,6 @@ begin
         req_syncE2   <= req_syncE;
  end
 end
-
 
 // DREQ_FULL diagnostic logic on SYSCLK
 // save number of DREQ_FULL rising edge and first DDR TAG at which is happens
@@ -288,13 +281,6 @@ begin
 	end
 	else
 	begin
-        
-        if (new_spill_on_serdesclk && !haltrun_en) 
-        begin
-            hb_cnt_onhold           <= 32'b0;
-            ew_fifo_emptied_count   <= 16'b0;
-            hb_empty_overlap_count  <= 16'b0;
-        end
         
 		// HB counter rules:
 		// - increase count on END OF EVENT WINDOW seen, decrease on EW_FIFO being emptied
@@ -423,16 +409,6 @@ begin
     else
     begin
         
-        if (new_spill_on_dreqclk && !haltrun_en) 
-        begin
-            dreq_cnt        <= 32'b0;
-            start_fetch_cnt <= 32'b0;
-            tag_done_cnt    <= 32'b0; 
-            tag_null_cnt    <= 32'b0; 
-            tag_sent_cnt    <= 32'b0; 
-            tag_valid_count <= 16'b0;
-            tag_error_count <= 16'b0;
-        end
         //
         // generate FETCH TAG and its latch for EW_SIZE_AND_STORE_CNTRL
         // (can be either DATAREQ or PREFETCH)
@@ -623,7 +599,8 @@ EWTAG_FIFO	dreq_tag_fifo (
 	.WCLOCK	(dreqclk),
 	.WRESET_N(resetn_fifo),
 	.DATA	(dreq_tag),
-	.WE		(event_start),
+//	.WE		(event_start),
+	.WE		(start_fetch),
 	.RCLOCK	(sysclk),
 	.RRESET_N(resetn_fifo),
 	.RE		(start_read),

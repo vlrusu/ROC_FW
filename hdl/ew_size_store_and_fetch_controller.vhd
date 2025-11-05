@@ -16,6 +16,8 @@
 --                                          from "store_XXX -> XXX_to_store" and "fetch_XXX -> XXX_to_fetch"; 
 --                                          from "store_newspill -> newspill_on_wclk" and "fetch_newspill -> newspill_on_rclk";
 --                                          from "size_fifo_XXX -> fetch_fifo_XXX"
+--  v5 Aug 29, 2025: Eliminate NEWSPILL edge reset logic
+
 --------------------------------------------------------------
 library IEEE;			
 use IEEE.STD_LOGIC_1164.all;            
@@ -30,7 +32,6 @@ entity ew_size_store_and_fetch_controller is
     -- on fast SYSCLK 
 		sysclk				: IN std_logic;
 		resetn_sysclk	    : IN std_logic;
-        newspill_on_sysclk  : IN std_logic;
         
 		store		        : IN std_logic; 					 
 		wrap_event_to_store : IN std_logic; 	-- if wrapped around DDR address space, store in STORE_WORD bits [38]/[25]/[12] 
@@ -44,7 +45,6 @@ entity ew_size_store_and_fetch_controller is
     -- on slow DREQCLK
 		dreqclk				: IN std_logic;
 		resetn_dreqclk      : IN std_logic;
-        newspill_on_dreqclk : IN std_logic;
         
 		fetch				: IN std_logic;
 		event_tag_to_fetch 	: IN std_logic_vector(EVENT_TAG_BITS-1 downto 0);  
@@ -149,7 +149,7 @@ begin
 			-- write-side of event size store handling				
             store_we <= '0'; 
             
-            if  (resetn_sysclk = '0'   or  newspill_on_sysclk = '1')    then
+            if  (resetn_sysclk = '0')    then
 				store_first 		<= '1';             
 				store_pos 			<= (others => '0');
 				store_word			<= (others => '0');
@@ -286,36 +286,6 @@ begin
                 skipped_DREQ_tag    <= (others => '0');
                 
                 ddr_wrap <= '0';
-                
-            -- reset everything on NEW SPILL except NEXT  DDR_ADDRESS and EVENT_TAG, 
-            -- ie keep reading from DDR where it was left on previous spill
-            elsif (newspill_on_dreqclk = '1') then
-                
-				fetch_done 	    <= '0';	
-				fetch_state     <= (others => '0');	
-				fetch_pos       <= (others => '0');	
-				fetch_word      <= (others => '0');	
-				fetch_sync_error<= '0';
-				fetch_overflow  <= '0';
-				fetch_size      <= (others => '0');	
-				fetch_tag	    <= (others => '0');
-				fetch_address   <= (others => '0');
-                fetch_word_cnt      <=	(others => '0');
-                
-				--next_ddr_address    <= (others => '0');  
-				--next_read_event_tag <= (others => '0');  
-                
-				fetch_has_not_fetched   <= '0';
-                fetch_first             <= '1'; 
-                
-				fetch_timeout       <= (others => '0');	 
-				fetch_timeout_cnt   <= (others => '0');	 
-                fetch_runover_cnt   <= (others => '0');
-                fetch_runover_TAG   <= (others => '0'); 
-				fetch_missing_cnt   <= (others => '0');
-                fetch_missing_TAG   <= (others => '0');
-                skipped_DREQ_cnt    <= (others => '0');
-                skipped_DREQ_tag    <= (others => '0');
                 
 			else  -- else not reset	or NEWSPILL 
                 
