@@ -59,6 +59,7 @@ sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_EN} -port_dire
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_PATTERN_TYPE} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_RESETFIFO} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {DCS_TX_RE} -port_direction {OUT}
+sd_create_scalar_port -sd_name ${sd_name} -port_name {DIGIDEVICE_RESETN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {END_EVM_SEEN} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {EWM} -port_direction {OUT}
 sd_create_scalar_port -sd_name ${sd_name} -port_name {FETCH_START} -port_direction {OUT}
@@ -491,6 +492,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_EMPTY" "DRACRegisters_0:
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_RX_FULL" "DRACRegisters_0:DCS_RX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_EMPTY" "DRACRegisters_0:DCS_TX_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCS_TX_FULL" "DRACRegisters_0:DCS_TX_FULL" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"DIGIDEVICE_RESETN" "DRACRegisters_0:DIGIDEVICE_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_BITSLIP_START" "XCVR_Block_0:BITSLIP_START" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:DCS_ERROR_EN" "ErrorCounter_0:dcs_error_en" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DRACRegisters_0:HALTRUN_EN" "HALTRUN_EN" "RxPacketReader_0:haltrun_en" }

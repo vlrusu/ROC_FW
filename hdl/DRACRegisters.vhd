@@ -140,6 +140,9 @@ entity DRACRegisters is
     dreq_data_pkt_count : IN std_logic_vector(15 downto 0);
     dreq_empty_pkt_count: IN std_logic_vector(15 downto 0);
     
+    
+    DIGIDEVICE_RESETN : out std_logic;
+    
     -- added signals for DIGIRW via DCS: drive signals for TWIController inside SLOWCONTROLS/Registers module
     dcs_digirw_sel  : out std_logic;                        -- drive TWI inputs via fiber: set 1 for duration of TWI transation, drive low to go back to TWI via uProc
     dcs_cal_init    : out std_logic;                        -- drive TWI CAL_INIT    via DCS write to addr=23: must toggle 1->0 after DATA and ADDR have been set
@@ -207,9 +210,6 @@ architecture architecture_DRACRegisters of DRACRegisters is
   
   constant C_ADDR_DREQ_FIFO_WRCNT  : natural := 23; -- bit(15:0) of counter of 40-bit data stored to DREQ_FIFO
 
-
-
-                                                     --
 
   
   constant C_ADDR_DREQ_FIFO_WR_STATUS  : natural := 24; -- bit(3:0)=DREQ_FIFO_WRCNT(19:0),  bit(9:8)=STORE_POS(**); bit(12)=DREQ_FIFO FULL status
@@ -281,7 +281,7 @@ architecture architecture_DRACRegisters of DRACRegisters is
  constant C_ADDR_RESET_DIGI_FIFOS : natural := 100; --when 1, FIFOs are reset. Must be written to zero to clear.
  constant C_ADDR_RESET_DDR : natural := 101; -- Enable Reset of DDR Write/Read State Machines and counters (neg. logic)
  constant C_ADDR_EXT_IRQ : natural := 102; -- If 1, it drives uProc IRQ0 for one 50MHz clock
-
+ constant C_ADDR_DIGIRESET : natural:=103; -- active low digi reset, need to come out of reset at the end
 
   constant C_ADDR_CAL_TWI_INIT  : natural := 110; --TWI interface for CAL
   constant C_ADDR_CAL_TWI_DATA_IN  : natural := 111; --TWI interface for CAL
@@ -403,6 +403,8 @@ begin
       DCS_BITSLIP_START   <= '0';
       DCS_BITSLIP_SHIFT   <= (others => '0');
       
+      DIGIDEVICE_RESETN	<= '1';
+      
     elsif rising_edge(DCS_CLK) then
       
       READY_REG		<= '0'; 
@@ -474,6 +476,9 @@ begin
           DCS_DDRRESET_N		<= '0';	 -- self clearing
         elsif (drac_addrs = C_ADDR_EXT_IRQ) then
           DCS_EXT_SYS_IRQ <= drac_wdata(0);
+          
+        elsif (drac_addrs = C_ADDR_DIGIRESET) then
+          DIGIDEVICE_RESETN	<= drac_wdata(0);
           
         elsif (drac_addrs = C_ADDR_DCS_ERROR_COUNTER) then
           DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);

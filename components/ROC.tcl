@@ -152,6 +152,11 @@ sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2
 
 
 
+# Add AND2_1 instance
+sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_1}
+
+
+
 # Add AND2_3 instance
 sd_instantiate_macro -sd_name ${sd_name} -macro_name {AND2} -instance_name {AND2_3}
 
@@ -468,6 +473,9 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {TOP_SERDES_0:PCS_ALIGNED}
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "INV_0:Y" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "SLOWCONTROLS_0:reset_fifo_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "DigiFIFOReset_0:EXT_RST_N" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "SLOWCONTROLS_0:DIGIDEVICE_RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:B" "TOP_SERDES_0:DIGIDEVICE_RESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:Y" "DigiReset_0:EXT_RST_N" "DigiReset_1:EXT_RST_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:A" "INIT_component_0:XCVR_INIT_DONE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:B" "SLOWCONTROLS_0:dtc_serdes_reset_n" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_3:Y" "DigiInterface_0:CTRL_ARST_N" "TOP_SERDES_0:CTRL_ARST_N" }
@@ -588,7 +596,6 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_full
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:serialfifo_re" "SLOWCONTROLS_0:SERDES_RE" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:tag_sync_error" "NewDDRInterface_0:DIGI_tag_sync_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiInterface_0:use_uart" "SLOWCONTROLS_0:use_uart" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReset_0:EXT_RST_N" "DigiReset_1:EXT_RST_N" "SLOWCONTROLS_0:DIGIDEVICE_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReset_0:FABRIC_RESET_N" "ROC_CAL_DEVRSTn" "ROC_HV_DEVRSTn" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReset_0:PLL_POWERDOWN_B" "PF_CCC_C1_0:PLL_POWERDOWN_N_0" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DigiReset_1:PLL_LOCK" "PF_CCC_C1_1:PLL_LOCK_0" }
