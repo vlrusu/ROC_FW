@@ -97,7 +97,7 @@ port (
 
     DCS_EXT_SYS_IRQ : OUT std_logic;					    -- processor interrupt (addr=15, bit[0])
     
-    DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(9 downto 0);		-- coarse Event Window Marker delay (addr=4)
+    DCS_LOOPBACK_COARSE_DELAY   : OUT std_logic_vector(7 downto 0);		-- coarse Event Window Marker delay (addr=4)
     DCS_TO_SERIAL   : OUT std_logic_vector(15 downto 0);    -- diagnostic RW register to be sent to serial (addr=5)
 
     DCS_ERROR_DATA  : IN  std_logic_vector(15 DOWNTO 0);    -- read error counter content for address DCS_ERROR_ADDRESS
@@ -303,7 +303,7 @@ DIGIDEVICE_RESETN	<= '1';
                 DCS_BITSLIP_SHIFT   <= drac_wdata(4 downto 0);
                 
             elsif (drac_addrs = 4) then  
-                DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(9 downto 0);
+                DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(7 downto 0);
             elsif (drac_addrs = 5) then  
                 DCS_TO_SERIAL <= drac_wdata(15 downto 0);
 			elsif (drac_addrs = 6) then
@@ -397,7 +397,7 @@ DIGIDEVICE_RESETN	<= '1';
 			elsif (drac_addrs = 3) then	 
 				DATA_OUT 	<=  readCounter; 	
 			elsif (drac_addrs = 4) then	 
-				DATA_OUT 	<=  B"000000" & DCS_LOOPBACK_COARSE_DELAY; 	
+				DATA_OUT 	<=  X"00" & DCS_LOOPBACK_COARSE_DELAY; 	
 			elsif (drac_addrs = 5) then	 
 				DATA_OUT 	<=  DCS_TO_SERIAL; 	
 			elsif (drac_addrs = 6) then		 	 
