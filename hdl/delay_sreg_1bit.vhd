@@ -29,7 +29,7 @@ entity delay_sreg_1bit is
     clk     : in std_logic;
     resetn  : in std_logic; 
   
-    sr_delay: std_logic_vector(10 downto 0);
+    sr_delay: std_logic_vector(15 downto 0);
     
     sr_in   : in std_logic;
     sr_out  : out std_logic
@@ -39,35 +39,40 @@ end delay_sreg_1bit;
 
 architecture slicing_with_rst of delay_sreg_1bit is
 
-    signal sr_depth : integer range 2 to 31;
-    signal sr       : std_logic_vector(31 downto 0);
-    
-    signal delay_sel: std_logic;
-    signal sr_temp  : std_logic;
+    type sr_ram_t is array (0 to 65535) of std_logic;
+
+    signal sr_ram       : sr_ram_t;
+    signal wr_ptr       : unsigned(15 downto 0);
+    signal stored_count : unsigned(15 downto 0);
+    signal sr_temp      : std_logic;
     
 begin
-  
-    sr_depth <= to_integer(unsigned(sr_delay(5 downto 0)));
 
-    -- MUX for undelayed outout if so desired
-    delay_sel <= '0' when  sr_depth = 0   else '1';
+    sr_out <= sr_in when unsigned(sr_delay) = 0 else sr_temp;
     
-    with delay_sel select
-        sr_out  <=  sr_in   when '0',
-                    sr_temp when '1';
-    
-    -- process to set delay based on value of SR_DELAY
+    -- Use a circular buffer so the delay can span the full 16-bit range.
     process(clk, resetn)
+        variable rd_ptr : unsigned(15 downto 0);
     begin
         if resetn = '0' then
-            sr      <= (others => '0');
-            sr_temp <= '0';
+            wr_ptr       <= (others => '0');
+            stored_count <= (others => '0');
+            sr_temp      <= '0';
         elsif rising_edge(clk) then
-            if sr_depth < 2 then
+            if unsigned(sr_delay) = 0 then
                 sr_temp <= sr_in;
+            elsif stored_count < unsigned(sr_delay) then
+                sr_temp <= '0';
             else
-                sr      <= sr(30 downto 0) & sr_in;
-                sr_temp <= sr(sr_depth-2);
+                rd_ptr := wr_ptr - unsigned(sr_delay);
+                sr_temp <= sr_ram(to_integer(rd_ptr));
+            end if;
+
+            sr_ram(to_integer(wr_ptr)) <= sr_in;
+            wr_ptr <= wr_ptr + 1;
+
+            if stored_count /= X"FFFF" then
+                stored_count <= stored_count + 1;
             end if;
         end if;
     end process;
