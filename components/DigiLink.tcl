@@ -210,17 +210,19 @@ sd_connect_net_to_pins -sd_name ${sd_name} -net_name {error_count_0} -pin_names 
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_8B10B_RX_K" "RxController_0:k_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_8B10B_TX_K" "TxController_0:kchar_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_RX_CODE_VIOLATION" "RxController_0:code_violation" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_RX_DATA" "ROCFIFO_0:DATA" "RxController_0:data_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_RX_DATA" "RxController_0:data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_RX_DISPARITY_ERROR" "RxController_0:disp_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE0_TX_DATA" "TxController_0:data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_8B10B_RX_K" "RxController_1:k_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_8B10B_TX_K" "TxController_1:kchar_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_RX_CODE_VIOLATION" "RxController_1:code_violation" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_RX_DATA" "ROCFIFO_1:DATA" "RxController_1:data_in" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_RX_DATA" "RxController_1:data_in" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_RX_DISPARITY_ERROR" "RxController_1:disp_error" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_XCVR_0_0:LANE1_TX_DATA" "TxController_1:data_out" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:DATA" "RxController_0:data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:Q" "lane0_fifo_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_0:WRCNT" "TxController_0:wrcnt[12:0]" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_1:DATA" "RxController_1:data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_1:Q" "lane1_fifo_data_out" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"ROCFIFO_1:WRCNT" "TxController_1:wrcnt[12:0]" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RxController_1:alignment" "alignment_1" }

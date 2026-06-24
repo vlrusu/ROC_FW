@@ -1,12 +1,11 @@
 #Importing and Linking all the HDL source files used in the design
-import_files -library work -hdl_source hdl/latch_and_clear.v
 import_files -library work -hdl_source hdl/Blinking_LED_driver.vhd
 import_files -library work -hdl_source hdl/RxController.vhd
 import_files -library work -hdl_source hdl/algorithm_constants.vhd
 import_files -library work -hdl_source hdl/TxController.vhd
 import_files -library work -hdl_source hdl/ROCFIFOController.vhd
-import_files -library work -hdl_source hdl/edge_generator.v
 import_files -library work -hdl_source hdl/EWMaker.vhd
+import_files -library work -hdl_source hdl/edge_generator.v
 import_files -library work -hdl_source hdl/EW_FIFO_controller.v
 import_files -library work -hdl_source hdl/mem_read_cntrl.v
 import_files -library work -hdl_source hdl/ew_size_store_and_fetch_controller.vhd
@@ -38,8 +37,9 @@ import_files -library work -hdl_source hdl/MUX_TX.v
 import_files -library work -hdl_source hdl/WordAligner.vhd
 import_files -library work -hdl_source hdl/WordFlipper.vhd
 import_files -library work -hdl_source hdl/crc.vhd
-import_files -library work -hdl_source hdl/delay_sreg_1bit.vhd
+import_files -library work -hdl_source hdl/delay_sreg_4bit.vhd
 import_files -library work -hdl_source hdl/pulse_time_crossing.v
 import_files -library work -hdl_source hdl/counter_16bit.v
 import_files -library work -hdl_source hdl/pulse_stretcher.v
+import_files -library work -hdl_source hdl/latch_and_clear.v
 import_files -library work -hdl_source hdl/tracker_params.vh
