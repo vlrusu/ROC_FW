@@ -41,7 +41,6 @@ architecture rtl of RS485Registers is
     constant MAX_PAYLOAD : natural := 32;
     constant MAX_FRAME : natural := 8 + MAX_PAYLOAD + 2;
     constant STATUS_OK : byte_t := x"00";
-    constant STATUS_UNSUPPORTED : byte_t := x"01";
     constant STATUS_BAD_LENGTH : byte_t := x"02";
     constant STATUS_CPU_PROTOCOL : byte_t := x"03";
 
@@ -56,15 +55,6 @@ architecture rtl of RS485Registers is
             end if;
         end loop;
         return c;
-    end;
-
-    function supported(cmd : byte_t) return boolean is
-        variable n : natural := to_integer(unsigned(cmd));
-    begin
-        -- CPU main.c implements scalar reads 0..41 and ID/HB/DBG 252..254.
-        -- Command42's duplicate ilpcommand==1 branch never writes a result;
-        -- do not expose a stale value. Commands43..251 and255 are undefined.
-        return n <= 41 or (n >= 252 and n <= 254);
     end;
 
     signal rx_meta, rx_sync : std_logic := '1';
@@ -284,9 +274,11 @@ begin
                         build_index <= 0; build_crc <= (others => '1');
                         if request_length /= x"00" then
                             active_status <= STATUS_BAD_LENGTH; engine <= E_BUILD;
-                        elsif not supported(request_cmd) then
-                            active_status <= STATUS_UNSUPPORTED; engine <= E_BUILD;
-                        else rx_ready <= '1'; engine <= E_CPU; end if;
+                        else
+                            -- Command semantics belong to the CPU. Deliver all
+                            -- 256 command values after transport validation.
+                            rx_ready <= '1'; engine <= E_CPU;
+                        end if;
                     end if;
                 when E_CPU =>
                     if wr then
