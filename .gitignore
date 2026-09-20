@@ -1,2 +1,4 @@
 
 ROC/*
+__pycache__/
+*.pyc

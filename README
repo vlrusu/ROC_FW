@@ -11,3 +11,8 @@ When building from TCL with v2021:
 
 components/fifo_mem_cntrl.tcl      must remove all of "hdl_core_delete_parameters" statements from line 35 to end
 components/pattern_gen_checker     must remove all of "hdl_core_delete_parameters" statements from line 35 to end
+
+RS485 protocol v2 (2026-09-19)
+See docs/rs485-v2.md for framing, CPU compatibility, host migration and offline tests.
+Run: python3 tests/rs485_v2/run_tests.py
+Legacy com.py is incompatible with the v2 wire protocol. No bitstream is included.

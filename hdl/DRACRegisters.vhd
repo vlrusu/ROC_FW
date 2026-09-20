@@ -159,7 +159,112 @@ end DRACRegisters;
 
 architecture architecture_DRACRegisters of DRACRegisters is
 		
-   -- signal, component etc. declarations
+	-- DRAC register addresses
+	constant C_ADDR_DBG                       : natural := 0;
+	constant C_ADDR_BITSLIP                   : natural := 1;
+	constant C_ADDR_NWRDCS                    : natural := 2;
+	constant C_ADDR_NRDDCS                    : natural := 3;
+	constant C_ADDR_LOOPBACK_COARSE_DELAY     : natural := 4;
+	constant C_ADDR_DCS_TO_SERIAL             : natural := 5;
+	constant C_ADDR_TWI_CONTROL               : natural := 6;
+	constant C_ADDR_LOSS_LOCK                 : natural := 7;
+	constant C_ADDR_ROC_ENABLE                : natural := 8;
+
+	constant C_ADDR_DATAREQ_CNT_L             : natural := 9;
+	constant C_ADDR_DATAREQ_CNT_H             : natural := 10;
+	constant C_ADDR_EWM_CNT_L                 : natural := 11;
+	constant C_ADDR_EWM_CNT_H                 : natural := 12;
+	constant C_ADDR_IS_SKIPPED_DREQ_CNT       : natural := 13;
+	constant C_ADDR_EW_DONE_CNT               : natural := 14;
+	constant C_ADDR_DCS_DDR_ADDRESS_L         : natural := 15;
+	constant C_ADDR_DCS_DDR_ADDRESS_H         : natural := 16;
+	constant C_ADDR_DCS_ERROR_COUNTER         : natural := 17;
+	constant C_ADDR_ROC_STATUS                : natural := 18;
+	constant C_ADDR_DDR_FIFO_WR_STATUS        : natural := 20;
+	constant C_ADDR_DDR_FIFO_RD_STATUS        : natural := 21;
+	constant C_ADDR_DREQ_FIFO_WRCNT           : natural := 23;
+	constant C_ADDR_DREQ_FIFO_WR_STATUS       : natural := 24;
+	constant C_ADDR_DREQ_FIFO_RDCNT           : natural := 25;
+	constant C_ADDR_DREQ_FIFO_RD_STATUS       : natural := 26;
+	constant C_ADDR_DCS_HB_CNT_L              : natural := 27;
+	constant C_ADDR_DCS_HB_CNT_H              : natural := 28;
+	constant C_ADDR_DCS_NULLHB_CNT_L          : natural := 29;
+	constant C_ADDR_DCS_NULLHB_CNT_H          : natural := 30;
+	constant C_ADDR_DCS_HBCNT_ONHOLD_L        : natural := 31;
+	constant C_ADDR_DCS_HBCNT_ONHOLD_H        : natural := 32;
+	constant C_ADDR_DCS_PREFCNT_L             : natural := 33;
+	constant C_ADDR_DCS_PREFCNT_H             : natural := 34;
+	constant C_ADDR_DCS_DREQCNT_L             : natural := 35;
+	constant C_ADDR_DCS_DREQCNT_H             : natural := 36;
+	constant C_ADDR_DCS_DREQREAD_L            : natural := 37;
+	constant C_ADDR_DCS_DREQREAD_H            : natural := 38;
+	constant C_ADDR_DCS_DREQSENT_L            : natural := 39;
+	constant C_ADDR_DCS_DREQSENT_H            : natural := 40;
+	constant C_ADDR_DCS_DREQNULL_L            : natural := 41;
+	constant C_ADDR_DCS_DREQNULL_H            : natural := 42;
+	constant C_ADDR_DCS_SPILLCNT_L            : natural := 43;
+	constant C_ADDR_DCS_SPILLCNT_H            : natural := 44;
+	constant C_ADDR_DCS_HBTAG_0               : natural := 45;
+	constant C_ADDR_DCS_HBTAG_1               : natural := 46;
+	constant C_ADDR_DCS_HBTAG_2               : natural := 47;
+	constant C_ADDR_DCS_PREFTAG_0             : natural := 48;
+	constant C_ADDR_DCS_PREFTAG_1             : natural := 49;
+	constant C_ADDR_DCS_PREFTAG_2             : natural := 50;
+	constant C_ADDR_DCS_FETCHTAG_0            : natural := 51;
+	constant C_ADDR_DCS_FETCHTAG_1            : natural := 52;
+	constant C_ADDR_DCS_FETCHTAG_2            : natural := 53;
+	constant C_ADDR_DCS_DREQTAG_0             : natural := 54;
+	constant C_ADDR_DCS_DREQTAG_1             : natural := 55;
+	constant C_ADDR_DCS_DREQTAG_2             : natural := 56;
+	constant C_ADDR_DCS_OFFSETTAG_0           : natural := 57;
+	constant C_ADDR_DCS_OFFSETTAG_1           : natural := 58;
+	constant C_ADDR_DCS_OFFSETTAG_2           : natural := 59;
+	constant C_ADDR_EVENT_TIMEOUT_L           : natural := 60;
+	constant C_ADDR_EVENT_TIMEOUT_H           : natural := 61;
+	constant C_ADDR_DCS_EVMCNT_L              : natural := 64;
+	constant C_ADDR_DCS_EVMCNT_H              : natural := 65;
+	constant C_ADDR_DCS_FULLTAG_0             : natural := 66;
+	constant C_ADDR_DCS_FULLTAG_1             : natural := 67;
+	constant C_ADDR_DCS_FULLTAG_2             : natural := 68;
+	constant C_ADDR_TWI_BUSY                  : natural := 69;
+	constant C_ADDR_TWI_CAL_DATAOUT           : natural := 70;
+	constant C_ADDR_TWI_HV_DATAOUT            : natural := 71;
+	constant C_ADDR_HB_TAG_ERR_CNT            : natural := 72;
+	constant C_ADDR_HB_DREQ_ERR_CNT           : natural := 73;
+	constant C_ADDR_HB_LOST_CNT               : natural := 74;
+	constant C_ADDR_EWM_LOST_CNT              : natural := 75;
+	constant C_ADDR_BAD_MARKER_CNT            : natural := 76;
+
+	constant C_ADDR_DCS_FORMAT_VER            : natural := 90;
+	constant C_ADDR_DCS_DTC_ID                : natural := 91;
+	constant C_ADDR_DCS_SUBSYSTEM_ID          : natural := 92;
+	constant C_ADDR_DCS_MEM_READ              : natural := 93;
+	constant C_ADDR_DCM_MEM_OFFSET_L          : natural := 94;
+	constant C_ADDR_DCM_MEM_OFFSET_H          : natural := 95;
+	constant C_ADDR_RESET_DIGI_FIFOS          : natural := 100;
+	constant C_ADDR_RESET_DDR                 : natural := 101;
+	constant C_ADDR_EXT_IRQ                   : natural := 102;
+	constant C_ADDR_DIGIRESET                 : natural := 103;
+	constant C_ADDR_CAL_TWI_INIT              : natural := 110;
+	constant C_ADDR_CAL_TWI_DATA_IN           : natural := 111;
+	constant C_ADDR_CAL_TWI_ADDR              : natural := 112;
+	constant C_ADDR_HV_TWI_INIT               : natural := 113;
+	constant C_ADDR_HV_TWI_DATA_IN            : natural := 114;
+	constant C_ADDR_HV_TWI_ADDR               : natural := 115;
+	constant C_ADDR_LED                       : natural := 120;
+	constant C_ADDR_DCS_CMD_STATUS            : natural := 128;
+	constant C_ADDR_DCS_TX_BUFFER_FIFO_STATUS : natural := 129;
+	constant C_ADDR_DCS_RX_BUFFER_FIFO_STATUS : natural := 130;
+	constant C_ADDR_DCS_PROG_RETURN           : natural := 132;
+	constant C_ADDR_DTC_PKT_COUNT             : natural := 144;
+	constant C_ADDR_DCS_PKT_COUNT             : natural := 145;
+	constant C_ADDR_DREQ_PKT_COUNT            : natural := 146;
+	constant C_ADDR_DREQ_HDR_PKT_COUNT        : natural := 147;
+	constant C_ADDR_DREQ_DATA_PKT_COUNT       : natural := 148;
+	constant C_ADDR_DREQ_EMPTY_PKT_COUNT      : natural := 149;
+	constant C_ADDR_DCS_DIAG_DATA             : natural := 255;
+
+	-- signal, component etc. declarations
 	signal drac_read		: std_logic;
 	signal drac_write		: std_logic;
     signal drac_addrs		: std_logic_vector(gAPB_AWIDTH-1 DOWNTO 0);   
@@ -296,21 +401,21 @@ DIGIDEVICE_RESETN	<= '1';
 			end if;
 						
    -- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
-			if (drac_addrs = 0) then			-- RESET ALL 
+			if (drac_addrs = C_ADDR_DBG) then			-- RESET ALL
             
-            elsif (drac_addrs = 1) then  
+            elsif (drac_addrs = C_ADDR_BITSLIP) then
                 DCS_BITSLIP_START   <= '1';
                 DCS_BITSLIP_SHIFT   <= drac_wdata(4 downto 0);
                 
-            elsif (drac_addrs = 4) then  
+            elsif (drac_addrs = C_ADDR_LOOPBACK_COARSE_DELAY) then
                 DCS_LOOPBACK_COARSE_DELAY <= drac_wdata(9 downto 0);
-            elsif (drac_addrs = 5) then  
+            elsif (drac_addrs = C_ADDR_DCS_TO_SERIAL) then
                 DCS_TO_SERIAL <= drac_wdata(15 downto 0);
-			elsif (drac_addrs = 6) then
+			elsif (drac_addrs = C_ADDR_TWI_CONTROL) then
                 dcs_digirw_sel <= drac_wdata(0);     
             
    -- 8...255 are reserved for DRAC controls and registers
-			elsif (drac_addrs = 8) then
+			elsif (drac_addrs = C_ADDR_ROC_ENABLE) then
 				use_lane_reg 	<= drac_wdata(3 downto 0);
                 pattern_en_reg  <= drac_wdata(4);
                 error_en_reg    <= drac_wdata(6);
@@ -320,50 +425,50 @@ DIGIDEVICE_RESETN	<= '1';
                 force_full_reg      <= drac_wdata(10);
                 pattern_type_reg    <= drac_wdata(12);
                 haltrun_en_reg      <= drac_wdata(13);
-            elsif (drac_addrs = 9) then 
+            elsif (drac_addrs = C_ADDR_LED) then
                 DCS_LED_OFF     <= drac_wdata(0);
-			elsif (drac_addrs = 13) then
+			elsif (drac_addrs = C_ADDR_RESET_DIGI_FIFOS) then
 				DCS_RESETFIFO	<= drac_wdata(0);
-			elsif (drac_addrs = 14) then
+			elsif (drac_addrs = C_ADDR_RESET_DDR) then
 				DCS_DDRRESET_N		<= '0';	 -- self clearing
-            elsif (drac_addrs = 15) then
+            elsif (drac_addrs = C_ADDR_EXT_IRQ) then
                 DCS_EXT_SYS_IRQ <= drac_wdata(0);
 
- elsif (drac_addrs = 103) then
+ elsif (drac_addrs = C_ADDR_DIGIRESET) then
           DIGIDEVICE_RESETN	<= drac_wdata(0);
 
                     
-            elsif (drac_addrs = 17) then
+            elsif (drac_addrs = C_ADDR_DCS_ERROR_COUNTER) then
 				DCS_ERROR_ADDR  <= drac_wdata(7 downto 0);
                     
-            elsif (drac_addrs = 23) then
+            elsif (drac_addrs = C_ADDR_CAL_TWI_INIT) then
                 dcs_cal_init <= drac_wdata(0);
-            elsif (drac_addrs = 24) then
+            elsif (drac_addrs = C_ADDR_CAL_TWI_DATA_IN) then
                 dcs_cal_data <= drac_wdata(15 downto 0);
-            elsif (drac_addrs = 25) then
+            elsif (drac_addrs = C_ADDR_CAL_TWI_ADDR) then
                 dcs_cal_addr <= drac_wdata(8 downto 0);
-            elsif (drac_addrs = 26) then
+            elsif (drac_addrs = C_ADDR_HV_TWI_INIT) then
                 dcs_hv_init <= drac_wdata(0);
-            elsif (drac_addrs = 27) then
+            elsif (drac_addrs = C_ADDR_HV_TWI_DATA_IN) then
                 dcs_hv_data <= drac_wdata(15 downto 0);
-            elsif (drac_addrs = 28) then
+            elsif (drac_addrs = C_ADDR_HV_TWI_ADDR) then
                 dcs_hv_addr <= drac_wdata(8 downto 0);
-            elsif (drac_addrs = 29) then   -- 0x1D
+            elsif (drac_addrs = C_ADDR_DCS_FORMAT_VER) then   -- 0x1D
                 DCS_FORMAT_VERSION <= drac_wdata(7 downto 0);
-            elsif (drac_addrs = 30) then   -- 0x1E
+            elsif (drac_addrs = C_ADDR_DCS_DTC_ID) then   -- 0x1E
                 DCS_DTC_ID <= drac_wdata(7 downto 0);
-            elsif (drac_addrs = 31) then   -- 0x1F
+            elsif (drac_addrs = C_ADDR_DCS_SUBSYSTEM_ID) then   -- 0x1F
                 DCS_SUBSYSTEM_ID <= drac_wdata(2 downto 0);
-            elsif (drac_addrs = 32) then   -- 0x20
+            elsif (drac_addrs = C_ADDR_DCS_MEM_READ) then   -- 0x20
                 DCS_MEM_READ <= drac_wdata(0);
-            elsif (drac_addrs = 33) then   -- 0x21
+            elsif (drac_addrs = C_ADDR_DCM_MEM_OFFSET_L) then   -- 0x21
                 DCS_MEM_OFFSET(15 downto 0) <= drac_wdata(15 downto 0);
-            elsif (drac_addrs = 34) then   -- 0x22
+            elsif (drac_addrs = C_ADDR_DCM_MEM_OFFSET_H) then   -- 0x22
                 DCS_MEM_OFFSET(19 downto 16) <= drac_wdata(3 downto 0);
 
-                elsif (drac_addrs = 60) then   -- 0x3C
+                elsif (drac_addrs = C_ADDR_EVENT_TIMEOUT_L) then   -- 0x3C
                 event_timeout_reg(15 downto 0)  <= drac_wdata(15 downto 0);
-            elsif (drac_addrs = 61) then   -- 0x3D
+            elsif (drac_addrs = C_ADDR_EVENT_TIMEOUT_H) then   -- 0x3D
                 event_timeout_reg(19 downto 16)  <= drac_wdata(3 downto 0);
                  
             --elsif (drac_addrs = 126) then
@@ -388,193 +493,193 @@ DIGIDEVICE_RESETN	<= '1';
 			end if;	
 				
 			-- 0...7 are reserved registers to deal with other modules inside TOP_SERDES
-			if (drac_addrs = 0) then	-- monitors status of Core_PCS	 						
+			if (drac_addrs = C_ADDR_DBG) then	-- monitors status of Core_PCS
 				DATA_OUT 	<= DEBUG_REG_0;			
-			elsif (drac_addrs = 1) then	
+			elsif (drac_addrs = C_ADDR_BITSLIP) then
 				DATA_OUT 	<=  CLOCK_ALIGNED & B"000_0000_000" & DCS_BITSLIP_SHIFT;	-- data read from other modules
-			elsif (drac_addrs = 2) then	
+			elsif (drac_addrs = C_ADDR_NWRDCS) then
 				DATA_OUT 	<=  writeCounter ;	-- useful counters
-			elsif (drac_addrs = 3) then	 
+			elsif (drac_addrs = C_ADDR_NRDDCS) then
 				DATA_OUT 	<=  readCounter; 	
-			elsif (drac_addrs = 4) then	 
+			elsif (drac_addrs = C_ADDR_LOOPBACK_COARSE_DELAY) then
 				DATA_OUT 	<=  B"000000" & DCS_LOOPBACK_COARSE_DELAY; 	
-			elsif (drac_addrs = 5) then	 
+			elsif (drac_addrs = C_ADDR_DCS_TO_SERIAL) then
 				DATA_OUT 	<=  DCS_TO_SERIAL; 	
-			elsif (drac_addrs = 6) then		 	 
+			elsif (drac_addrs = C_ADDR_TWI_CONTROL) then
                 DATA_OUT    <= B"000_0000_0000_0000" & dcs_digirw_sel;
-			elsif (drac_addrs = 7) then		 	 
+			elsif (drac_addrs = C_ADDR_LOSS_LOCK) then
 				DATA_OUT 	<= LOSS_OF_LOCK_CNT;			
 					
    -- 8...255 are reserved for DRAC controls and registers
-			elsif (drac_addrs = 8) then		 	 
+			elsif (drac_addrs = C_ADDR_ROC_ENABLE) then
 				DATA_OUT <= B"00" & HALTRUN_EN & DCS_PATTERN_TYPE &
                             '0'   & DCS_FORCE_FULL & DCS_ENABLE_MARKER & DCS_ENABLE_CLOCK &
                             DCS_INT_EVM_EN & DCS_ERROR_EN & '0' & DCS_PATTERN_EN & 
                             DCS_USE_LANE;
                             
-			elsif (drac_addrs = 9) then		 	 
+			elsif (drac_addrs = C_ADDR_DATAREQ_CNT_L) then
 				DATA_OUT 	<= DATAREQ_CNT(15 downto 0);			
-			elsif (drac_addrs = 10) then		 	 
+			elsif (drac_addrs = C_ADDR_DATAREQ_CNT_H) then
 				DATA_OUT 	<= DATAREQ_CNT(31 downto 16);			
-			elsif (drac_addrs = 11) then		 	 
+			elsif (drac_addrs = C_ADDR_EWM_CNT_L) then
 				DATA_OUT 	<= EVENT_MARKER_CNT(15 downto 0);			
-			elsif (drac_addrs = 12) then		 	 
+			elsif (drac_addrs = C_ADDR_EWM_CNT_H) then
 				DATA_OUT 	<= EVENT_MARKER_CNT(31 downto 16);			
-			elsif (drac_addrs = 13) then		 	 
+			elsif (drac_addrs = C_ADDR_IS_SKIPPED_DREQ_CNT) then
 				DATA_OUT 	<= IS_SKIPPED_DREQ_CNT;			
-            elsif (drac_addrs = 14) then		 	 
+            elsif (drac_addrs = C_ADDR_EW_DONE_CNT) then
 				DATA_OUT 	<= ew_done_cnt;                
-            elsif (drac_addrs = 15) then		 	 
+            elsif (drac_addrs = C_ADDR_DCS_DDR_ADDRESS_L) then
 				DATA_OUT 	<= DCS_DDR_ADDRESS(15 downto 0);
-            elsif (drac_addrs = 16) then		 	 
+            elsif (drac_addrs = C_ADDR_DCS_DDR_ADDRESS_H) then
 				DATA_OUT 	<= B"0000_0000_0000" & DCS_DDR_ADDRESS(19 downto 16);
-            elsif (drac_addrs = 17) then		 	 
+            elsif (drac_addrs = C_ADDR_DCS_ERROR_COUNTER) then
 				DATA_OUT <= DCS_ERROR_DATA(15 downto 0);
- 			elsif (drac_addrs = 18) then		 	 
+			elsif (drac_addrs = C_ADDR_ROC_STATUS) then
 				DATA_OUT    <= B"0000" & 
                             DCS_LANE_EMPTY & 
                             DCS_LANE_FULL  &
                             LANE_EMPTY_SEEN;
                     
- 			elsif (drac_addrs = 20) then		 	 
+			elsif (drac_addrs = C_ADDR_DDR_FIFO_WR_STATUS) then
 				DATA_OUT    <= DCS_DDR_FIFO_FULL &
                             B"000_0000" & 
                             DCS_DDR_FIFO_WRCNT;
- 			elsif (drac_addrs = 21) then		 	 
+			elsif (drac_addrs = C_ADDR_DDR_FIFO_RD_STATUS) then
 				DATA_OUT    <= DCS_DDR_FIFO_EMPTY &
                             B"000_00" & 
                             DCS_DDR_FIFO_RDCNT;
                     
-            elsif (drac_addrs = 23) then		 	 
+            elsif (drac_addrs = C_ADDR_DREQ_FIFO_WRCNT) then
 				DATA_OUT <= DCS_STORE_CNT(15 downto 0);	
-			elsif (drac_addrs = 24) then		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_FIFO_WR_STATUS) then
 				DATA_OUT <= B"000" & DCS_DREQ_FIFO_FULL & B"00" & DCS_STORE_POS & B"0000" & DCS_STORE_CNT(19 downto 16);	
-			elsif (drac_addrs = 25) then		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_FIFO_RDCNT) then
 				DATA_OUT <= DCS_FETCH_CNT(15 downto 0);	
-			elsif (drac_addrs = 26) then		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_FIFO_RD_STATUS) then
 				DATA_OUT <= B"000" & DCS_DREQ_FIFO_EMPTY & B"00" & DCS_FETCH_POS & B"0000" & DCS_FETCH_CNT(19 downto 16);	
-			elsif (drac_addrs = 27) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HB_CNT_L) then
 				DATA_OUT <= DCS_HBCNT(15 downto 0);
-			elsif (drac_addrs = 28) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HB_CNT_H) then
 				DATA_OUT <= DCS_HBCNT(31 downto 16);
-			elsif (drac_addrs = 29) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_NULLHB_CNT_L) then
 				DATA_OUT <= DCS_NULLHBCNT(15 downto 0);
-			elsif (drac_addrs = 30) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_NULLHB_CNT_H) then
 				DATA_OUT <= DCS_NULLHBCNT(31 downto 16);
-			elsif (drac_addrs = 31) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HBCNT_ONHOLD_L) then
 				DATA_OUT <= DCS_HBONHOLD(15 downto 0);
-			elsif (drac_addrs = 32) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HBCNT_ONHOLD_H) then
 				DATA_OUT <= DCS_HBONHOLD(31 downto 16);
-			elsif (drac_addrs = 33) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PREFCNT_L) then
 				DATA_OUT <= DCS_PREFCNT(15 downto 0);
-			elsif (drac_addrs = 34) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PREFCNT_H) then
 				DATA_OUT <= DCS_PREFCNT(31 downto 16);
-			elsif (drac_addrs = 35) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQCNT_L) then
 				DATA_OUT <= DCS_DREQCNT(15 downto 0);
-			elsif (drac_addrs = 36) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQCNT_H) then
 				DATA_OUT <= DCS_DREQCNT(31 downto 16);
-			elsif (drac_addrs = 37) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQREAD_L) then
 				DATA_OUT <= DCS_DREQREAD(15 downto 0);
-			elsif (drac_addrs = 38) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQREAD_H) then
 				DATA_OUT <= DCS_DREQREAD(31 downto 16);
-			elsif (drac_addrs = 39) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQSENT_L) then
 				DATA_OUT <= DCS_DREQSENT(15 downto 0);
-			elsif (drac_addrs = 40) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQSENT_H) then
 				DATA_OUT <= DCS_DREQSENT(31 downto 16);
-			elsif (drac_addrs = 41) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQNULL_L) then
 				DATA_OUT <= DCS_DREQNULL(15 downto 0);
-			elsif (drac_addrs = 42) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQNULL_H) then
 				DATA_OUT <= DCS_DREQNULL(31 downto 16);
-			elsif (drac_addrs = 43) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_SPILLCNT_L) then
 				DATA_OUT <= DCS_SPILLCNT(15 downto 0);
-			elsif (drac_addrs = 44) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_SPILLCNT_H) then
 				DATA_OUT <= DCS_SPILLCNT(31 downto 16);
-			elsif (drac_addrs = 45) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HBTAG_0) then
 				DATA_OUT <= DCS_HBTAG(15 downto 0);
-			elsif (drac_addrs = 46) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HBTAG_1) then
 				DATA_OUT <= DCS_HBTAG(31 downto 16);
-			elsif (drac_addrs = 47) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_HBTAG_2) then
 				DATA_OUT <= DCS_HBTAG(47 downto 32);
-			elsif (drac_addrs = 48) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PREFTAG_0) then
 				DATA_OUT <= DCS_PREFTAG(15 downto 0);
-			elsif (drac_addrs = 49) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PREFTAG_1) then
 				DATA_OUT <= DCS_PREFTAG(31 downto 16);
-			elsif (drac_addrs = 50) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PREFTAG_2) then
 				DATA_OUT <= DCS_PREFTAG(47 downto 32);
-			elsif (drac_addrs = 51) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FETCHTAG_0) then
 				DATA_OUT <= DCS_FETCHTAG(15 downto 0);
-			elsif (drac_addrs = 52) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FETCHTAG_1) then
 				DATA_OUT <= DCS_FETCHTAG(31 downto 16);
-			elsif (drac_addrs = 53) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FETCHTAG_2) then
 				DATA_OUT <= DCS_FETCHTAG(47 downto 32);
-			elsif (drac_addrs = 54) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQTAG_0) then
 				DATA_OUT <= DCS_DREQTAG(15 downto 0);
-			elsif (drac_addrs = 55) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQTAG_1) then
 				DATA_OUT <= DCS_DREQTAG(31 downto 16);
-			elsif (drac_addrs = 56) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_DREQTAG_2) then
 				DATA_OUT <= DCS_DREQTAG(47 downto 32);
-			elsif (drac_addrs = 57) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_OFFSETTAG_0) then
 				DATA_OUT <= DCS_OFFSETTAG(15 downto 0);
-			elsif (drac_addrs = 58) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_OFFSETTAG_1) then
 				DATA_OUT <= DCS_OFFSETTAG(31 downto 16);
-			elsif (drac_addrs = 59) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_OFFSETTAG_2) then
 				DATA_OUT <= DCS_OFFSETTAG(47 downto 32);
-			elsif (drac_addrs = 60) then		 	 
+			elsif (drac_addrs = C_ADDR_EVENT_TIMEOUT_L) then
 				DATA_OUT <= EVENT_TIMEOUT(15 downto 0);
-			elsif (drac_addrs = 61) then		 	 
+			elsif (drac_addrs = C_ADDR_EVENT_TIMEOUT_H) then
 				DATA_OUT <= X"000" & EVENT_TIMEOUT(19 downto 16);
                 
-			elsif (drac_addrs = 64) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_EVMCNT_L) then
 				DATA_OUT <= DCS_EVMCNT(15 downto 0);
-			elsif (drac_addrs = 65) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_EVMCNT_H) then
 				DATA_OUT <= DCS_EVMCNT(31 downto 16);
-			elsif (drac_addrs = 66) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FULLTAG_0) then
 				DATA_OUT <= DCS_FULLTAG(15 downto 0);
-			elsif (drac_addrs = 67) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FULLTAG_1) then
 				DATA_OUT <= DCS_FULLTAG(31 downto 16);
-			elsif (drac_addrs = 68) then		 	 
+			elsif (drac_addrs = C_ADDR_DCS_FULLTAG_2) then
 				DATA_OUT <= DCS_FULLTAG(47 downto 32);
-            elsif (drac_addrs = 69) then		 	 
+            elsif (drac_addrs = C_ADDR_TWI_BUSY) then
 				DATA_OUT <= X"00" & B"000" & dcs_hv_busy & B"000" & dcs_cal_busy;
-			elsif (drac_addrs = 70) then		 	 
+			elsif (drac_addrs = C_ADDR_TWI_CAL_DATAOUT) then
 				DATA_OUT <= dcs_cal_data_out(15 downto 0);
-			elsif (drac_addrs = 71) then		 	 
+			elsif (drac_addrs = C_ADDR_TWI_HV_DATAOUT) then
 				DATA_OUT <= dcs_hv_data_out(15 downto 0);
-			elsif (drac_addrs = 72) then		 	 
+			elsif (drac_addrs = C_ADDR_HB_TAG_ERR_CNT) then
 				DATA_OUT <= hb_tag_err_cnt;
-			elsif (drac_addrs = 73) then		 	 
+			elsif (drac_addrs = C_ADDR_HB_DREQ_ERR_CNT) then
 				DATA_OUT <= hb_dreq_err_cnt;
-			elsif (drac_addrs = 74) then		 	 
+			elsif (drac_addrs = C_ADDR_HB_LOST_CNT) then
 				DATA_OUT <= hb_lost_cnt;
-			elsif (drac_addrs = 75) then		 	 
+			elsif (drac_addrs = C_ADDR_EWM_LOST_CNT) then
 				DATA_OUT <= evm_lost_cnt;
-			elsif (drac_addrs = 76) then		 	 
+			elsif (drac_addrs = C_ADDR_BAD_MARKER_CNT) then
 				DATA_OUT 	<= BAD_MARKER_CNT;			
                 
             -- CALO uses 77 to 126                
             -- DCS CMD Registers
-			elsif (drac_addrs = 128) then		-- 0x80 	 
+			elsif (drac_addrs = C_ADDR_DCS_CMD_STATUS) then		-- 0x80
 				DATA_OUT <= DCS_CMD_STATUS;
-			elsif (drac_addrs = 129) then		-- 0x81 	 
+			elsif (drac_addrs = C_ADDR_DCS_TX_BUFFER_FIFO_STATUS) then		-- 0x81
 				DATA_OUT <= '0' & DCS_TX_FULL & '0' & DCS_TX_EMPTY & '0' & DCS_TX_WRCNT;
-			elsif (drac_addrs = 130) then		-- 0x82 	 
+			elsif (drac_addrs = C_ADDR_DCS_RX_BUFFER_FIFO_STATUS) then		-- 0x82
 				DATA_OUT <= '0' & DCS_RX_FULL & '0' & DCS_RX_EMPTY & '0' & DCS_RX_WRCNT;
-			elsif (drac_addrs = 132) then		-- 0x84 	 
+			elsif (drac_addrs = C_ADDR_DCS_PROG_RETURN) then		-- 0x84
                 DATA_OUT <= DCS_PROG_RETURN;
-			elsif (drac_addrs = 255) then		-- 0xFF 	 
+			elsif (drac_addrs = C_ADDR_DCS_DIAG_DATA) then		-- 0xFF
 				DATA_OUT <= DCS_DIAG_DATA;
                 
-            elsif (drac_addrs = 144) then	 -- 0x90	 	 
+            elsif (drac_addrs = C_ADDR_DTC_PKT_COUNT) then	 -- 0x90
                 DATA_OUT <= dtc_pkt_count;
-			elsif (drac_addrs = 145) then	 -- 0x91		 	 
+			elsif (drac_addrs = C_ADDR_DCS_PKT_COUNT) then	 -- 0x91
                 DATA_OUT <= dcs_pkt_count;
-			elsif (drac_addrs = 146) then	 -- 0x92		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_PKT_COUNT) then	 -- 0x92
                 DATA_OUT <= dreq_pkt_count;
-			elsif (drac_addrs = 147) then	 -- 0x93		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_HDR_PKT_COUNT) then	 -- 0x93
                 DATA_OUT <= dreq_hdr_pkt_count;
-			elsif (drac_addrs = 148) then	 -- 0x94		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_DATA_PKT_COUNT) then	 -- 0x94
                 DATA_OUT <= dreq_data_pkt_count;
-			elsif (drac_addrs = 149) then	 -- 0x95		 	 
+			elsif (drac_addrs = C_ADDR_DREQ_EMPTY_PKT_COUNT) then	 -- 0x95
                 DATA_OUT <= dreq_empty_pkt_count;	
                 
 			else	
