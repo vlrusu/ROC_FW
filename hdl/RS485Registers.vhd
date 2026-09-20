@@ -57,53 +57,55 @@ architecture rtl of RS485Registers is
         return c;
     end;
 
-    signal rx_meta, rx_sync : std_logic := '1';
+    -- Initialize registers only through PRESETn. Declaration initializers can
+    -- conflict with resettable storage in the target synthesis flow.
+    signal rx_meta, rx_sync : std_logic;
     type uart_rx_state_t is (U_IDLE, U_START, U_DATA, U_STOP, U_BREAK);
-    signal uart_rx_state : uart_rx_state_t := U_IDLE;
-    signal rx_ticks : natural range 0 to CLKS_PER_BIT-1 := 0;
-    signal rx_bit : natural range 0 to 7 := 0;
-    signal rx_shift, rx_byte : byte_t := (others => '0');
-    signal byte_valid, byte_error : std_logic := '0';
+    signal uart_rx_state : uart_rx_state_t;
+    signal rx_ticks : natural range 0 to CLKS_PER_BIT-1;
+    signal rx_bit : natural range 0 to 7;
+    signal rx_shift, rx_byte : byte_t;
+    signal byte_valid, byte_error : std_logic;
 
-    signal frame_buf : bytes_t(0 to MAX_FRAME-1) := (others => (others => '0'));
-    signal frame_count : natural range 0 to MAX_FRAME := 0;
-    signal frame_active, escape_pending : std_logic := '0';
-    signal frame_crc : unsigned(15 downto 0) := (others => '1');
-    signal frame_ticks : natural range 0 to RX_TIMEOUT_CLKS-1 := 0;
-    signal request_valid : std_logic := '0';
-    signal request_cmd, request_length : byte_t := (others => '0');
-    signal request_roc, request_id : std_logic_vector(15 downto 0) := (others => '0');
-    signal crc_errors, frame_errors, frame_timeouts, frame_overflows : unsigned(31 downto 0) := (others => '0');
+    signal frame_buf : bytes_t(0 to MAX_FRAME-1);
+    signal frame_count : natural range 0 to MAX_FRAME;
+    signal frame_active, escape_pending : std_logic;
+    signal frame_crc : unsigned(15 downto 0);
+    signal frame_ticks : natural range 0 to RX_TIMEOUT_CLKS-1;
+    signal request_valid : std_logic;
+    signal request_cmd, request_length : byte_t;
+    signal request_roc, request_id : std_logic_vector(15 downto 0);
+    signal crc_errors, frame_errors, frame_timeouts, frame_overflows : unsigned(31 downto 0);
 
     type engine_state_t is (E_IDLE, E_CPU, E_BUILD, E_TRANSMIT, E_STALE);
-    signal engine : engine_state_t := E_IDLE;
-    signal rx_ready : std_logic := '0';
-    signal active_cmd, active_status : byte_t := (others => '0');
-    signal active_roc, active_id, active_data : std_logic_vector(15 downto 0) := (others => '0');
-    signal active_delay : std_logic_vector(7 downto 0) := (others => '0');
-    signal cpu_data : std_logic_vector(15 downto 0) := (others => '0');
-    signal cpu_status : byte_t := (others => '0');
-    signal cpu_wrote : std_logic := '0';
-    signal cpu_ticks : natural range 0 to CPU_TIMEOUT_CLKS-1 := 0;
-    signal build_index : natural range 0 to 12 := 0;
-    signal build_crc : unsigned(15 downto 0) := (others => '1');
-    signal reply_buf : bytes_t(0 to 12) := (others => (others => '0'));
-    signal launch_tx, tx_done : std_logic := '0';
-    signal accepted, busy_drops, cpu_timeouts, reply_count : unsigned(31 downto 0) := (others => '0');
+    signal engine : engine_state_t;
+    signal rx_ready : std_logic;
+    signal active_cmd, active_status : byte_t;
+    signal active_roc, active_id, active_data : std_logic_vector(15 downto 0);
+    signal active_delay : std_logic_vector(7 downto 0);
+    signal cpu_data : std_logic_vector(15 downto 0);
+    signal cpu_status : byte_t;
+    signal cpu_wrote : std_logic;
+    signal cpu_ticks : natural range 0 to CPU_TIMEOUT_CLKS-1;
+    signal build_index : natural range 0 to 12;
+    signal build_crc : unsigned(15 downto 0);
+    signal reply_buf : bytes_t(0 to 12);
+    signal launch_tx, tx_done : std_logic;
+    signal accepted, busy_drops, cpu_timeouts, reply_count : unsigned(31 downto 0);
 
     type uart_tx_state_t is (T_IDLE, T_DELAY, T_SETUP, T_LOAD, T_BITS);
     type wire_phase_t is (W_OPEN, W_BODY, W_CLOSE, W_DONE);
-    signal uart_tx_state : uart_tx_state_t := T_IDLE;
-    signal wire_phase : wire_phase_t := W_OPEN;
-    signal tx_en : std_logic := '0';
-    signal tx_word : std_logic_vector(9 downto 0) := (others => '1');
-    signal tx_bit : natural range 0 to 9 := 0;
-    signal tx_ticks : natural range 0 to CLKS_PER_BIT-1 := 0;
-    signal delay_ticks : natural range 0 to DELAY_UNIT_CLKS-1 := 0;
-    signal delay_left : natural range 0 to 255 := 0;
-    signal setup_ticks : natural range 0 to DE_SETUP_CLKS-1 := 0;
-    signal wire_index : natural range 0 to 12 := 0;
-    signal tx_escape : std_logic := '0';
+    signal uart_tx_state : uart_tx_state_t;
+    signal wire_phase : wire_phase_t;
+    signal tx_en : std_logic;
+    signal tx_word : std_logic_vector(9 downto 0);
+    signal tx_bit : natural range 0 to 9;
+    signal tx_ticks : natural range 0 to CLKS_PER_BIT-1;
+    signal delay_ticks : natural range 0 to DELAY_UNIT_CLKS-1;
+    signal delay_left : natural range 0 to 255;
+    signal setup_ticks : natural range 0 to DE_SETUP_CLKS-1;
+    signal wire_index : natural range 0 to 12;
+    signal tx_escape : std_logic;
 begin
     assert APB_ADDRESS_WIDTH >= 10 and APB_DATA_WIDTH >= 32
         report "RS485Registers requires >=10 address and >=32 data bits" severity failure;
