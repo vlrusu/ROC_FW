@@ -8,7 +8,9 @@ hdl_core_add_bif -hdl_core_name {PanelIdReader} -bif_definition {APB:AMBA:AMBA2:
 "PREADY:S_PREADY" \
 "PSLVERR:S_PSLVERR" \
 "PSELx:S_PSEL" }
-hdl_core_add_bif -hdl_core_name {PanelIdReader} -bif_definition {APB:AMBA:AMBA2:master} -bif_name {SERVICE_APB} -signal_map {\
+# Direct peripheral-facing APB: Libero slave interfaces pair with mirroredSlave.
+# A master role instead pairs with the bus fabric mirroredMaster interface.
+hdl_core_add_bif -hdl_core_name {PanelIdReader} -bif_definition {APB:AMBA:AMBA2:mirroredSlave} -bif_name {SERVICE_APB} -signal_map {\
 "PADDR:M_PADDR" \
 "PENABLE:M_PENABLE" \
 "PWRITE:M_PWRITE" \
