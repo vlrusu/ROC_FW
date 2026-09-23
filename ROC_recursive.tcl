@@ -9,6 +9,8 @@ source components/EW_FIFO_controller.tcl
 source components/mem_read_cntrl.tcl 
 source components/DCSRegisters.tcl 
 source components/RS485Registers.tcl 
+source components/PanelIdReader.tcl
+source components/GoldenImageRecovery.tcl
 source components/Registers.tcl 
 build_design_hierarchy
 

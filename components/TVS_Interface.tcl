@@ -17,6 +17,11 @@ sd_create_bus_port -sd_name ${sd_name} -port_name {R_ADDR} -port_direction {IN} 
 sd_create_bus_port -sd_name ${sd_name} -port_name {R_DATA} -port_direction {OUT} -port_range {[15:0]}
 
 
+sd_create_bus_port -sd_name ${sd_name} -port_name {DIRECT_VALUES} -port_direction {OUT} -port_range {[63:0]}
+sd_create_bus_port -sd_name ${sd_name} -port_name {DIRECT_FRESH} -port_direction {OUT} -port_range {[3:0]}
+
+sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {TVSReadback} -hdl_file {hdl/TVSReadback.vhd} -instance_name {TVSReadback_0}
+
 # Add PF_TVS_C0_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_TVS_C0} -instance_name {PF_TVS_C0_0}
 sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {PF_TVS_C0_0:TEMP_HIGH_CLEAR} -value {VCC}
@@ -44,18 +49,21 @@ sd_instantiate_hdl_module -sd_name ${sd_name} -hdl_module_name {TVS_Cntrl} -hdl_
 # Add scalar net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALID" "TVS_Cntrl_0:valid_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:R_CLK" "R_CLK" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_CLK" "TVS_Cntrl_0:clk" "clk" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_EN" "TVS_Cntrl_0:w_en_o" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:resetn_i" "resetn_i" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_CLK" "TVS_Cntrl_0:clk" "TVSReadback_0:clk" "clk" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_EN" "TVS_Cntrl_0:w_en_o" "TVSReadback_0:sample_valid" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Cntrl_0:resetn_i" "TVSReadback_0:resetn_i" "resetn_i" }
 
 # Add bus net connections
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:CHANNEL" "TVS_Cntrl_0:channel_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_TVS_C0_0:VALUE" "TVS_Cntrl_0:value_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:R_ADDR" "R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:R_DATA" "R_DATA" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_ADDR" "TVS_Cntrl_0:channel_o" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_DATA" "TVS_Cntrl_0:value_o" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_ADDR" "TVS_Cntrl_0:channel_o" "TVSReadback_0:sample_channel" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PF_URAM_C0_0:W_DATA" "TVS_Cntrl_0:value_o" "TVSReadback_0:sample_value" }
 
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVSReadback_0:values_o" "DIRECT_VALUES" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVSReadback_0:fresh_o" "DIRECT_FRESH" }
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

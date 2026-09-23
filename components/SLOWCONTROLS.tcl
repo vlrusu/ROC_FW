@@ -294,6 +294,11 @@ sd_connect_pins_to_constant -sd_name ${sd_name} -pin_names {PF_SPI_0:SS_OE} -val
 
 
 
+# Add autonomous panel-ID reader and startup APB ownership gate
+sd_instantiate_hdl_core -sd_name ${sd_name} -hdl_core_name {PanelIdReader} -instance_name {PanelIdReader_0}
+
+sd_instantiate_hdl_core -sd_name ${sd_name} -hdl_core_name {GoldenImageRecovery} -instance_name {GoldenImageRecovery_0}
+
 # Add PF_SYSTEM_SERVICES_C0_0 instance
 sd_instantiate_component -sd_name ${sd_name} -component_name {PF_SYSTEM_SERVICES_C0} -instance_name {PF_SYSTEM_SERVICES_C0_0}
 sd_mark_pins_unused -sd_name ${sd_name} -pin_names {PF_SYSTEM_SERVICES_C0_0:USR_CMD_ERROR}
@@ -435,7 +440,7 @@ sd_mark_pins_unused -sd_name ${sd_name} -pin_names {UARTapb_0:FRAMING_ERR}
 
 
 # Add scalar net connections
-sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "CAL_SPI_PROG_0:PRESETN" "CAL_SPI_PROG_1:PRESETN" "CORESPI_IAP_0:PRESETN" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "RS485Registers_0:PRESETn" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:A" "AND2_1:B" "CAL_SPI_PROG_0:PRESETN" "CAL_SPI_PROG_1:PRESETN" "GPIO_0:PRESETN" "PF_SYSTEM_SERVICES_C0_0:RESETN" "PanelIdReader_0:PRESETn" "GoldenImageRecovery_0:PRESETn" "PREAMPSPI_0:PRESETN" "PREAMPSPI_1:PRESETN" "PRESETN" "RS485Registers_0:PRESETn" "Registers_0:PRESETn" "SPI0_0:PRESETN" "SPI0_1:PRESETN" "SPI_KEY_0:PRESETN" "UARTapb_0:PRESETN" "pwm_0:PRESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:B" "Registers_0:TVS_RESETN" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_0:Y" "TVS_Interface_0:resetn_i" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"AND2_1:A" "EXT_RST_N" }
@@ -449,7 +454,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_CE1n" "PREAMPSPI_1:S
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MISO" "PREAMPSPI_1:SPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_MOSI" "PREAMPSPI_1:SPISDO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_PREAMP_SCLK" "MX2_0:Y" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "DFN1_0:CLK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485Registers_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_0:PCLK" "CAL_SPI_PROG_1:PCLK" "CMD_TO_PROC_BUFFER_0:RCLOCK" "CORESPI_IAP_0:PCLK" "DCSRegisters_0:PCLK" "DCS_RX_BUFFER_0:CLK" "DCS_TX_BUFFER_0:WCLOCK" "DFN1_0:CLK" "GPIO_0:PCLK" "PCLK" "PF_SYSTEM_SERVICES_C0_0:CLK" "PanelIdReader_0:PCLK" "GoldenImageRecovery_0:PCLK" "PREAMPSPI_0:PCLK" "PREAMPSPI_1:PCLK" "RS485Registers_0:PCLK" "Registers_0:PCLK" "SPI0_0:PCLK" "SPI0_1:PCLK" "SPI_KEY_0:PCLK" "TVS_Interface_0:R_CLK" "TVS_Interface_0:clk" "UARTapb_0:PCLK" "counter32_0:clk" "pwm_0:PCLK" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISCLKO" "HVPROGSPISCLKO" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDI" "HVPROGSPISDI" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CAL_SPI_PROG_1:SPISDO" "HVPROGSPISDO" }
@@ -466,7 +471,7 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISCLKO" "PF_SPI
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISDI" "PF_SPI_0:D_I" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISDO" "PF_SPI_0:D_O" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISSI" "PF_SPI_0:SS_I" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISS[0:0]" "PF_SPI_0:SS_O" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"CORESPI_IAP_0:SPISS[0:0]" "PF_SPI_0:SS_O" "GoldenImageRecovery_0:SPI_CS_N" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_EMPTY" "DCS_RX_BUFFER_0:EMPTY" "DCS_RX_EMPTY" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_FULL" "DCS_RX_BUFFER_0:FULL" "DCS_RX_FULL" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"DCSRegisters_0:DCS_RX_RE" "DCS_RX_BUFFER_0:RE" }
@@ -589,6 +594,8 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"GPIO_0:GPIO_OUT" "GPIO_OUT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"PRBS_ERRORCNT" "Registers_0:PRBS_ERRORCNT" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:my_address" "Registers_0:rs485_my_address" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"RS485Registers_0:my_delay" "Registers_0:rs485_my_delay" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:DIRECT_VALUES" "RS485Registers_0:tvs_values" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"TVS_Interface_0:DIRECT_FRESH" "RS485Registers_0:tvs_fresh" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_ADDR" "TVS_Interface_0:R_ADDR" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:ROCTVS_VAL" "TVS_Interface_0:R_DATA" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"Registers_0:SERDES_DATA" "SERDES_DATA" }
@@ -629,8 +636,22 @@ sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave4" "SPI0_0:APB_
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave5" "SPI0_1:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave6" "PREAMPSPI_0:APB_bif" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave7" "PREAMPSPI_1:APB_bif" }
-sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave8" "PF_SYSTEM_SERVICES_C0_0:APBSlave" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave8" "PanelIdReader_0:CPU_APB" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PanelIdReader_0:SERVICE_APB" "GoldenImageRecovery_0:CPU_APB" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PanelIdReader_0:PANEL_ID" "Registers_0:panel_id_boot" "RS485Registers_0:panel_id" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PanelIdReader_0:PANEL_VALID" "Registers_0:panel_id_valid" "RS485Registers_0:panel_valid" "GoldenImageRecovery_0:PANEL_VALID" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"PanelIdReader_0:STATUS" "Registers_0:panel_id_status" }
 sd_connect_pins -sd_name ${sd_name} -pin_names {"APB3_0:APBmslave9" "SPI_KEY_0:APB_bif" }
+
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:SERVICE_APB" "PF_SYSTEM_SERVICES_C0_0:APBSlave" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:SPI_RESET_N" "CORESPI_IAP_0:PRESETN" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:PREPARE" "RS485Registers_0:recovery_prepare" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:COMMIT" "RS485Registers_0:recovery_commit" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:READY" "RS485Registers_0:recovery_ready" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:DENIED" "RS485Registers_0:recovery_reject" }
+sd_create_pin_slices -sd_name ${sd_name} -pin_name {GoldenImageRecovery_0:STATUS} -pin_slices {[15:0]}
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:STATUS" "Registers_0:golden_recovery_status" }
+sd_connect_pins -sd_name ${sd_name} -pin_names {"GoldenImageRecovery_0:STATUS[15:0]" "RS485Registers_0:recovery_status" }
 
 # Re-enable auto promotion of pins of type 'pad'
 auto_promote_pad_pins -promote_all 1

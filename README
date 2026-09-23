@@ -16,3 +16,17 @@ RS485 protocol v2 (2026-09-19)
 See docs/rs485-v2.md for framing, CPU compatibility, host migration and offline tests.
 Run: python3 tests/rs485_v2/run_tests.py
 Legacy com.py is incompatible with the v2 wire protocol. No bitstream is included.
+
+Autonomous panel ID initialization (2026-09-23)
+See docs/panel-id-reader.md for the sNVM reader, startup CPU bus handoff,
+address initialization, diagnostics, and validation limitations.
+Run: python3 tests/panel_id/run_tests.py
+This does not yet add the FPGA-only RS485 discovery packet handler.
+
+Manual FPGA-only golden recovery (2026-09-23)
+See docs/golden-recovery.md. Activation requires an explicit user RS485 command;
+CPU absence/timeouts never activate it automatically. No hardware deployment.
+Run: python3 tests/golden_recovery/run_tests.py
+
+CPU-independent ROC temperature/rail readback: docs/direct-tvs.md.
+Client command: rs485_direct_read MN253 [variable ...]. Existing CPU reads remain.

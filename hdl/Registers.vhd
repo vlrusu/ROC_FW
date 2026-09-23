@@ -124,6 +124,10 @@ entity Registers is
     leak_sdi        : in std_logic;
     leak_sdir       : out std_logic;
 
+    panel_id_boot : in std_logic_vector(8 downto 0);
+    panel_id_valid : in std_logic;
+    golden_recovery_status : in std_logic_vector(31 downto 0);
+    panel_id_status : in std_logic_vector(31 downto 0);
     rs485_my_address: out std_logic_vector(8 downto 0);
     rs485_my_delay  : out std_logic_vector(7 downto 0);
     
@@ -138,6 +142,7 @@ entity Registers is
 end Registers;
 
 architecture synth of Registers is
+    signal panel_id_loaded : std_logic := '0';
 
 
    constant CRDDRRESETN		: std_logic_vector(7 downto 0) := x"10";
@@ -496,7 +501,7 @@ begin
 -- Code for APB transactions
 -------------------------------------------------------------------------------
     -- Generate PRDATA on falling edge
-    p_PRDATA : process (PWRITE, PSEL, PADDR)
+    p_PRDATA : process (PWRITE, PSEL, PADDR, panel_id_boot, panel_id_status, golden_recovery_status, rs485_my_address, rs485_my_delay)
     begin
         DataOut <= (others => '0');
         if PWRITE = '0' and PSEL = '1' then
@@ -568,6 +573,12 @@ begin
                 DataOut(8 downto 0) <= rs485_my_address;
             when x"C4" =>
                 DataOut(7 downto 0) <= rs485_my_delay;
+            when x"C5" =>
+                DataOut <= panel_id_status;
+            when x"C7" =>
+                DataOut <= golden_recovery_status;
+            when x"C6" =>
+                DataOut(8 downto 0) <= panel_id_boot;
                 
             when others =>
                 DataOut <= (others => '0');
@@ -647,6 +658,7 @@ begin
         
         led_off <= '0';
         
+        panel_id_loaded <= '0';
         rs485_my_address <= (others => '0');
         rs485_my_delay <= X"01";
 		
@@ -780,6 +792,12 @@ begin
              
             when others =>
         end case;
+        end if;
+        -- One-time hardware initialization. Later explicit CPU writes to C3
+        -- retain their legacy override behavior; C6 always reports the NVM ID.
+        if panel_id_valid = '1' and panel_id_loaded = '0' then
+            rs485_my_address <= panel_id_boot;
+            panel_id_loaded <= '1';
         end if;
     end if;
     end process p_reg_seq;

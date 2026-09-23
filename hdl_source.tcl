@@ -20,6 +20,7 @@ import_files -library work -hdl_source hdl/RS485Registers.vhd
 import_files -library work -hdl_source hdl/TWIController.vhd
 import_files -library work -hdl_source hdl/Registers.vhd
 import_files -library work -hdl_source hdl/TVS_Cntrl.v
+import_files -library work -hdl_source hdl/TVSReadback.vhd
 import_files -library work -hdl_source hdl/counter32.v
 import_files -library work -hdl_source hdl/DCSProcessor.vhd
 import_files -library work -hdl_source hdl/DCSReadCMDProcessor.vhd
@@ -43,3 +44,5 @@ import_files -library work -hdl_source hdl/counter_16bit.v
 import_files -library work -hdl_source hdl/pulse_stretcher.v
 import_files -library work -hdl_source hdl/latch_and_clear.v
 import_files -library work -hdl_source hdl/tracker_params.vh
+import_files -library work -hdl_source hdl/PanelIdReader.vhd
+import_files -library work -hdl_source hdl/GoldenImageRecovery.vhd
